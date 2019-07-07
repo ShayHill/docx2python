@@ -17,6 +17,12 @@ sys.path.insert(0, os.path.abspath('../docx2python'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../../'))
 
+# -- Hack -----------------------------------------------------
+
+# readthedocs.org looks for contents.rst. The local version of sphinx I'm using
+# looks for 'index.rst'
+master_doc = 'index'
+master_doc = 'index'
 
 # -- Project information -----------------------------------------------------
 
