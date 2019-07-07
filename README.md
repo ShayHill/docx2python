@@ -61,8 +61,6 @@ __document__ - header  + body + footer
 
 __text__ - all docx text as one string, similar to what you'd get from `python-docx2txt`
 
-__tables__ - all docx text as simple html tables
-
 __properties__ - docx property names mapped to values (e.g., `{"lastModifiedBy": "Shay Hill"}`)
 
 __images__ - image names mapped to images in binary format. Write to filesystem with

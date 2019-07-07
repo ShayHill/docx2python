@@ -9,6 +9,8 @@ iterators module
 
 This allows for simple recipes like::
 
+    from docx2python.iterators import enum_cells
+
     def remove_empty_paragraphs(tables):
         for (i, j, k), cell in enum_cells(tables):
             tables[i][j][k] = [x for x in cell if x]
@@ -19,6 +21,8 @@ This allows for simple recipes like::
     [[[['a', 'b'], ['a', 'd']]]]
 
 ::
+
+    from docx2python.iterators import enum_at_depth
 
     def html_map(tables) -> str:
         """Create an HTML map of document contents.

@@ -155,23 +155,23 @@
 <div class="section" id="docx2python">
 <h1>docx2python<a class="headerlink" href="#docx2python" title="Permalink to this headline">¶</a></h1>
 <p>Extract docx headers, footers, text, properties, and images to a Python object.</p>
-<p>The code is an expansion/contraction of <a class="reference external" href="https://github.com/ankushshah89/python-docx2txt">python-docx2txt</a> (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.</p>
+<p>The code is an expansion/contraction of [python-docx2txt](<a class="reference external" href="https://github.com/ankushshah89/python-docx2txt">https://github.com/ankushshah89/python-docx2txt</a>) (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.</p>
 <p><strong>shared features</strong>:</p>
 <ul class="simple">
 <li><p>extracts text from docx files</p></li>
 <li><p>extracts images from docx files</p></li>
 <li><p>no dependencies (docx2python requires pytest to test)</p></li>
 </ul>
-<p><strong>additions:</strong></p>
+<p><strong>additions</strong>:</p>
 <ul class="simple">
 <li><p>converts bullets and numbered lists to ascii with indentation</p></li>
 <li><p>retains some structure of the original file (more below)</p></li>
 <li><p>extracts document properties (creator, lastModifiedBy, etc.)</p></li>
-<li><p>inserts image placeholders in text (‘<code class="docutils literal notranslate"><span class="pre">----image1.jpg----</span></code>‘)</p></li>
+<li><p>inserts image placeholders in text (‘<cite>—-image1.jpg—-</cite>‘)</p></li>
 <li><p>(optionally) retains font size, font color, bold, italics, and underscore as html</p></li>
 <li><p>full test coverage</p></li>
 </ul>
-<p><strong>subtractions:</strong></p>
+<p><strong>subtractions</strong>:</p>
 <ul class="simple">
 <li><p>no command-line interface</p></li>
 <li><p>will only work with later versions of Python</p></li>
@@ -179,29 +179,26 @@
 </div>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install docx2python
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">docx2python</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="use">
 <h1>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">docx2python</span> <span class="kn">import</span> <span class="n">docx2python</span>
-
-<span class="c1"># extract docx content</span>
-<span class="n">docx2python</span><span class="p">(</span><span class="s1">&#39;path/to/file.docx&#39;</span><span class="p">)</span>
-
-<span class="c1"># extract docx content, write images to image_directory</span>
-<span class="n">docx2python</span><span class="p">(</span><span class="s1">&#39;path/to/file.docx&#39;</span><span class="p">,</span> <span class="s1">&#39;path/to/image_directory&#39;</span><span class="p">)</span>
-
-<span class="c1"># extract docx content with basic font styles converted to html</span>
-<span class="n">docx2python</span><span class="p">(</span><span class="s1">&#39;path/to/file.docx&#39;</span><span class="p">,</span> <span class="n">html</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre></div>
-</div>
+<blockquote>
+<div><p>from docx2python import docx2python</p>
+<p># extract docx content
+docx2python(‘path/to/file.docx’)</p>
+<p># extract docx content, write images to image_directory
+docx2python(‘path/to/file.docx’, ‘path/to/image_directory’)</p>
+<p># extract docx content with basic font styles converted to html
+docx2python(‘path/to/file.docx’, html=True)</p>
+</div></blockquote>
 <p>Note on html feature:</p>
 <ul class="simple">
 <li><p>font size, font color, bold, italics, and underline supported</p></li>
-<li><p>every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as <code class="docutils literal notranslate"><span class="pre">&lt;b&gt;paragraph</span> <span class="pre">q&lt;/b&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;b&gt;paragraph</span> <span class="pre">2&lt;/b&gt;</span></code>. This is intentional to make  each paragraph its own entity.</p></li>
-<li><p>if you specify <code class="docutils literal notranslate"><span class="pre">export_font_style=True</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> in your docx text will be encoded as <code class="docutils literal notranslate"><span class="pre">&amp;gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&amp;lt;</span></code></p></li>
+<li><p>every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as <cite>&lt;b&gt;paragraph q&lt;/b&gt;</cite>, <cite>&lt;b&gt;paragraph 2&lt;/b&gt;</cite>. This is intentional to make  each paragraph its own entity.</p></li>
+<li><p>if you specify <cite>export_font_style=True</cite>, <cite>&gt;</cite> and <cite>&lt;</cite> in your docx text will be encoded as <cite>&amp;gt;</cite> and <cite>&amp;lt;</cite></p></li>
 </ul>
 </div>
 <div class="section" id="return-value">
@@ -211,21 +208,20 @@
 <p><strong>footer</strong> - contents of the docx footers in the return format described herein</p>
 <p><strong>body</strong> - contents of the docx in the return format described herein</p>
 <p><strong>document</strong> - header  + body + footer</p>
-<p><strong>text</strong> - all docx text as one string, similar to what you’d get from <code class="docutils literal notranslate"><span class="pre">python-docx2txt</span></code></p>
-<p><strong>tables</strong> - all docx text as simple html tables</p>
-<p><strong>properties</strong> - docx property names mapped to values (e.g., <code class="docutils literal notranslate"><span class="pre">{&quot;lastModifiedBy&quot;:</span> <span class="pre">&quot;Shay</span> <span class="pre">Hill&quot;}</span></code>)</p>
-<p><strong>images</strong> - image names mapped to images in binary format. Write to filesystem with</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">image</span> <span class="k">in</span> <span class="k">result</span><span class="p">.</span><span class="n">images</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">with</span> <span class="k">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">image_destination</span><span class="p">:</span>
-        <span class="k">write</span><span class="p">(</span><span class="n">image_destination</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+<p><strong>text</strong> - all docx text as one string, similar to what you’d get from <cite>python-docx2txt</cite></p>
+<p><strong>properties</strong> - docx property names mapped to values (e.g., <cite>{“lastModifiedBy”: “Shay Hill”}</cite>)</p>
+<p><strong>images</strong> - image names mapped to images in binary format. Write to filesystem with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">image_destination</span><span class="p">:</span>
+        <span class="n">write</span><span class="p">(</span><span class="n">image_destination</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-format">
 <h1>Return Format<a class="headerlink" href="#return-format" title="Permalink to this headline">¶</a></h1>
-<p>Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., <code class="docutils literal notranslate"><span class="pre">output.body[i][j][k][l]</span></code> will be a paragraph).</p>
+<p>Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., <cite>output.body[i][j][k][l]</cite> will be a paragraph).</p>
 <p>If your docx has no tables, output.body will appear as one a table with all contents in one cell:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>  <span class="c1"># document</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>  <span class="c1"># document</span>
     <span class="p">[</span>  <span class="c1"># table</span>
         <span class="p">[</span>  <span class="c1"># row</span>
             <span class="p">[</span>  <span class="c1"># cell</span>
@@ -247,7 +243,7 @@
 </div>
 <p>Table cells will appear as table cells. Text outside tables will appear as table cells.</p>
 <p>To preserve the even depth (text always at depth 4), nested tables will appear as new, top-level tables. This is clearer with an example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#  docx structure</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#  docx structure</span>
 
 <span class="p">[</span>  <span class="c1"># document</span>
     <span class="p">[</span>  <span class="c1"># table A</span>
@@ -270,8 +266,8 @@
 <span class="p">]</span>
 </pre></div>
 </div>
-<p>becomes …</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>  <span class="c1"># document</span>
+<p>becomes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>  <span class="c1"># document</span>
     <span class="p">[</span>  <span class="c1"># table A</span>
         <span class="p">[</span>  <span class="c1"># row in table A</span>
             <span class="p">[</span>  <span class="c1"># cell in table A</span>
@@ -297,11 +293,13 @@
 </pre></div>
 </div>
 <p>This ensures text appears</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">)</span> <span class="k">only</span> <span class="n">once</span>
-<span class="mi">2</span><span class="p">)</span> <span class="k">in</span> <span class="n">the</span> <span class="k">order</span> <span class="n">it</span> <span class="n">appears</span> <span class="k">on</span> <span class="n">the</span> <span class="n">docx</span>
-<span class="mi">3</span><span class="p">)</span> <span class="n">always</span> <span class="k">at</span> <span class="n">depth</span> <span class="n">four</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">e</span><span class="p">.,</span> <span class="k">result</span><span class="p">.</span><span class="n">body</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="n">will</span> <span class="n">be</span> <span class="n">a</span> <span class="n">string</span><span class="p">).</span>
-</pre></div>
-</div>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>only once</p></li>
+<li><p>in the order it appears on the docx</p></li>
+<li><p>always at depth four (i.e., result.body[i][j][k][l] will be a string).</p></li>
+</ol>
+</div></blockquote>
 </div>
 <div class="section" id="helper-functions">
 <h1>Helper Functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h1>
