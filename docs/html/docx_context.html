@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>docx_context module &mdash; source 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> source
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">docx_context module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">source</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>docx_context module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/docx_context.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-docx_context">
+<span id="docx-context-module"></span><h1>docx_context module<a class="headerlink" href="#module-docx_context" title="Permalink to this headline">¶</a></h1>
+<p>Content from files that aren’t <code class="docutils literal notranslate"><span class="pre">word/document.xml</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">author</dt>
+<dd class="field-odd"><p>Shay Hill</p>
+</dd>
+<dt class="field-even">created</dt>
+<dd class="field-even"><p>6/26/2019</p>
+</dd>
+</dl>
+<p>Most of the “meat” in a docx file is in <code class="docutils literal notranslate"><span class="pre">word/document.xml</span></code>. These functions retrieve
+numbering formats, images, and font styles from <em>other</em> files in a decompressed docx.</p>
+<p>Several functions here take a bytes-format document from a decompressed docx.file.
+Create such with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">zipfile</span>
+
+<span class="n">zipf</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="s2">&quot;docx_filename.docx&quot;</span><span class="p">)</span>
+<span class="n">xml</span> <span class="o">=</span> <span class="n">zipf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;trash/numbering.xml&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="docx_context.collect_docProps">
+<code class="sig-prename descclassname">docx_context.</code><code class="sig-name descname">collect_docProps</code><span class="sig-paren">(</span><em class="sig-param">xml: bytes</em><span class="sig-paren">)</span> &#x2192; Dict[str, str]<a class="headerlink" href="#docx_context.collect_docProps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get author, modified, etc. from docProps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> – <code class="docutils literal notranslate"><span class="pre">DocProps/core.xml</span></code> from a decompressed docx file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>document property names mapped to values</p>
+</dd>
+</dl>
+<p><strong>E.g., Given</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">cp</span><span class="p">:</span><span class="n">coreProperties</span> <span class="n">xmlns</span><span class="p">:</span><span class="n">cp</span><span class="o">=</span><span class="s2">&quot;http://schemas.openxmlformats...&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">dc</span><span class="p">:</span><span class="n">title</span><span class="o">&gt;</span><span class="n">SG</span><span class="o">-</span><span class="n">DOP</span><span class="o">-</span><span class="mi">5009</span> <span class="o">-</span> <span class="n">Operate</span> <span class="n">ROMAR</span> <span class="n">swarf</span> <span class="n">unit</span>
+    <span class="o">&lt;/</span><span class="n">dc</span><span class="p">:</span><span class="n">title</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">dc</span><span class="p">:</span><span class="n">creator</span><span class="o">&gt;</span><span class="n">Shay</span> <span class="n">Hill</span>
+    <span class="o">&lt;/</span><span class="n">dc</span><span class="p">:</span><span class="n">creator</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">cp</span><span class="p">:</span><span class="n">lastModifiedBy</span><span class="o">&gt;</span><span class="n">Shay</span> <span class="n">Hill</span>
+    <span class="o">&lt;/</span><span class="n">cp</span><span class="p">:</span><span class="n">lastModifiedBy</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">cp</span><span class="p">:</span><span class="n">revision</span><span class="o">&gt;</span><span class="mi">6</span>
+    <span class="o">&lt;/</span><span class="n">cp</span><span class="p">:</span><span class="n">revision</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">cp</span><span class="p">:</span><span class="n">lastPrinted</span><span class="o">&gt;</span><span class="mi">2017</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T15</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mi">00</span><span class="n">Z</span>
+    <span class="o">&lt;/</span><span class="n">cp</span><span class="p">:</span><span class="n">lastPrinted</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">dcterms</span><span class="p">:</span><span class="n">created</span> <span class="n">xsi</span><span class="p">:</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;dcterms:W3CDTF&quot;</span><span class="o">&gt;</span><span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span><span class="n">T07</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mi">00</span><span class="n">Z</span>
+    <span class="o">&lt;/</span><span class="n">dcterms</span><span class="p">:</span><span class="n">created</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">dcterms</span><span class="p">:</span><span class="n">modified</span> <span class="n">xsi</span><span class="p">:</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;dcterms:W3CDTF&quot;</span><span class="o">&gt;</span><span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">11</span><span class="n">T11</span><span class="p">:</span><span class="mi">41</span><span class="p">:</span><span class="mi">00</span><span class="n">Z</span>
+    <span class="o">&lt;/</span><span class="n">dcterms</span><span class="p">:</span><span class="n">modified</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">cp</span><span class="p">:</span><span class="n">coreProperties</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p><strong>E.g., Returns</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;SG-DOP-5009 - Operate ROMAR swarf unit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;creator&quot;</span><span class="p">:</span> <span class="s2">&quot;Shay Hill&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lastModifiedBy&quot;</span><span class="p">:</span> <span class="s2">&quot;Shay Hill&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;revision&quot;</span><span class="p">:</span> <span class="s2">&quot;6&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="docx_context.collect_image_rels">
+<code class="sig-prename descclassname">docx_context.</code><code class="sig-name descname">collect_image_rels</code><span class="sig-paren">(</span><em class="sig-param">xml: bytes</em><span class="sig-paren">)</span> &#x2192; Dict[str, str]<a class="headerlink" href="#docx_context.collect_image_rels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect relId with images</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> – <code class="docutils literal notranslate"><span class="pre">word/_rels/document.xml.rels</span></code> from a decompressed docx file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">relId</span></code> mapped to <code class="docutils literal notranslate"><span class="pre">Target</span></code>.</p>
+</dd>
+</dl>
+<p><strong>E.g, Given</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">Relationships</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">Relationship</span> <span class="n">Id</span><span class="o">=</span><span class="s2">&quot;rId8&quot;</span> <span class="n">Target</span><span class="o">=</span><span class="s2">&quot;webSettings.xml&quot;</span><span class="o">/&gt;</span>  <span class="c1"># ignore this one</span>
+    <span class="o">&lt;</span><span class="n">Relationship</span> <span class="n">Id</span><span class="o">=</span><span class="s2">&quot;rId13&quot;</span> <span class="n">Target</span><span class="o">=</span><span class="s2">&quot;media/image5.jpeg&quot;</span><span class="o">/&gt;</span>  <span class="c1"># map Id to Target</span>
+<span class="o">&lt;</span><span class="n">Relationships</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p><strong>E.g., Returns</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;rId13&quot;</span><span class="p">:</span> <span class="s2">&quot;image5.jpg&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="docx_context.collect_numFmts">
+<code class="sig-prename descclassname">docx_context.</code><code class="sig-name descname">collect_numFmts</code><span class="sig-paren">(</span><em class="sig-param">xml: bytes</em><span class="sig-paren">)</span> &#x2192; Dict[str, List[str]]<a class="headerlink" href="#docx_context.collect_numFmts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect abstractNum bullet formats into a dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> – <code class="docutils literal notranslate"><span class="pre">trash/numbering.xml</span></code> from a decompressed docx file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>numId mapped to numFmts (by ilvl)</p>
+</dd>
+<dt class="field-odd">Background</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">trash/numbering.xml</span></code> will have two sections.</p>
+<p><strong>SECTION 1</strong> - Some abstractNum elements defining numbering formats for multiple
+indentation levels:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">abstractNum</span> <span class="n">w</span><span class="p">:</span><span class="n">abstractNumId</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">lvl</span> <span class="n">w</span><span class="p">:</span><span class="n">ilvl</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="o">&gt;&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">numFmt</span> <span class="n">w</span><span class="p">:</span><span class="n">val</span><span class="o">=</span><span class="s2">&quot;decimal&quot;</span><span class="o">/&gt;&lt;/</span><span class="n">w</span><span class="p">:</span><span class="n">lvl</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">lvl</span> <span class="n">w</span><span class="p">:</span><span class="n">ilvl</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">&gt;&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">numFmt</span> <span class="n">w</span><span class="p">:</span><span class="n">val</span><span class="o">=</span><span class="s2">&quot;lowerLetter&quot;</span><span class="o">/&gt;&lt;/</span><span class="n">w</span><span class="p">:</span><span class="n">lvl</span><span class="o">&gt;</span>
+    <span class="o">...</span>
+<span class="o">&lt;/</span><span class="n">w</span><span class="p">:</span><span class="n">abstractNum</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p><strong>SECTION 2</strong> - Some num elements, each referencing an abstractNum. Multiple nums
+may reference the same abstractNum, but each will maintain a separate count (i.e.,
+each numbered paragraph will start from 1, even if it shares a style with another
+paragraph.):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">num</span> <span class="n">w</span><span class="p">:</span><span class="n">numId</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">abstractNumId</span> <span class="n">w</span><span class="p">:</span><span class="n">val</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="o">/&gt;</span>
+<span class="o">&lt;/</span><span class="n">w</span><span class="p">:</span><span class="n">num</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">num</span> <span class="n">w</span><span class="p">:</span><span class="n">numId</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">w</span><span class="p">:</span><span class="n">abstractNumId</span> <span class="n">w</span><span class="p">:</span><span class="n">val</span><span class="o">=</span><span class="s2">&quot;5&quot;</span><span class="o">/&gt;</span>
+<span class="o">&lt;/</span><span class="n">w</span><span class="p">:</span><span class="n">num</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p><strong>E.g, Given</strong>: <em>above</em></p>
+<p><strong>E.g., Returns</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;lowerLetter&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="docx_context.get_context">
+<code class="sig-prename descclassname">docx_context.</code><code class="sig-name descname">get_context</code><span class="sig-paren">(</span><em class="sig-param">zipf: zipfile.ZipFile</em><span class="sig-paren">)</span> &#x2192; Dict[str, Any]<a class="headerlink" href="#docx_context.get_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect context information from docProps, rels etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>zipf</strong> – created by <code class="docutils literal notranslate"><span class="pre">zipfile.ZipFile(&quot;docx_filename&quot;)</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>dictionaries</p>
+<ul class="simple">
+<li><p>rId2Target - rel Id mapped to image files</p></li>
+<li><p>docProp2text - document properties like ‘modified’ and ‘created’</p></li>
+<li><p>numId2numFmts - paragraph IDs mapped to number and bullet formats</p></li>
+<li><p>numIdcount - a counter starting at 0 for each ilvl of each numbered list</p></li>
+</ul>
+<p>The last two will only be present in documents with bulleted or numbered lists.</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="docx_context.pull_image_files">
+<code class="sig-prename descclassname">docx_context.</code><code class="sig-name descname">pull_image_files</code><span class="sig-paren">(</span><em class="sig-param">zipf: zipfile.ZipFile</em>, <em class="sig-param">image_directory: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, bytes]<a class="headerlink" href="#docx_context.pull_image_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy images from zip file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zipf</strong> – created by <code class="docutils literal notranslate"><span class="pre">zipfile.ZipFile(docx_filename)</span></code></p></li>
+<li><p><strong>image_directory</strong> – optional destination for copied images</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Image names mapped to images in binary format.</p>
+<p>To write these to disc:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</p>
+</dd>
+<dt class="field-odd">Side effects</dt>
+<dd class="field-odd"><p>Given an optional image_directory, will write the images out to file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Shay Hill
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

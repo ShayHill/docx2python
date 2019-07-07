@@ -1,0 +1,518 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>iterators module &mdash; source 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> source
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">iterators module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">source</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>iterators module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/iterators.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-iterators">
+<span id="iterators-module"></span><span id="iterators"></span><h1>iterators module<a class="headerlink" href="#module-iterators" title="Permalink to this headline">¶</a></h1>
+<p>Iterate over extracted docx content.</p>
+<dl class="field-list simple">
+<dt class="field-odd">author</dt>
+<dd class="field-odd"><p>Shay Hill</p>
+</dd>
+<dt class="field-even">created</dt>
+<dd class="field-even"><p>6/28/2019</p>
+</dd>
+</dl>
+<p>This package extracts docx text as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>  <span class="c1"># tables</span>
+    <span class="p">[</span>  <span class="c1"># table</span>
+        <span class="p">[</span>  <span class="c1"># row</span>
+            <span class="p">[</span>  <span class="c1"># cell</span>
+                <span class="s2">&quot;&quot;</span>  <span class="c1"># paragraph</span>
+            <span class="p">]</span>
+        <span class="p">]</span>
+    <span class="p">]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>These functions help manipulate that deep nest without deep indentation.</p>
+<p>This allows for simple recipes like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">remove_empty_paragraphs</span><span class="p">(</span><span class="n">tables</span><span class="p">):</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">enum_cells</span><span class="p">(</span><span class="n">tables</span><span class="p">):</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cell</span> <span class="k">if</span> <span class="n">x</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tables</span> <span class="o">=</span> <span class="p">[[[[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">remove_empty_paragraphs</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+<span class="go">    [[[[&#39;a&#39;, &#39;b&#39;], [&#39;a&#39;, &#39;d&#39;]]]]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">html_map</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create an HTML map of document contents.</span>
+
+<span class="sd">    Render this in a browser to visually search for data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span>
+
+    <span class="c1"># prepend index tuple to each paragraph</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">paragraph</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">tables</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">)),</span> <span class="n">paragraph</span><span class="p">])</span>
+
+    <span class="c1"># wrap each paragraph in &lt;pre&gt; tags</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">tables</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{x}</span><span class="s2">&lt;/pre&gt;&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">])</span>
+
+    <span class="c1"># wrap each cell in &lt;td&gt; tags</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">tables</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">f</span><span class="s2">&quot;&lt;td&gt;</span><span class="si">{x}</span><span class="s2">&lt;/td&gt;&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])</span>
+
+    <span class="c1"># wrap each row in &lt;tr&gt; tags</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,),</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">tables</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&lt;tr&gt;</span><span class="si">{x}</span><span class="s2">&lt;/tr&gt;&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">table</span><span class="p">)</span>
+
+    <span class="c1"># wrap each table in &lt;table&gt; tags</span>
+    <span class="n">tables</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">f</span><span class="s1">&#39;&lt;table border=&quot;1&quot;&gt;</span><span class="si">{x}</span><span class="s1">&lt;/table&gt;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;&lt;html&gt;&lt;body&gt;&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tables</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;&lt;/body&gt;&lt;/html&gt;&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tables</span> <span class="o">=</span> <span class="p">[[[[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">html_toc</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+<span class="go">&lt;html&gt;</span>
+<span class="go">    &lt;body&gt;</span>
+<span class="go">        &lt;table border=&quot;1&quot;&gt;</span>
+<span class="go">            &lt;tr&gt;</span>
+<span class="go">                &lt;td&gt;</span>
+<span class="go">                    &#39;(0, 0, 0, 0) a&#39;</span>
+<span class="go">                    &#39;(0, 0, 0, 1) b&#39;</span>
+<span class="go">                &lt;/td&gt;</span>
+<span class="go">                &lt;td&gt;</span>
+<span class="go">                    &#39;(0, 0, 1, 0) a&#39;</span>
+<span class="go">                    &#39;(0, 0, 1, 1) d&#39;</span>
+<span class="go">                &lt;/td&gt;</span>
+<span class="go">            &lt;/tr&gt;</span>
+<span class="go">        &lt;/table&gt;</span>
+<span class="go">    &lt;/body&gt;</span>
+<span class="go">&lt;/html&gt;</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="iterators.enum_at_depth">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">enum_at_depth</code><span class="sig-paren">(</span><em class="sig-param">nested: Sequence[Any], depth: int</em><span class="sig-paren">)</span> &#x2192; Iterator[iterators.IndexedItem]<a class="headerlink" href="#iterators.enum_at_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate over a nested sequence at depth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nested</strong> – a (nested) sequence</p></li>
+<li><p><strong>depth</strong> – <p>depth of iteration</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">((i,),</span> <span class="pre">nested[i])</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">((i,</span> <span class="pre">j),</span> <span class="pre">nested[:][j])</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">3</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">((i,</span> <span class="pre">j,</span> <span class="pre">k),</span> <span class="pre">nested[:][:][k])</span></code></p></li>
+<li><p>…</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuples (tuple “address”, item)</p>
+</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sequence</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">[[[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]],</span> <span class="p">[[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">]]],</span>
+<span class="gp">... </span>    <span class="p">[[[</span><span class="s2">&quot;f&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">]]]</span>
+<span class="gp">... </span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">IndexedItem(index=(0,), value=[[[&#39;a&#39;, &#39;b&#39;], [&#39;c&#39;]], [[&#39;d&#39;, &#39;e&#39;]]])</span>
+<span class="go">IndexedItem(index=(1,), value=[[[&#39;f&#39;], [&#39;g&#39;, &#39;h&#39;]]])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">IndexedItem(index=(0, 0), value=[[&#39;a&#39;, &#39;b&#39;], [&#39;c&#39;]])</span>
+<span class="go">IndexedItem(index=(0, 1), value=[[&#39;d&#39;, &#39;e&#39;]])</span>
+<span class="go">IndexedItem(index=(1, 0), value=[[&#39;f&#39;], [&#39;g&#39;, &#39;h&#39;]])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">IndexedItem(index=(0, 0, 0), value=[&#39;a&#39;, &#39;b&#39;])</span>
+<span class="go">IndexedItem(index=(0, 0, 1), value=[&#39;c&#39;])</span>
+<span class="go">IndexedItem(index=(0, 1, 0), value=[&#39;d&#39;, &#39;e&#39;])</span>
+<span class="go">IndexedItem(index=(1, 0, 0), value=[&#39;f&#39;])</span>
+<span class="go">IndexedItem(index=(1, 0, 1), value=[&#39;g&#39;, &#39;h&#39;])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">enum_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">IndexedItem(index=(0, 0, 0, 0), value=&#39;a&#39;)</span>
+<span class="go">IndexedItem(index=(0, 0, 0, 1), value=&#39;b&#39;)</span>
+<span class="go">IndexedItem(index=(0, 0, 1, 0), value=&#39;c&#39;)</span>
+<span class="go">IndexedItem(index=(0, 1, 0, 0), value=&#39;d&#39;)</span>
+<span class="go">IndexedItem(index=(0, 1, 0, 1), value=&#39;e&#39;)</span>
+<span class="go">IndexedItem(index=(1, 0, 0, 0), value=&#39;f&#39;)</span>
+<span class="go">IndexedItem(index=(1, 0, 1, 0), value=&#39;g&#39;)</span>
+<span class="go">IndexedItem(index=(1, 0, 1, 1), value=&#39;h&#39;)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">enum_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">will not iterate over sequence item</span>
+</pre></div>
+</div>
+<p>This error is analogous to the <code class="docutils literal notranslate"><span class="pre">TypeError:</span> <span class="pre">'int'</span> <span class="pre">object</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">iterable</span></code> you
+would see if attempting to enumerate over a non-iterable. In this case,
+you’ve attempted to enumerate over an item that <em>may</em> be iterable, but is not of
+the same type as the <code class="docutils literal notranslate"><span class="pre">nested</span></code> sequence argument. This type checking is how we
+can safely descend into a nested list of strings.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.iter_at_depth">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">iter_at_depth</code><span class="sig-paren">(</span><em class="sig-param">nested: Sequence[Any], depth: int</em><span class="sig-paren">)</span> &#x2192; Iterator[Any]<a class="headerlink" href="#iterators.iter_at_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over a nested sequence at depth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nested</strong> – a (nested) sequence</p></li>
+<li><p><strong>depth</strong> – <p>depth of iteration</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">nested[i]</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">nested[:][j]</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">3</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">nested[:][:][k]</span></code></p></li>
+<li><p>…</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>sub-sequences or items in nested</p>
+</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sequence</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">[[[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]],</span> <span class="p">[[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">]]],</span>
+<span class="gp">... </span>    <span class="p">[[[</span><span class="s2">&quot;f&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">]]]</span>
+<span class="gp">... </span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">iter_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">[[[&#39;a&#39;, &#39;b&#39;], [&#39;c&#39;]], [[&#39;d&#39;, &#39;e&#39;]]]</span>
+<span class="go">[[[&#39;f&#39;], [&#39;g&#39;, &#39;h&#39;]]]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">iter_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">[[&#39;a&#39;, &#39;b&#39;], [&#39;c&#39;]]</span>
+<span class="go">[[&#39;d&#39;, &#39;e&#39;]]</span>
+<span class="go">[[&#39;f&#39;], [&#39;g&#39;, &#39;h&#39;]]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">iter_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;]</span>
+<span class="go">[&#39;c&#39;]</span>
+<span class="go">[&#39;d&#39;, &#39;e&#39;]</span>
+<span class="go">[&#39;f&#39;]</span>
+<span class="go">[&#39;g&#39;, &#39;h&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">iter_at_depth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;, &#39;g&#39;, &#39;h&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.enum_tables">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">enum_tables</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[iterators.IndexedItem]<a class="headerlink" href="#iterators.enum_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate over <code class="docutils literal notranslate"><span class="pre">tables[i]</span></code></p>
+<p>Analog of enum_at_depth(tables, 1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">((0,</span> <span class="pre">),</span> <span class="pre">tables[0])</span> <span class="pre">...</span> <span class="pre">,</span> <span class="pre">((i,</span> <span class="pre">),</span> <span class="pre">tables[i])</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.enum_rows">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">enum_rows</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[iterators.IndexedItem]<a class="headerlink" href="#iterators.enum_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate over <code class="docutils literal notranslate"><span class="pre">tables[:][j]</span></code></p>
+<p>Analog of enum_at_depth(tables, 2)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">((0,</span> <span class="pre">0),</span> <span class="pre">tables[0][0])</span> <span class="pre">...</span> <span class="pre">,</span> <span class="pre">((i,</span> <span class="pre">j),</span> <span class="pre">tables[i][j])</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.enum_cells">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">enum_cells</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[iterators.IndexedItem]<a class="headerlink" href="#iterators.enum_cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate over <code class="docutils literal notranslate"><span class="pre">tables[:][:][k]</span></code></p>
+<p>Analog of enum_at_depth(tables, 3)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">((0,</span> <span class="pre">0,</span> <span class="pre">0),</span> <span class="pre">tables[0][0][0])</span> <span class="pre">...</span> <span class="pre">,</span> <span class="pre">((i,</span> <span class="pre">j,</span> <span class="pre">k),</span> <span class="pre">tables[i][j][k])</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.enum_paragraphs">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">enum_paragraphs</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[iterators.IndexedItem]<a class="headerlink" href="#iterators.enum_paragraphs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate over <code class="docutils literal notranslate"><span class="pre">tables[:][:][:][l]</span></code></p>
+<p>Analog of enum_at_depth(tables, 4)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">((0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0),</span> <span class="pre">tables[0][0][0][0])</span> <span class="pre">...</span> <span class="pre">,</span> <span class="pre">((i,</span> <span class="pre">j,</span> <span class="pre">k,</span> <span class="pre">l),</span> <span class="pre">tables[i][j][k][l])</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.iter_tables">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">iter_tables</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[List[List[List[Any]]]]<a class="headerlink" href="#iterators.iter_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over <code class="docutils literal notranslate"><span class="pre">tables[i]</span></code></p>
+<p>Analog of iter_at_depth(tables, 1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">tables[0],</span> <span class="pre">tables[1],</span> <span class="pre">...</span> <span class="pre">tables[i]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.iter_rows">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">iter_rows</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[List[List[Any]]]<a class="headerlink" href="#iterators.iter_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over <code class="docutils literal notranslate"><span class="pre">tables[:][j]</span></code></p>
+<p>Analog of iter_at_depth(tables, 2)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">tables[0][0],</span> <span class="pre">tables[0][1],</span> <span class="pre">...</span> <span class="pre">tables[i][j]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.iter_cells">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">iter_cells</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[List[Any]]<a class="headerlink" href="#iterators.iter_cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over <code class="docutils literal notranslate"><span class="pre">tables[:][:][k]</span></code></p>
+<p>Analog of iter_at_depth(tables, 3)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">tables[0][0][0],</span> <span class="pre">tables[0][0][1],</span> <span class="pre">...</span> <span class="pre">tables[i][j][k]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="iterators.iter_paragraphs">
+<code class="sig-prename descclassname">iterators.</code><code class="sig-name descname">iter_paragraphs</code><span class="sig-paren">(</span><em class="sig-param">tables: Sequence[Sequence[Sequence[Sequence[Any]]]]</em><span class="sig-paren">)</span> &#x2192; Iterator[str]<a class="headerlink" href="#iterators.iter_paragraphs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over <code class="docutils literal notranslate"><span class="pre">tables[:][:][:][l]</span></code></p>
+<p>Analog of iter_at_depth(tables, 4)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tables</strong> – <code class="docutils literal notranslate"><span class="pre">[[[[&quot;string&quot;]]]]</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">tables[0][0][0][0],</span> <span class="pre">tables[0][0][0][1],</span> <span class="pre">...</span> <span class="pre">tables[i][j][k][l]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Shay Hill
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
