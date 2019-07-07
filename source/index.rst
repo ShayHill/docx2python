@@ -26,7 +26,7 @@ The code is an expansion/contraction of [python-docx2txt](https://github.com/ank
 * converts bullets and numbered lists to ascii with indentation
 * retains some structure of the original file (more below)
 * extracts document properties (creator, lastModifiedBy, etc.)
-* inserts image placeholders in text ('`----image1.jpg----`')
+* inserts image placeholders in text ('``----image1.jpg----``')
 * (optionally) retains font size, font color, bold, italics, and underscore as html
 * full test coverage
 
@@ -62,7 +62,7 @@ Note on html feature:
 
 * font size, font color, bold, italics, and underline supported
 * every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph q</b>`, `<b>paragraph 2</b>`. This is intentional to make  each paragraph its own entity.
-* if you specify `export_font_style=True`, `>` and `<` in your docx text will be encoded as `&gt;` and `&lt;`
+* if you specify ``export_font_style=True``, ``>`` and ``<`` in your docx text will be encoded as `&gt;` and `&lt;`
 
 Return Value
 ============
@@ -170,7 +170,7 @@ This ensures text appears
 
     1) only once
     2) in the order it appears on the docx
-    3) always at depth four (i.e., result.body[i][j][k][l] will be a string).
+    3) always at depth four (i.e., ``result.body[i][j][k][l]`` will be a string).
 
 
 

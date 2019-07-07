@@ -1,1 +1,1 @@
-from docx2python.main import docx2python
+from docx2python import main as docx2python
