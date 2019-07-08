@@ -47,6 +47,8 @@ Installation
 Use
 ===
 
+::
+
     from docx2python import docx2python
 
     # extract docx content
@@ -61,8 +63,8 @@ Use
 Note on html feature:
 
 * font size, font color, bold, italics, and underline supported
-* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph q</b>`, `<b>paragraph 2</b>`. This is intentional to make  each paragraph its own entity.
-* if you specify ``export_font_style=True``, ``>`` and ``<`` in your docx text will be encoded as `&gt;` and `&lt;`
+* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as ``<b>paragraph q</b>``, ``<b>paragraph 2</b>``. This is intentional to make  each paragraph its own entity.
+* if you specify ``export_font_style=True``, ``>`` and ``<`` in your docx text will be encoded as ``&gt;`` and ``&lt;``
 
 Return Value
 ============
@@ -75,7 +77,7 @@ Function ``docx2python`` returns an object with several attributes.
 
 **body** - contents of the docx in the return format described herein
 
-**document** - header  + body + footer
+**document** - header  + body + footer (read only)
 
 **text** - all docx text as one string, similar to what you'd get from `python-docx2txt`
 
@@ -177,6 +179,15 @@ This ensures text appears
 Helper Functions
 ================
 
+To assist with future development, every significant function is documented here. The ``iterators`` module is for users. Import these helper functions with::
+
+   from docx2python.iterators import ...
+
+Helpers and recipes documented here:
+
 * :ref:`iterators`
+
+For developers, all major functions within docx2python. Also a decent primer on the major files in an extracted ``docx`` file.
+
 * :ref:`modindex`
 * :ref:`search`

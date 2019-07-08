@@ -2,6 +2,8 @@
 
 Extract docx headers, footers, text, properties, and images to a Python object.
 
+[full documentation](https://docx2python.readthedocs.io/en/latest/index.html)
+
 The code is an expansion/contraction of [python-docx2txt](https://github.com/ankushshah89/python-docx2txt) (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.
 
 __shared features__:
@@ -23,12 +25,12 @@ __subtractions:__
 * will only work with later versions of Python
 
 
-#Installation
+##Installation
 ```bash
 pip install docx2python
 ```
 
-#Use
+##Use
 
 ```python
 from docx2python import docx2python
@@ -57,7 +59,7 @@ __footer__ - contents of the docx footers in the return format described herein
 
 __body__ - contents of the docx in the return format described herein
 
-__document__ - header  + body + footer 
+__document__ - header  + body + footer (read only)
 
 __text__ - all docx text as one string, similar to what you'd get from `python-docx2txt`
 
@@ -71,7 +73,7 @@ for name, image in result.images.items():
         write(image_destination, image)
 ```
 
-#Return Format
+##Return Format
 Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., `output.body[i][j][k][l]` will be a paragraph).
 
 If your docx has no tables, output.body will appear as one a table with all contents in one cell:
@@ -159,4 +161,74 @@ This ensures text appears
     2) in the order it appears on the docx
     3) always at depth four (i.e., result.body[i][j][k][l] will be a string).
     
+##Working with output
+
+This package provides several documented helper functions in [the ``docx2python.iterators`` module](https://docx2python.readthedocs.io/en/latest/iterators.html#iterators). Here are a few recipes possible with these functions:
+
+```python
+from docx2python.iterators import enum_cells
+
+def remove_empty_paragraphs(tables):
+    for (i, j, k), cell in enum_cells(tables):
+        tables[i][j][k] = [x for x in cell if x]
+```
+
+```
+>>> tables = [[[['a', 'b'], ['a', '', 'd', '']]]]
+>>> remove_empty_paragraphs(tables)
+    [[[['a', 'b'], ['a', 'd']]]]
+```
+
+```python
+from docx2python.iterators import enum_at_depth
+
+def html_map(tables) -> str:
+    """Create an HTML map of document contents.
+
+    Render this in a browser to visually search for data.
+    """
+    tables = self.document
+
+    # prepend index tuple to each paragraph
+    for (i, j, k, l), paragraph in enum_at_depth(tables, 4):
+        tables[i][j][k][l] = " ".join([str((i, j, k, l)), paragraph])
+
+    # wrap each paragraph in <pre> tags
+    for (i, j, k), cell in enum_at_depth(tables, 3):
+        tables[i][j][k] = "".join([f"<pre>{x}</pre>" for x in cell])
+
+    # wrap each cell in <td> tags
+    for (i, j), row in enum_at_depth(tables, 2):
+        tables[i][j] = "".join([f"<td>{x}</td>" for x in row])
+
+    # wrap each row in <tr> tags
+    for (i,), table in enum_at_depth(tables, 1):
+        tables[i] = "".join(f"<tr>{x}</tr>" for x in table)
+
+    # wrap each table in <table> tags
+    tables = "".join([f'<table border="1">{x}</table>' for x in tables])
+
+    return ["<html><body>"] + tables + ["</body></html>"]
+```
+
+```
+>>> tables = [[[['a', 'b'], ['a', 'd']]]]
+>>> html_toc(tables)
+<html>
+    <body>
+        <table border="1">
+            <tr>
+                <td>
+                    '(0, 0, 0, 0) a'
+                    '(0, 0, 0, 1) b'
+                </td>
+                <td>
+                    '(0, 0, 1, 0) a'
+                    '(0, 0, 1, 1) d'
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
+```
 
