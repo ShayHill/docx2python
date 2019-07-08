@@ -1,4 +1,4 @@
-#docx2python
+# docx2python
 
 Extract docx headers, footers, text, properties, and images to a Python object.
 
@@ -17,20 +17,19 @@ __additions:__
 * extracts document properties (creator, lastModifiedBy, etc.) 
 * inserts image placeholders in text ('`----image1.jpg----`')
 * (optionally) retains font size, font color, bold, italics, and underscore as html
-* full test coverage
-
+* full test coverage and documentation for developers
   
 __subtractions:__
 * no command-line interface
 * will only work with later versions of Python
 
 
-##Installation
+## Installation
 ```bash
 pip install docx2python
 ```
 
-##Use
+## Use
 
 ```python
 from docx2python import docx2python
@@ -50,7 +49,8 @@ Note on html feature:
 * every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph q</b>`, `<b>paragraph 2</b>`. This is intentional to make  each paragraph its own entity. 
 * if you specify `export_font_style=True`, `>` and `<` in your docx text will be encoded as `&gt;` and `&lt;`
 
-#Return Value
+## Return Value
+
 Function `docx2python` returns an object with several attributes.
 
 __header__ - contents of the docx headers in the return format described herein
@@ -73,7 +73,8 @@ for name, image in result.images.items():
         write(image_destination, image)
 ```
 
-##Return Format
+## Return Format
+
 Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., `output.body[i][j][k][l]` will be a paragraph).
 
 If your docx has no tables, output.body will appear as one a table with all contents in one cell:
@@ -157,11 +158,11 @@ becomes ...
 
 This ensures text appears
 
-    1) only once
-    2) in the order it appears on the docx
-    3) always at depth four (i.e., result.body[i][j][k][l] will be a string).
+1. only once
+1. in the order it appears on the docx
+1. always at depth four (i.e., `result.body[i][j][k][l]` will be a string).
     
-##Working with output
+## Working with output
 
 This package provides several documented helper functions in [the ``docx2python.iterators`` module](https://docx2python.readthedocs.io/en/latest/iterators.html#iterators). Here are a few recipes possible with these functions:
 

@@ -28,7 +28,7 @@ The code is an expansion/contraction of [python-docx2txt](https://github.com/ank
 * extracts document properties (creator, lastModifiedBy, etc.)
 * inserts image placeholders in text ('``----image1.jpg----``')
 * (optionally) retains font size, font color, bold, italics, and underscore as html
-* full test coverage
+* full test coverage and documentation for developers
 
 
 **subtractions**:
