@@ -185,7 +185,7 @@ To assist with future development, every significant function is documented here
 
 Helpers and recipes documented here:
 
-* :ref:`iterators`
+* :ref:`modindex`
 
 For developers, all major functions within docx2python. Also a decent primer on the major files in an extracted ``docx`` file.
 
