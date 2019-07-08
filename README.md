@@ -164,7 +164,7 @@ This ensures text appears
     
 ## Working with output
 
-This package provides several documented helper functions in [the ``docx2python.iterators`` module](https://docx2python.readthedocs.io/en/latest/iterators.html#iterators). Here are a few recipes possible with these functions:
+This package provides several documented helper functions in [the ``docx2python.iterators`` module](https://docx2python.readthedocs.io/en/latest/docx2python.html#module-iterators). Here are a few recipes possible with these functions:
 
 ```python
 from docx2python.iterators import enum_cells
