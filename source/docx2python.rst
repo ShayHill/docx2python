@@ -39,7 +39,7 @@ docx2python.docx\_text module
 docx2python.iterators module
 ----------------------------
 
-.. automodule:: iterators
+.. automodule:: docx2python.iterators
    :undoc-members:
    :show-inheritance:
 
@@ -107,17 +107,16 @@ This allows for simple recipes like::
     </body>
 </html>
 
-.. autofunction:: iterators.enum_at_depth
-.. autofunction:: iterators.iter_at_depth
-.. autofunction:: iterators.enum_tables
-.. autofunction:: iterators.enum_rows
-.. autofunction:: iterators.enum_cells
-.. autofunction:: iterators.enum_paragraphs
-.. autofunction:: iterators.iter_tables
-.. autofunction:: iterators.iter_rows
-.. autofunction:: iterators.iter_cells
-.. autofunction:: iterators.iter_paragraphs
-
+.. autofunction:: docx2python.iterators.enum_at_depth
+.. autofunction:: docx2python.iterators.iter_at_depth
+.. autofunction:: docx2python.iterators.enum_tables
+.. autofunction:: docx2python.iterators.enum_rows
+.. autofunction:: docx2python.iterators.enum_cells
+.. autofunction:: docx2python.iterators.enum_paragraphs
+.. autofunction:: docx2python.iterators.iter_tables
+.. autofunction:: docx2python.iterators.iter_rows
+.. autofunction:: docx2python.iterators.iter_cells
+.. autofunction:: docx2python.iterators.iter_paragraphs
 
 docx2python.main module
 -----------------------

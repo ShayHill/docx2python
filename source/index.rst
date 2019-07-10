@@ -11,7 +11,7 @@
 docx2python
 ===========
 
-Extract docx headers, footers, text, properties, and images to a Python object.
+Extract docx headers, footers, text, footnotes, endnotes, properties, and images to a Python object.
 
 The code is an expansion/contraction of [python-docx2txt](https://github.com/ankushshah89/python-docx2txt) (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.
 
@@ -23,13 +23,14 @@ The code is an expansion/contraction of [python-docx2txt](https://github.com/ank
 
 **additions**:
 
+* extracts footnotes and endnotes
 * converts bullets and numbered lists to ascii with indentation
 * retains some structure of the original file (more below)
 * extracts document properties (creator, lastModifiedBy, etc.)
-* inserts image placeholders in text ('``----image1.jpg----``')
+* inserts image placeholders in text (``'----image1.jpg----'``)
+* inserts plain text footnote and endnote references in text (``'----footnote1----'``)
 * (optionally) retains font size, font color, bold, italics, and underscore as html
 * full test coverage and documentation for developers
-
 
 **subtractions**:
 
@@ -77,7 +78,11 @@ Function ``docx2python`` returns an object with several attributes.
 
 **body** - contents of the docx in the return format described herein
 
-**document** - header  + body + footer (read only)
+**footnotes** - contents of the docx in the return format described herein
+
+**endnotes** - contents of the docx in the return format described herein
+
+**document** - header  + body + footer + footnotes + endnotes (read only)
 
 **text** - all docx text as one string, similar to what you'd get from `python-docx2txt`
 
@@ -183,11 +188,12 @@ To assist with future development, every significant function is documented here
 
    from docx2python.iterators import ...
 
-Helpers and recipes documented here:
+Helpers and recipes documented in the ``docx2python.index`` module.:
 
 * :ref:`modindex`
 
-For developers, all major functions within docx2python. Also a decent primer on the major files in an extracted ``docx`` file.
+For developers, all major functions within docx2python. Also serves as a primer on the major files in an extracted ``docx`` file.
 
+* :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

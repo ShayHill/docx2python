@@ -5,7 +5,7 @@
 author: Shay Hill
 created: 5/20/2019
 
-Does not test ``get_text``. ``get text`` is tested through source.
+Does not test ``get_text``. ``get text`` is tested through source_old.
 """
 
 

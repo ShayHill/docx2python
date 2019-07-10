@@ -1,6 +1,6 @@
 # docx2python
 
-Extract docx headers, footers, text, properties, and images to a Python object.
+Extract docx headers, footers, text, footnotes, endnotes, properties, and images to a Python object.
 
 [full documentation](https://docx2python.readthedocs.io/en/latest/index.html)
 
@@ -12,10 +12,12 @@ __shared features__:
 * no dependencies (docx2python requires pytest to test)
 
 __additions:__
+* extracts footnotes and endnotes
 * converts bullets and numbered lists to ascii with indentation
 * retains some structure of the original file (more below)
-* extracts document properties (creator, lastModifiedBy, etc.) 
-* inserts image placeholders in text ('`----image1.jpg----`')
+* extracts document properties (creator, lastModifiedBy, etc.)
+* inserts image placeholders in text (``'----image1.jpg----'``)
+* inserts plain text footnote and endnote references in text (``'----footnote1----'``)
 * (optionally) retains font size, font color, bold, italics, and underscore as html
 * full test coverage and documentation for developers
   
@@ -58,6 +60,10 @@ __header__ - contents of the docx headers in the return format described herein
 __footer__ - contents of the docx footers in the return format described herein
 
 __body__ - contents of the docx in the return format described herein
+
+__footnotes__ - contents of the docx in the return format described herein
+
+__endnotes__ - contents of the docx in the return format described herein
 
 __document__ - header  + body + footer (read only)
 
@@ -233,3 +239,4 @@ def html_map(tables) -> str:
 </html>
 ```
 
+[See helper functions.](https://docx2python.readthedocs.io/en/latest/index.html)

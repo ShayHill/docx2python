@@ -13,25 +13,25 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../docx2python'))
-sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../../'))
+# sys.path.insert(0, os.path.abspath('./docx2python'))
+# sys.path.insert(0, os.path.abspath('../docx2python'))
+# sys.path.insert(0, os.path.abspath('../'))
+# sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Hack -----------------------------------------------------
 
 # readthedocs.org looks for contents.rst. The local version of sphinx I'm using
 # looks for 'index.rst'
 master_doc = 'index'
-master_doc = 'index'
 
 # -- Project information -----------------------------------------------------
 
-project = 'source'
+project = 'docx2python'
 copyright = '2019, Shay Hill'
 author = 'Shay Hill'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '1.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -45,8 +45,8 @@ extensions = ["sphinx.ext.autodoc"
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
+# List of patterns, relative to source_old directory, that match files and
+# directories to ignore when looking for source_old files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 

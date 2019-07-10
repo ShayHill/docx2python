@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # _*_ coding: utf-8 _*_
-"""Test full functionality of source
+"""Test full functionality of source_old
 
 :author: Shay Hill
 :created: 7/5/2019
@@ -8,8 +8,10 @@
 
 import os
 import shutil
+import re
 
 from docx2python.main import docx2python
+from docx2python.iterators import iter_at_depth
 
 OUTPUT = docx2python("resources/example.docx")
 HTML_OUTPUT = docx2python("resources/example.docx", html=True)
@@ -20,11 +22,47 @@ class TestFormatting:
 
     def test_header(self) -> None:
         """Header text in correct location"""
-        assert OUTPUT.header[0][0][0][0] == "Header text"
+        header_text = "".join(iter_at_depth(OUTPUT.header, 4))
+        assert re.match(r"Header text----media/image\d+\.\w+----$", header_text)
 
     def test_footer(self) -> None:
         """Footer text in correct location"""
-        assert OUTPUT.footer[0][0][0][0] == "Footer text"
+        footer_text = "".join(iter_at_depth(OUTPUT.footer, 4))
+        assert re.match(r"Footer text----media/image\d+\.\w+----$", footer_text)
+
+    def test_footnotes(self) -> None:
+        """Footnotes extracted."""
+        assert OUTPUT.footnotes == [
+            [
+                [
+                    [
+                        "",
+                        "",
+                        "footnote1)\t",
+                        " First footnote",
+                        "footnote2)\t",
+                        " Second footnote----media/image1.png----",
+                    ]
+                ]
+            ]
+        ]
+
+    def test_endnotes(self) -> None:
+        """Endnotes extracted."""
+        assert OUTPUT.endnotes == [
+            [
+                [
+                    [
+                        "",
+                        "",
+                        "endnote1)\t",
+                        " First endnote",
+                        "endnote2)\t",
+                        " Second endnote----media/image1.png----",
+                    ]
+                ]
+            ]
+        ]
 
     def test_numbered_lists(self) -> None:
         """Sublists reset. Expected formatting."""
@@ -78,7 +116,19 @@ class TestFormatting:
 
     def test_text_outside_table(self) -> None:
         """Text outside table is its own table (also tests image marker)"""
-        assert OUTPUT.body[3] == [[["Text outside table----image1.jpg----"]]]
+        assert OUTPUT.body[3] == [
+            [
+                [
+                    "Text outside table",
+                    "Reference footnote 1----footnote1----",
+                    "Reference footnote 2----footnote2----",
+                    "Reference endnote 1----endnote1----",
+                    "Reference endnote 2----endnote2----",
+                    "",
+                    "----media/image2.jpg----",
+                ]
+            ]
+        ]
 
 
 class TestHtmlFormatting:
@@ -108,6 +158,6 @@ class TestImageDir:
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
         docx2python("resources/example.docx", "delete_this/path/to/images")
-        assert os.listdir("delete_this/path/to/images") == ["image1.jpg"]
+        assert os.listdir("delete_this/path/to/images") == ["image1.png", "image2.jpg"]
         # clean up
         shutil.rmtree("delete_this")

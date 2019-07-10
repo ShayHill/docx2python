@@ -20,19 +20,23 @@ class DocxContent:
         header: TablesList,
         footer: TablesList,
         body: TablesList,
+        footnotes: TablesList,
+        endnotes: TablesList,
         properties: Dict[str, Any],
         images: Dict[str, bytes],
     ) -> None:
         self.header = header
         self.footer = footer
         self.body = body
+        self.footnotes = footnotes
+        self.endnotes = endnotes
         self.properties = properties
         self.images = images
 
     @property
     def document(self) -> TablesList:
         """All docx "tables" concatenated."""
-        return self.header + self.body + self.footer
+        return self.header + self.body + self.footer + self.footnotes + self.endnotes
 
     @property
     def text(self) -> str:

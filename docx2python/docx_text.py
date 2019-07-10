@@ -23,6 +23,19 @@ from docx2python.text_runs import get_run_style, style_close, style_open
 
 TablesList = List[List[List[List[str]]]]
 
+# frequent qn calls
+TABLE = qn("w:tbl")
+TABLE_ROW = qn("w:tr")
+TABLE_CELL = qn("w:tc")
+PARAGRAPH = qn("w:p")
+RUN = qn("w:r")
+TEXT = qn("w:t")
+IMAGE = qn("a:blip")
+TAB = qn("w:tab")
+FOOTNOTE_REFERENCE = qn("w:footnoteReference")
+ENDNOTE_REFERENCE = qn("w:endnoteReference")
+FOOTNOTE = qn("w:footnote")
+ENDNOTE = qn("w:endnote")
 
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
     """
@@ -57,7 +70,7 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
     Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
     :param paragraph: <w:p> xml element
-    :param context: dictionary of document attributes generated in get_docx_text
+    :param context: dictionary of document attributes generated in ``get_context``
     :return: specified 'bullet' string or '' if paragraph is not numbered
 
     <w:p>
@@ -146,20 +159,20 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
             tag = child.tag
 
             # set caret depth
-            if tag == qn("w:tbl"):
+            if tag == TABLE:
                 tables.set_caret(1)
-            elif tag == qn("w:tr"):
+            elif tag == TABLE_ROW:
                 tables.set_caret(2)
-            elif tag == qn("w:tc"):
+            elif tag == TABLE_CELL:
                 tables.set_caret(3)
-            elif tag == qn("w:p"):
+            elif tag == PARAGRAPH:
                 tables.set_caret(4)
 
             # open elements
-            if tag == qn("w:p"):
+            if tag == PARAGRAPH:
                 tables.insert(_get_bullet_string(child, context))
 
-            elif tag == qn("w:r") and do_html is True:
+            elif tag == RUN and do_html is True:
                 # new text run
                 run_style = get_run_style(child)
                 open_style = getattr(tables, "open_style", ())
@@ -168,7 +181,7 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                     tables.insert(style_open(run_style))
                     tables.open_style = run_style
 
-            elif tag == qn("w:t"):
+            elif tag == TEXT:
                 # new text object. oddly enough, these don't all contain text
                 text = child.text if child.text is not None else ""
                 if do_html is True:
@@ -176,25 +189,42 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                     text = text.replace(">", "&gt;")
                 tables.insert(text)
 
-            elif tag == qn("a:blip"):
-                # image found. add placeholder
+            elif tag == FOOTNOTE:
+                if 'separator' not in child.attrib.get(qn('w:type'), '').lower():
+                    tables.insert(f"footnote{child.attrib[qn('w:id')]})\t")
+
+            elif tag == ENDNOTE:
+                if 'separator' not in child.attrib.get(qn('w:type'), '').lower():
+                    tables.insert(f"endnote{child.attrib[qn('w:id')]})\t")
+
+            # add placeholders
+            elif tag == FOOTNOTE_REFERENCE:
+                tables.insert(f"----footnote{child.attrib[qn('w:id')]}----")
+
+            elif tag == ENDNOTE_REFERENCE:
+                tables.insert(f"----endnote{child.attrib[qn('w:id')]}----")
+
+            elif tag == IMAGE:
                 rId = child.attrib[qn("r:embed")]
                 image = context["rId2Target"].get(rId)
                 if image:
                     tables.insert(f"----{image}----")
 
-            elif tag == qn("w:tab"):
+            elif tag == TAB:
                 tables.insert("\t")
 
             # enter child element
             branches(child)
 
             # close elements
-            if tag == qn("w:p") and do_html is True:
+            if tag == PARAGRAPH and do_html is True:
                 tables.insert(style_close(getattr(tables, "open_style", ())))
                 tables.open_style = ()
 
-            elif tag == qn("w:tbl"):
+            if tag in {TABLE_ROW, TABLE_CELL, PARAGRAPH}:
+                tables.raise_caret()
+
+            elif tag == TABLE:
                 tables.set_caret(1)
 
     branches(ElementTree.fromstring(xml))

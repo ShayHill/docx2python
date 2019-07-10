@@ -6,7 +6,6 @@ author: Shay Hill
 created: 6/26/2019
 """
 import os
-import re
 import shutil
 import zipfile
 from collections import defaultdict
@@ -16,7 +15,6 @@ import pytest
 
 from docx2python.docx_context import (
     collect_docProps,
-    collect_image_rels,
     collect_numFmts,
     get_context,
     pull_image_files,
@@ -49,17 +47,6 @@ class TestCollectNumFmts:
         }
 
 
-class TestCollectImageRels:
-    """Test strip_text.collect_image_rels """
-
-    def test_gets_rels(self) -> None:
-        """Retrieves images"""
-        zipf = zipfile.ZipFile("resources/example.docx")
-        image_rels = collect_image_rels(zipf.read("word/_rels/document.xml.rels"))
-        assert all(re.match(r"rId\d+", x) for x in image_rels.keys())
-        assert all(re.match(r"image\d+", x) for x in image_rels.values())
-
-
 class TestCollectDocProps:
     """Test strip_text.collect_docProps """
 
@@ -81,12 +68,6 @@ def docx_context() -> Dict[str, Any]:
 # noinspection PyPep8Naming
 class TestGetContext:
     """Text strip_text.get_context """
-
-    def test_rID2Target(self, docx_context) -> None:
-        """All targets mapped"""
-        zipf = zipfile.ZipFile("resources/example.docx")
-        image_rels = collect_image_rels(zipf.read("word/_rels/document.xml.rels"))
-        assert docx_context["rId2Target"] == image_rels
 
     def test_docProp2text(self, docx_context) -> None:
         """All targets mapped"""
@@ -120,15 +101,17 @@ class TestPullImageFiles:
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
         zipf = zipfile.ZipFile("resources/example.docx")
-        pull_image_files(zipf, "delete_this/path/to/images")
-        assert os.listdir("delete_this/path/to/images") == ["image1.jpg"]
+        context = get_context(zipf)
+        pull_image_files(zipf, context, "delete_this/path/to/images")
+        assert os.listdir("delete_this/path/to/images") == ["image1.png", "image2.jpg"]
         # clean up
         shutil.rmtree("delete_this")
 
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
         zipf = zipfile.ZipFile("resources/basic.docx")
-        pull_image_files(zipf, "delete_this/path/to/images")
+        context = get_context(zipf)
+        pull_image_files(zipf, context, "delete_this/path/to/images")
         assert os.listdir("delete_this/path/to/images") == []
         # clean up
         shutil.rmtree("delete_this")

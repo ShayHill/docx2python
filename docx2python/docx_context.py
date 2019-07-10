@@ -90,31 +90,75 @@ def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
     return numId2numFmts
 
 
-# noinspection PyPep8Naming
-def collect_image_rels(xml: bytes) -> Dict[str, str]:
-    """Collect relId with images
+def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
+    """
+    Map file to relId to attrib
 
-    :param xml: ``word/_rels/document.xml.rels`` from a decompressed docx file
-    :returns: ``relId`` mapped to ``Target``.
+    :param zipf: created by ``zipfile.ZipFile("docx_filename")``
+    :return: a deep dictionary ``{filename: list of Relationships``
+
+    Each rel in list of Relationships is::
+
+        {
+            "Id": "rId1",
+            "Type": "http...",
+            "Target": "path to file in docx"
+        }
+
+    There are several rels files:
+
+    ``_rels/.rels``: rels related to entire structure.  The identity of
+    ``word/document.xml`` is here. (It might be called
+    ``word/document2.xml`` or something else. Checking here is the best way
+    to make sure.)
+
+    ``word/_rels/document.xml.rels``: images, headers, etc. referenced by
+    ``word/document.xml``
+
+    ``word/_rels/header1.xml.rels``: images, etc. for ``header1.xml``
+
+    ...
+
+    Get everything from everywhere. Map ``_rels/.rels`` to ``'rels'`` and everything
+    else to e.g., ``'document'`` or ``'header'``. RelIds are **not** unique between
+    these files.
 
     **E.g, Given**::
 
-        <Relationships>
-            <Relationship Id="rId8" Target="webSettings.xml"/>  # ignore this one
-            <Relationship Id="rId13" Target="media/image5.jpeg"/>  # map Id to Target
-        <Relationships>
+        # one of several files
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.../relationships">
+            <Relationship Id="rId3" Type="http://schemas... \
+                /extended-properties" Target="docProps/app.xml"/>
+            <Relationship Id="rId2" Type="http://schemas... \
+                /core-properties" Target="docProps/core.xml"/>
+            <Relationship Id="rId1" Type="http://schemas... \
+                /officeDocument" Target="word/document.xml"/>
+            <Relationship Id="rId4" Type="http://schemas... \
+                /custom-properties" Target="docProps/custom.xml"/>
+        </Relationships>
 
-    **E.g., Returns**::
+    **Returns**::
 
-        {"rId13": "image5.jpg"}
+        {
+            "filename": [
+                {
+                    "Id": "rId3",
+                    "Type": "http://schemas.../extended-properties",
+                    "Target": "docProps/app.xml",
+                },
+                {
+                    "Id": "rId2",
+                    "Type": "http://schemas.../core-properties",
+                    "Target": "docProps/core.xml",
+                },
+            ]
+        }
     """
-    Id2Target = {}
-    root = ElementTree.fromstring(xml)
-    for rel in root:
-        image = re.search(r"media/(image\d+\.\w+)", rel.attrib["Target"])
-        if image:
-            Id2Target[rel.attrib["Id"]] = image.group(1)
-    return Id2Target
+    path2rels = {}
+    for rels in (x for x in zipf.namelist() if x[-5:] == ".rels"):
+        path2rels[rels] = [x.attrib for x in ElementTree.fromstring(zipf.read(rels))]
+    return path2rels
 
 
 # noinspection PyPep8Naming
@@ -161,6 +205,20 @@ def collect_docProps(xml: bytes) -> Dict[str, str]:
     return docProp2text
 
 
+def get_path_rels(path: str) -> str:
+    """
+    Get path/to/rels for path/to/xml
+
+    :param path: path to a docx content file.
+    :returns: path to rels (which may not exist)
+
+    Every content file (``document.xml``, ``header1.xml``, ...) will have its own
+    ``.rels`` file--if any relationships are defined.
+    """
+    folder, file = os.path.split(path)
+    return "".join([folder, "/_rels/", file, ".rels"])
+
+
 # noinspection PyPep8Naming
 def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
     """
@@ -176,8 +234,40 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
 
         The last two will only be present in documents with bulleted or numbered lists.
     """
+    path2rels = collect_rels(zipf)
+    officeDocument = next(
+        x["Target"]
+        for x in path2rels["_rels/.rels"]
+        if os.path.basename(x["Type"]) == "officeDocument"
+    )
+    officeDocument_rels = get_path_rels(officeDocument)
+    content_dir = os.path.dirname(officeDocument)
+
+    headers, footers, endnotes, footnotes = [], [], [], []
+    for rel in path2rels[officeDocument_rels]:
+        rel_type = os.path.basename(rel["Type"])
+        if rel_type == "header":
+            headers.append("/".join([content_dir, rel["Target"]]))
+        elif rel_type == "footer":
+            footers.append("/".join([content_dir, rel["Target"]]))
+        elif rel_type == "footnotes":
+            footnotes.append("/".join([content_dir, rel["Target"]]))
+        elif rel_type == "endnotes":
+            endnotes.append("/".join([content_dir, rel["Target"]]))
+
+    content_path2rels = {
+        x: path2rels.get(get_path_rels(x), {})
+        for x in [officeDocument] + headers + footers + footnotes + endnotes
+    }
+
     context = {
-        "rId2Target": collect_image_rels(zipf.read("word/_rels/document.xml.rels")),
+        "content_dir": content_dir,
+        "officeDocument": officeDocument,
+        "headers": headers,
+        "footers": footers,
+        "footnotes": footnotes,
+        "endnotes": endnotes,
+        "content_path2rels": content_path2rels,
         "docProp2text": collect_docProps(zipf.read("docProps/core.xml")),
     }
     try:
@@ -193,13 +283,16 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
 
 
 def pull_image_files(
-    zipf: zipfile.ZipFile, image_directory: Optional[str] = None
+    zipf: zipfile.ZipFile,
+    context: Dict[str, Any],
+    image_directory: Optional[str] = None,
 ) -> Dict[str, bytes]:
     """
     Copy images from zip file.
 
     :param zipf: created by ``zipfile.ZipFile(docx_filename)``
     :param image_directory: optional destination for copied images
+    :param context: dictionary of document attributes generated in ``get_context``
     :return: Image names mapped to images in binary format.
 
         To write these to disc::
@@ -212,7 +305,7 @@ def pull_image_files(
     images = {
         os.path.basename(x): zipf.read(x)
         for x in zipf.namelist()
-        if re.match(r"word/media/image\d+", x)
+        if re.match(context["content_dir"] + r"/media/image\d+", x)
     }
     if image_directory is not None:
         pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)

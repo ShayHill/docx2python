@@ -24,25 +24,35 @@ def docx2python(
     context = get_context(zipf)
     context["do_html"] = html
 
-    xml_files = zipf.namelist()
+    def file_text(filename_):
+        context["rId2Target"] = {
+            x["Id"]: x["Target"] for x in context["content_path2rels"][filename_]
+        }
+        return get_text(zipf.read(filename_), context)
 
-    header = []
-    for filename in (x for x in xml_files if re.match("word/header[0-9]*.xml", x)):
-        header += get_text(zipf.read(filename), context)
+    header = [file_text(filename) for filename in context["headers"]]
+    header = [x for y in header for x in y]
 
-    body = get_text(zipf.read("word/document.xml"), context)
+    body = file_text(context["officeDocument"])
 
-    footer = []
-    for filename in (x for x in xml_files if re.match("word/footer[0-9]*.xml", x)):
-        footer += get_text(zipf.read(filename), context)
+    footer = [file_text(filename) for filename in context["footers"]]
+    footer = [x for y in footer for x in y]
 
-    images = pull_image_files(zipf, image_folder)
+    footnotes = [file_text(filename) for filename in context["footnotes"]]
+    footnotes = [x for y in footnotes for x in y]
+
+    endnotes = [file_text(filename) for filename in context["endnotes"]]
+    endnotes = [x for y in endnotes for x in y]
+
+    images = pull_image_files(zipf, context, image_folder)
 
     zipf.close()
     return DocxContent(
         header=header,
         body=body,
         footer=footer,
+        footnotes=footnotes,
+        endnotes=endnotes,
         images=images,
         properties=context["docProp2text"],
     )
