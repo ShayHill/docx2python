@@ -3,4 +3,9 @@ trash
 docx2python.egg-info
 build
 dist
+docs
+lib.egg-info
+.gitignore
+
+
 

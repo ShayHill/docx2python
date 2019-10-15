@@ -8,7 +8,7 @@
 from typing import Any, Dict
 
 from docx2python.docx_text import TablesList
-from docx2python.iterators import iter_at_depth
+from docx2python.iterators import get_html_map, iter_at_depth
 
 
 class DocxContent:
@@ -42,3 +42,8 @@ class DocxContent:
     def text(self) -> str:
         """All docx paragraphs, "\n\n" delimited."""
         return "\n\n".join(iter_at_depth(self.document, 4))
+
+    @property
+    def html_map(self) -> str:
+        """A visual mapping of docx content."""
+        return get_html_map(self.document)

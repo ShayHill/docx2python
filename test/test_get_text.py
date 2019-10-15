@@ -59,7 +59,7 @@ def numbered_paragraphs():
     for ilvl in range(7):
         paragraphs.append(
             "<w:p><w:pPr><w:numPr>"
-            f'<w:ilvl w:val="{ilvl}"/>'
+            '<w:ilvl w:val="' + str(ilvl) + '"/>'
             '<w:numId w:val="1"/>'
             "</w:numPr></w:pPr></w:p>"
         )

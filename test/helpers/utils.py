@@ -15,7 +15,7 @@ def valid_xml(elements: str) -> bytes:
     """Build a legal xml file from elements."""
     return bytes(
         '<?xml version="1.0" encoding="UTF-8"?>'
-        f'<w:document xmlns:w="{NSMAP["w"]}">' + elements + "</w:document>",
+        '<w:document xmlns:w="{}">'.format(NSMAP["w"]) + elements + "</w:document>",
         encoding="utf-8",
     )
 

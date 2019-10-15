@@ -120,9 +120,9 @@ def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
         if tag in {"b", "i", "u"}:
             style.append((tag, ""))
         elif tag == "sz":
-            font_styles.append(f'size="{val}"')
+            font_styles.append('size="{}"'.format(val))
         elif tag == "color":
-            font_styles.append(f'color="{val}"')
+            font_styles.append('color="{}"'.format(val))
 
     if font_styles:
         style = [("font", " ".join(sorted(font_styles)))] + style
@@ -143,7 +143,7 @@ def style_open(style: Sequence[Tuple[str, str]]) -> str:
     '<font color="red" size="32"><b><i><u>'
     """
     text = [" ".join(x for x in y if x) for y in style]
-    return "".join(f"<{x}>" for x in text)
+    return "".join("<{}>".format(x) for x in text)
 
 
 def style_close(style: List[Tuple[str, str]]) -> str:
@@ -163,4 +163,4 @@ def style_close(style: List[Tuple[str, str]]) -> str:
 
         <b><i><u>text</u></i></b>
     """
-    return "".join(f"</{x}>" for x, y in reversed(style))
+    return "".join("</{}>".format(x) for x, _ in reversed(style))

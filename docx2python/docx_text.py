@@ -37,6 +37,7 @@ ENDNOTE_REFERENCE = qn("w:endnoteReference")
 FOOTNOTE = qn("w:footnote")
 ENDNOTE = qn("w:endnote")
 
+
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
     """
     Increase counter at ilvl, reset counter at deeper levels.
@@ -121,7 +122,9 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         return format_bullet(nums.bullet())
     else:
         warnings.warn(
-            f"{numFmt} numbering format not implemented, substituting '{nums.bullet()}'"
+            "{} numbering format not implemented, substituting '{}'".format(
+                numFmt, nums.bullet()
+            )
         )
         return format_bullet(nums.bullet())
 
@@ -190,25 +193,25 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.insert(text)
 
             elif tag == FOOTNOTE:
-                if 'separator' not in child.attrib.get(qn('w:type'), '').lower():
-                    tables.insert(f"footnote{child.attrib[qn('w:id')]})\t")
+                if "separator" not in child.attrib.get(qn("w:type"), "").lower():
+                    tables.insert("footnote{})\t".format(child.attrib[qn('w:id')]))
 
             elif tag == ENDNOTE:
-                if 'separator' not in child.attrib.get(qn('w:type'), '').lower():
-                    tables.insert(f"endnote{child.attrib[qn('w:id')]})\t")
+                if "separator" not in child.attrib.get(qn("w:type"), "").lower():
+                    tables.insert("endnote{})\t".format(child.attrib[qn('w:id')]))
 
             # add placeholders
             elif tag == FOOTNOTE_REFERENCE:
-                tables.insert(f"----footnote{child.attrib[qn('w:id')]}----")
+                tables.insert("----footnote{}----".format(child.attrib[qn('w:id')]))
 
             elif tag == ENDNOTE_REFERENCE:
-                tables.insert(f"----endnote{child.attrib[qn('w:id')]}----")
+                tables.insert("----endnote{}----".format(child.attrib[qn('w:id')]))
 
             elif tag == IMAGE:
                 rId = child.attrib[qn("r:embed")]
                 image = context["rId2Target"].get(rId)
                 if image:
-                    tables.insert(f"----{image}----")
+                    tables.insert("----{}----".format(image))
 
             elif tag == TAB:
                 tables.insert("\t")

@@ -64,7 +64,7 @@ Use
 Note on html feature:
 
 * font size, font color, bold, italics, and underline supported
-* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as ``<b>paragraph q</b>``, ``<b>paragraph 2</b>``. This is intentional to make  each paragraph its own entity.
+* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequent paragraphs are bold, they will be returned as ``<b>paragraph q</b>``, ``<b>paragraph 2</b>``. This is intentional to make  each paragraph its own entity.
 * if you specify ``export_font_style=True``, ``>`` and ``<`` in your docx text will be encoded as ``&gt;`` and ``&lt;``
 
 Return Value
@@ -84,9 +84,9 @@ Function ``docx2python`` returns an object with several attributes.
 
 **document** - header  + body + footer + footnotes + endnotes (read only)
 
-**text** - all docx text as one string, similar to what you'd get from `python-docx2txt`
+**text** - all docx text as one string, similar to what you'd get from ``python-docx2txt``
 
-**properties** - docx property names mapped to values (e.g., `{"lastModifiedBy": "Shay Hill"}`)
+**properties** - docx property names mapped to values (e.g., ``{"lastModifiedBy": "Shay Hill"}``)
 
 **images** - image names mapped to images in binary format. Write to filesystem with::
 
@@ -97,7 +97,7 @@ Function ``docx2python`` returns an object with several attributes.
 Return Format
 =============
 
-Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., `output.body[i][j][k][l]` will be a paragraph).
+Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., ``output.body[i][j][k][l]`` will be a paragraph).
 
 If your docx has no tables, output.body will appear as one a table with all contents in one cell::
 

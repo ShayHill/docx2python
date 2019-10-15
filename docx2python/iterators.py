@@ -21,7 +21,7 @@ These functions help manipulate that deep nest without deep indentation.
 
 """
 
-from typing import Any, Iterable, Iterator, List, NamedTuple, Sequence, Tuple
+from typing import Any, Iterable, Iterator, List, NamedTuple, Sequence, Tuple, Union
 
 TablesList = Sequence[Sequence[Sequence[Sequence[Any]]]]
 
@@ -246,3 +246,70 @@ def enum_paragraphs(tables: TablesList) -> Iterator[IndexedItem]:
         ``((0, 0, 0, 0), tables[0][0][0][0]) ... , ((i, j, k, l), tables[i][j][k][l])``
     """
     return enum_at_depth(tables, 4)
+
+
+def copy_table(tables: TablesList) -> List[List[List[List[str]]]]:
+    """
+    "Deep copy" the nested list of strings.
+
+    :param tables:
+    :return:
+
+    The ``iter_at`` and ``enum_at`` functions are generally useful. Copying here so
+    those can be "typed" as Sequence instead of List.
+    """
+
+    def copy_next_level(seq: Union[Sequence, str], depth: int) -> Union[List, str]:
+        if depth == 4:
+            return seq
+        return [copy_next_level(x, depth + 1) for x in seq]
+
+    return copy_next_level(tables, depth=0)
+
+
+def get_text(tables: TablesList) -> str:
+    """
+    Short cut to pull text from any subset of extracted content.
+
+    :param tables: ``[[[["string"]]]]``
+    :return: "string" (all paragraphs in tables joined with '\n\n'
+    """
+    return "\n\n".join(iter_at_depth(tables, 4))
+
+
+def get_html_map(tables: TablesList) -> str:
+    """
+    Create a visual map in html format.
+
+    :param tables: ``[[[["string"]]]]``
+    :return: html to show all strings with index tuples
+
+    Create an html string that can be rendered in a browser to show the relative
+    location and index tuple of every paragraph in the document.
+
+    * Each table will be a grid of cell boxes, outlined in black. * Each paragraph
+    will be prepended with an index tuple. (e.g., ``[[[['text']]]]`` will appear as
+    ``(0, 0, 0, 0) text``.
+    """
+    tables = copy_table(tables)  # type: Union[List, str]
+
+    # prepend index tuple to each paragraph
+    for (i, j, k, l), paragraph in enum_at_depth(tables, 4):
+        tables[i][j][k][l] = " ".join([str((i, j, k, l)), paragraph])
+
+    # wrap each paragraph in <pre> tags
+    for (i, j, k), cell in enum_at_depth(tables, 3):
+        tables[i][j][k] = "".join(["<pre>{}</pre>".format(x) for x in cell])
+
+    # wrap each cell in <td> tags
+    for (i, j), row in enum_at_depth(tables, 2):
+        tables[i][j] = "".join(["<td>{}</td>".format(x) for x in row])
+
+    # wrap each row in <tr> tags
+    for (i,), table in enum_at_depth(tables, 1):
+        tables[i] = "".join("<tr>{}</tr>".format(x) for x in table)
+
+    # wrap each table in <table> tags
+    tables = "".join(['<table border="1">{}</table>'.format(x) for x in tables])
+
+    return "<html><body>" + tables + "</body></html>"

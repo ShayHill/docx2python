@@ -15,10 +15,13 @@ from docx2python.iterators import (
     enum_paragraphs,
     enum_rows,
     enum_tables,
+    get_text,
     iter_cells,
     iter_paragraphs,
     iter_rows,
     iter_tables,
+    copy_table,
+    get_html_map,
 )
 
 TABLES = [
@@ -131,3 +134,82 @@ class TestEnumerators:
             IndexedItem(index=(1, 1, 1, 0), value="1110"),
             IndexedItem(index=(1, 1, 1, 1), value="1111"),
         ]
+
+
+class TestCopyTable:
+    """Test iterators.copy_table"""
+
+    def test_copy_table(self) -> None:
+        """Copy structure. Convert any input sequence to list."""
+        assert copy_table((((("text",),),),)) == [[[["text"]]]]
+
+
+class TestGetText:
+    """Test iterators.get_text"""
+
+    def test_captures_text(self) -> None:
+        """Return all text, '\n\n' joined."""
+        assert get_text(TABLES) == (
+            "0000\n\n0001\n\n0010\n\n0011\n\n0100\n\n0101\n\n0110\n\n0111\n\n"
+            "1000\n\n1001\n\n1010\n\n1011\n\n1100\n\n1101\n\n1110\n\n1111"
+        )
+
+
+class TestGetHtmlMap:
+    """Test iterators.get_html_map"""
+
+    def test_get_html_map(self) -> None:
+        """Create valid html."""
+        # fmt: off
+        # noinspection PyPep8
+        assert get_html_map(TABLES) == (
+            '<html>'
+                '<body>'
+                    '<table border="1">'
+                        '<tr>'
+                            '<td>'
+                                '<pre>(0, 0, 0, 0) 0000</pre>'
+                                '<pre>(0, 0, 0, 1) 0001</pre>'
+                            '</td>'
+                                '<td>'
+                                '<pre>(0, 0, 1, 0) 0010</pre>'
+                                '<pre>(0, 0, 1, 1) 0011</pre>'
+                            '</td>'
+                        '</tr>'
+                        '<tr>'
+                            '<td>'
+                                '<pre>(0, 1, 0, 0) 0100</pre>'
+                                '<pre>(0, 1, 0, 1) 0101</pre>'
+                            '</td>'
+                            '<td>'
+                                '<pre>(0, 1, 1, 0) 0110</pre>'
+                                '<pre>(0, 1, 1, 1) 0111</pre>'
+                            '</td>'
+                        '</tr>'
+                    '</table>'
+                    '<table border="1">'
+                        '<tr>'
+                            '<td>'
+                                '<pre>(1, 0, 0, 0) 1000</pre>'
+                                '<pre>(1, 0, 0, 1) 1001</pre>'
+                            '</td>'
+                            '<td>'
+                                '<pre>(1, 0, 1, 0) 1010</pre>'
+                                '<pre>(1, 0, 1, 1) 1011</pre>'
+                            '</td>'
+                        '</tr>'
+                        '<tr>'
+                            '<td>'
+                                '<pre>(1, 1, 0, 0) 1100</pre>'
+                                '<pre>(1, 1, 0, 1) 1101</pre>'
+                            '</td>'
+                            '<td>'
+                                '<pre>(1, 1, 1, 0) 1110</pre>'
+                                '<pre>(1, 1, 1, 1) 1111</pre>'
+                            '</td>'
+                        '</tr>'
+                    '</table>'
+               '</body>'
+            '</html>'
+        )
+        # fmt: on

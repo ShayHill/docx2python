@@ -36,6 +36,12 @@ class TestText:
         assert INST.text[:50] == (
             "\n\n\n\nHeader text----media/image1.png----\n\nI)	expect"
         )
-        assert INST.text[-50:] == (
-            "ndnote2)	\n\n Second endnote----media/image1.png----"
+        assert INST.text[-51:] == (
+            "endnote2)\t\n\n Second endnote----media/image1.png----"
         )
+
+
+class TestHtmlMap:
+    def test_function(self) -> None:
+        """Return html tables."""
+        assert INST.html_map[:49] == '<html><body><table border="1"><tr><td><pre>(0, 0,'

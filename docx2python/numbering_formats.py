@@ -97,7 +97,7 @@ def lower_roman(n: int) -> str:
             'mmmmmmmmmm'
         """
     if n < 1:
-        raise ValueError(f"the Romans hadn't figured out {n}")
+        raise ValueError("the Romans hadn't figured out {}".format(n))
     result = "i" * n
     for pattern, replacement in ROMAN_SUBS:
         result = result.replace(pattern, replacement)

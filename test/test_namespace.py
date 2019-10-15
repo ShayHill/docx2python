@@ -14,4 +14,4 @@ class TestQn:
 
         `qn('p:cSld')`` returns ``'{http://schemas.../main}cSld'`
         """
-        assert qn("w:p") == f'{{{NSMAP["w"]}}}p'
+        assert qn("w:p") == '{{{}}}p'.format(NSMAP["w"])

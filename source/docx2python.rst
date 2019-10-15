@@ -86,7 +86,7 @@ This allows for simple recipes like::
         # wrap each table in <table> tags
         tables = "".join([f'<table border="1">{x}</table>' for x in tables])
 
-        return ["<html><body>"] + tables + ["</body></html>"]
+        return "<html><body>" + tables + "</body></html>"
 
 >>> tables = [[[['a', 'b'], ['a', 'd']]]]
 >>> html_toc(tables)

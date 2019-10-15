@@ -12,7 +12,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
 
+
+# noinspection PyUnusedLocal
 def pytest_assertrepr_compare(config, op, left, right):
     # see full error diffs
-    if op in ('==', '!='):
-        return ['{0} {1} {2}'.format(left, op, right)]
+    if op in ("==", "!="):
+        return ["{0} {1} {2}".format(left, op, right)]
