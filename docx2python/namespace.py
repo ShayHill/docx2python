@@ -44,6 +44,7 @@ supposed to ever happen). *If* this happens::
 NSMAP = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
     "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    "v": "urn:schemas-microsoft-com:vml",
     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
     "cp": "http://schemas.openxmlformats.org/package/2006/metadata/core-properties",
     "dc": "http://purl.org/dc/elements/1.1/",

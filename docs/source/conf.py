@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 PROJECT = Path(__file__, '..', '..').resolve()
 # sys.path.insert(0, PROJECT / 'docx2python')
-sys.path.insert(0, PROJECT)
+sys.path.insert(0, str(PROJECT))
 
 # sys.path.insert(0, os.path.abspath('./docx2python'))
 # sys.path.insert(0, os.path.abspath('../docx2python'))

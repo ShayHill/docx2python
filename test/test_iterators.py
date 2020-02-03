@@ -20,7 +20,6 @@ from docx2python.iterators import (
     iter_paragraphs,
     iter_rows,
     iter_tables,
-    copy_table,
     get_html_map,
 )
 
@@ -134,14 +133,6 @@ class TestEnumerators:
             IndexedItem(index=(1, 1, 1, 0), value="1110"),
             IndexedItem(index=(1, 1, 1, 1), value="1111"),
         ]
-
-
-class TestCopyTable:
-    """Test iterators.copy_table"""
-
-    def test_copy_table(self) -> None:
-        """Copy structure. Convert any input sequence to list."""
-        assert copy_table((((("text",),),),)) == [[[["text"]]]]
 
 
 class TestGetText:

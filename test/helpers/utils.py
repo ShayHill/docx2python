@@ -13,9 +13,12 @@ from docx2python.namespace import NSMAP
 
 def valid_xml(elements: str) -> bytes:
     """Build a legal xml file from elements."""
+    xmlns = " ".join(
+        ['xmlns:w="{}"'.format(NSMAP["w"]), 'xmlns:v="{}"'.format(NSMAP["v"])]
+    )
     return bytes(
         '<?xml version="1.0" encoding="UTF-8"?>'
-        '<w:document xmlns:w="{}">'.format(NSMAP["w"]) + elements + "</w:document>",
+        '<w:document {}>'.format(xmlns) + elements + "</w:document>",
         encoding="utf-8",
     )
 

@@ -35,7 +35,7 @@ from typing import Any, List
 
 
 class CaretDepthError(Exception):
-    pass
+    """Caller attempted to raise or lower DepthCollector caret out of range"""
 
 
 class DepthCollector:

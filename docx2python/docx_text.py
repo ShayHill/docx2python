@@ -31,6 +31,7 @@ PARAGRAPH = qn("w:p")
 RUN = qn("w:r")
 TEXT = qn("w:t")
 IMAGE = qn("a:blip")
+IMAGEDATA = qn("v:imagedata")
 TAB = qn("w:tab")
 FOOTNOTE_REFERENCE = qn("w:footnoteReference")
 ENDNOTE_REFERENCE = qn("w:endnoteReference")
@@ -209,6 +210,12 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
             elif tag == IMAGE:
                 rId = child.attrib[qn("r:embed")]
+                image = context["rId2Target"].get(rId)
+                if image:
+                    tables.insert("----{}----".format(image))
+
+            elif tag == IMAGEDATA:
+                rId = child.attrib[qn("r:id")]
                 image = context["rId2Target"].get(rId)
                 if image:
                     tables.insert("----{}----".format(image))

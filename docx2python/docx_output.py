@@ -23,7 +23,7 @@ class DocxContent:
         footnotes: TablesList,
         endnotes: TablesList,
         properties: Dict[str, Any],
-        images: Dict[str, bytes],
+        images: Dict[str, bytes]
     ) -> None:
         self.header = header
         self.footer = footer

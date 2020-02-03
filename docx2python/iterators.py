@@ -21,9 +21,9 @@ These functions help manipulate that deep nest without deep indentation.
 
 """
 
-from typing import Any, Iterable, Iterator, List, NamedTuple, Sequence, Tuple, Union
+from typing import Any, Iterable, Iterator, List, NamedTuple, Sequence, Tuple
 
-TablesList = Sequence[Sequence[Sequence[Sequence[Any]]]]
+TablesList = List[List[List[List[Any]]]]
 
 IndexedItem = NamedTuple("IndexedItem", [("index", Tuple[int, ...]), ("value", Any)])
 
@@ -248,25 +248,6 @@ def enum_paragraphs(tables: TablesList) -> Iterator[IndexedItem]:
     return enum_at_depth(tables, 4)
 
 
-def copy_table(tables: TablesList) -> List[List[List[List[str]]]]:
-    """
-    "Deep copy" the nested list of strings.
-
-    :param tables:
-    :return:
-
-    The ``iter_at`` and ``enum_at`` functions are generally useful. Copying here so
-    those can be "typed" as Sequence instead of List.
-    """
-
-    def copy_next_level(seq: Union[Sequence, str], depth: int) -> Union[List, str]:
-        if depth == 4:
-            return seq
-        return [copy_next_level(x, depth + 1) for x in seq]
-
-    return copy_next_level(tables, depth=0)
-
-
 def get_text(tables: TablesList) -> str:
     """
     Short cut to pull text from any subset of extracted content.
@@ -291,7 +272,7 @@ def get_html_map(tables: TablesList) -> str:
     will be prepended with an index tuple. (e.g., ``[[[['text']]]]`` will appear as
     ``(0, 0, 0, 0) text``.
     """
-    tables = copy_table(tables)  # type: Union[List, str]
+    tables = tables.copy()
 
     # prepend index tuple to each paragraph
     for (i, j, k, l), paragraph in enum_at_depth(tables, 4):

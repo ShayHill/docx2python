@@ -23,7 +23,7 @@ __additions:__
   
 __subtractions:__
 * no command-line interface
-* will only work with later Python 3.4+
+* will only work with Python 3.4+
 
 
 ## Installation
@@ -165,7 +165,7 @@ becomes ...
 This ensures text appears
 
 1. only once
-1. in the order it appears on the docx
+1. in the order it appears in the docx
 1. always at depth four (i.e., `result.body[i][j][k][l]` will be a string).
     
 ## Working with output
@@ -202,18 +202,18 @@ def html_map(tables) -> str:
 
     # wrap each paragraph in <pre> tags
     for (i, j, k), cell in enum_at_depth(tables, 3):
-        tables[i][j][k] = "".join([f"<pre>{x}</pre>" for x in cell])
+        tables[i][j][k] = "".join(["<pre>{x}</pre>".format(x) for x in cell])
 
     # wrap each cell in <td> tags
     for (i, j), row in enum_at_depth(tables, 2):
-        tables[i][j] = "".join([f"<td>{x}</td>" for x in row])
+        tables[i][j] = "".join(["<td>{x}</td>".format(x) for x in row])
 
     # wrap each row in <tr> tags
     for (i,), table in enum_at_depth(tables, 1):
-        tables[i] = "".join(f"<tr>{x}</tr>" for x in table)
+        tables[i] = "".join("<tr>{x}</tr>".format(x) for x in table)
 
     # wrap each table in <table> tags
-    tables = "".join([f'<table border="1">{x}</table>' for x in tables])
+    tables = "".join(['<table border="1">{x}</table>'.format(x) for x in tables])
 
     return ["<html><body>"] + tables + ["</body></html>"]
 ```
