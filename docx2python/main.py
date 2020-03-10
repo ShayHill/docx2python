@@ -15,9 +15,8 @@ from docx2python.docx_context import get_context, pull_image_files
 from docx2python.docx_output import DocxContent
 from docx2python.docx_text import get_text
 
-
 def docx2python(
-    docx_filename: str, image_folder: Optional[str] = None, html: bool = False
+    docx_filename: str, image_folder: Optional[str] = None, html: bool = False, extract_image: bool = False
 ) -> DocxContent:
     """Unzip a docx file and extract contents.
 
@@ -58,7 +57,10 @@ def docx2python(
     endnotes = [file_text(filename) for filename in context["endnotes"]]
     endnotes = [x for y in endnotes for x in y]
 
-    images = pull_image_files(zipf, context, image_folder)
+    if extract_image:
+        images = pull_image_files(zipf, context, image_folder)
+    else:
+        images = None
 
     zipf.close()
     return DocxContent(
