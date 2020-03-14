@@ -16,7 +16,7 @@ from docx2python.docx_output import DocxContent
 from docx2python.docx_text import get_text
 
 def docx2python(
-    docx_filename: str, image_folder: Optional[str] = None, html: bool = False, extract_image: bool = False
+    docx_filename: str, image_folder: Optional[str] = None, html: bool = False, extract_image: bool = True
 ) -> DocxContent:
     """Unzip a docx file and extract contents.
 
