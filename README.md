@@ -42,6 +42,9 @@ docx2python('path/to/file.docx')
 # extract docx content, write images to image_directory
 docx2python('path/to/file.docx', 'path/to/image_directory')
 
+# extract docx content, ignore images
+docx2python('path/to/file.docx', extract_image=False)
+
 # extract docx content with basic font styles converted to html
 docx2python('path/to/file.docx', html=True)
 ```
