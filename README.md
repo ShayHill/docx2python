@@ -14,6 +14,7 @@ __shared features__:
 __additions:__
 * extracts footnotes and endnotes
 * converts bullets and numbered lists to ascii with indentation
+* converts hyperlinks to ``<a href="http:/...">link text</a>``
 * retains some structure of the original file (more below)
 * extracts document properties (creator, lastModifiedBy, etc.)
 * inserts image placeholders in text (``'----image1.jpg----'``)
@@ -51,6 +52,7 @@ docx2python('path/to/file.docx', html=True)
 
 Note on html feature:
 * font size, font color, bold, italics, and underline supported
+* hyperlinks will always be exported as html (``<a href="http:/...">link text</a>``), even if ``export_font_style=False``, because I couldn't think of a more cononical representation.
 * every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph q</b>`, `<b>paragraph 2</b>`. This is intentional to make  each paragraph its own entity. 
 * if you specify `export_font_style=True`, `>` and `<` in your docx text will be encoded as `&gt;` and `&lt;`
 

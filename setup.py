@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='docx2python',
-    version='1.22',
+    version='1.23',
     author="Shay Hill",
     author_email="shay_public@hotmail.com",
     description="Extract content from docx files",

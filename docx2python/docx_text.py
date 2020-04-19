@@ -37,6 +37,7 @@ FOOTNOTE_REFERENCE = qn("w:footnoteReference")
 ENDNOTE_REFERENCE = qn("w:endnoteReference")
 FOOTNOTE = qn("w:footnote")
 ENDNOTE = qn("w:endnote")
+HYPERLINK = qn("w:hyperlink")
 
 
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
@@ -201,6 +202,12 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 if "separator" not in child.attrib.get(qn("w:type"), "").lower():
                     tables.insert("endnote{})\t".format(child.attrib[qn('w:id')]))
 
+            elif tag == HYPERLINK:
+                rId = child.attrib[qn("r:id")]
+                link = context["rId2Target"].get(rId)
+                if link:
+                    tables.insert("<a href=\"{}\">".format(link))
+
             # add placeholders
             elif tag == FOOTNOTE_REFERENCE:
                 tables.insert("----footnote{}----".format(child.attrib[qn('w:id')]))
@@ -236,6 +243,9 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
             elif tag == TABLE:
                 tables.set_caret(1)
+
+            elif tag == HYPERLINK:
+                tables.insert('</a>')
 
     branches(ElementTree.fromstring(xml))
 

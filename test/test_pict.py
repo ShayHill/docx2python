@@ -20,11 +20,12 @@ docx2text 1.19 would get the image, but not mark the image location in the outpu
 """
 
 from docx2python.main import docx2python
+import os
 
 
 class TestPictElement:
-    def test_run(self) -> None:
-        """Run original code and see how it works"""
-        extraction = docx2python("resources/has_pict.docx")
+    def test_extraction(self) -> None:
+        """Image placeholder inserted into extracted text."""
+        extraction = docx2python(os.path.join("resources", "has_pict.docx"))
         assert "image1.png" in extraction.images
         assert "----media/image1.png----" in extraction.text
