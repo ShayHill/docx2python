@@ -12,7 +12,7 @@ import re
 from typing import Dict, List, Optional, Sequence, Tuple
 from xml.etree import ElementTree
 
-from docx2python.namespace import qn
+from .namespace import qn
 
 
 def _elem_tag_str(elem: ElementTree.Element) -> str:
@@ -36,7 +36,7 @@ def _elem_tag_str(elem: ElementTree.Element) -> str:
 
         'document'
         """
-    return re.match(r"{.*}(\w+)", elem.tag).group(1)
+    return re.match(r"{.*}(?P<tag_name>\w+)", elem.tag).group("tag_name")
 
 
 # noinspection PyPep8Naming

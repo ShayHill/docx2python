@@ -10,8 +10,8 @@
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
-
+project = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+sys.path.append(project)
 
 def pytest_assertrepr_compare(config, op, left, right):
     """See full error diffs"""

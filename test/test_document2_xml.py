@@ -9,7 +9,7 @@ The main content file in a docx is usually ``word/document.xml``, but this is no
 always the case.
 """
 
-from main import docx2python
+from docx2python.main import docx2python
 import os
 
 

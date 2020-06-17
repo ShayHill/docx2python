@@ -200,8 +200,9 @@ def collect_docProps(xml: bytes) -> Dict[str, str]:
         """
     docProp2text = {}
     root = ElementTree.fromstring(xml)
+    capture_tag_name = re.compile(r"{.+}(?P<tag_name>\w+)")
     for dc in root:
-        docProp2text[re.match(r"{.+}(\w+)", dc.tag).group(1)] = dc.text
+        docProp2text[re.match(capture_tag_name, dc.tag).group('tag_name')] = dc.text
     return docProp2text
 
 

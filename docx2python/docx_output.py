@@ -7,8 +7,8 @@
 """
 from typing import Any, Dict
 
-from docx2python.docx_text import TablesList
-from docx2python.iterators import get_html_map, iter_at_depth
+from .docx_text import TablesList
+from .iterators import get_html_map, iter_at_depth
 
 
 class DocxContent:

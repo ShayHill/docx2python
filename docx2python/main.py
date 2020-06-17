@@ -11,9 +11,9 @@ import zipfile
 from pathlib import Path
 from typing import Optional
 
-from docx2python.docx_context import get_context, pull_image_files
-from docx2python.docx_output import DocxContent
-from docx2python.docx_text import get_text
+from .docx_context import get_context, pull_image_files
+from .docx_output import DocxContent
+from .docx_text import get_text
 
 
 def docx2python(

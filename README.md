@@ -20,6 +20,7 @@ __additions:__
 * inserts image placeholders in text (``'----image1.jpg----'``)
 * inserts plain text footnote and endnote references in text (``'----footnote1----'``)
 * (optionally) retains font size, font color, bold, italics, and underscore as html
+* extract user selections from checkboxes and dropdown menus
 * full test coverage and documentation for developers
   
 __subtractions:__
@@ -198,8 +199,11 @@ def html_map(tables) -> str:
     """Create an HTML map of document contents.
 
     Render this in a browser to visually search for data.
+    
+    :tables: value could come from, e.g.,
+        * docx_to_text_output.document
+        * docx_to_text_output.body
     """
-    tables = self.document
 
     # prepend index tuple to each paragraph
     for (i, j, k, l), paragraph in enum_at_depth(tables, 4):
@@ -245,3 +249,11 @@ def html_map(tables) -> str:
 ```
 
 [See helper functions.](https://docx2python.readthedocs.io/en/latest/index.html)
+
+Some fine print about checkboxes:
+
+MS Word has checkboxes that can be checked any time, and others that can only be checked when the form is locked.
+The previous print as. ``☐`` or ``☒``. Which this module, the latter will too. I gave checkboxes a bailout value of
+``----checkbox failed----`` if the xml doesn't look like I expect it to, because I don't have several-thousand test
+files with checkboxes (as I did with most of the other form elements). Checkboxes *should* work, but please let me know
+if you encounter any that do not.

@@ -15,11 +15,12 @@ from typing import Any, Dict, List
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-from docx2python import numbering_formats as nums
-from docx2python.depth_collector import DepthCollector
-from docx2python.iterators import enum_at_depth
-from docx2python.namespace import qn
-from docx2python.text_runs import get_run_style, style_close, style_open
+from . import numbering_formats as nums
+from .depth_collector import DepthCollector
+from .forms import get_checkBox_entry, get_ddList_entry
+from .iterators import enum_at_depth
+from .namespace import qn
+from .text_runs import get_run_style, style_close, style_open
 
 TablesList = List[List[List[List[str]]]]
 
@@ -38,6 +39,8 @@ ENDNOTE_REFERENCE = qn("w:endnoteReference")
 FOOTNOTE = qn("w:footnote")
 ENDNOTE = qn("w:endnote")
 HYPERLINK = qn("w:hyperlink")
+FORM_CHECKBOX = qn("w:checkBox")
+FORM_DDLIST = qn("w:ddList")  # drop-down form
 
 
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
@@ -196,24 +199,30 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
             elif tag == FOOTNOTE:
                 if "separator" not in child.attrib.get(qn("w:type"), "").lower():
-                    tables.insert("footnote{})\t".format(child.attrib[qn('w:id')]))
+                    tables.insert("footnote{})\t".format(child.attrib[qn("w:id")]))
 
             elif tag == ENDNOTE:
                 if "separator" not in child.attrib.get(qn("w:type"), "").lower():
-                    tables.insert("endnote{})\t".format(child.attrib[qn('w:id')]))
+                    tables.insert("endnote{})\t".format(child.attrib[qn("w:id")]))
 
             elif tag == HYPERLINK:
                 rId = child.attrib[qn("r:id")]
                 link = context["rId2Target"].get(rId)
                 if link:
-                    tables.insert("<a href=\"{}\">".format(link))
+                    tables.insert('<a href="{}">'.format(link))
+
+            elif tag == FORM_CHECKBOX:
+                tables.insert(get_checkBox_entry(child))
+
+            elif tag == FORM_DDLIST:
+                tables.insert(get_ddList_entry(child))
 
             # add placeholders
             elif tag == FOOTNOTE_REFERENCE:
-                tables.insert("----footnote{}----".format(child.attrib[qn('w:id')]))
+                tables.insert("----footnote{}----".format(child.attrib[qn("w:id")]))
 
             elif tag == ENDNOTE_REFERENCE:
-                tables.insert("----endnote{}----".format(child.attrib[qn('w:id')]))
+                tables.insert("----endnote{}----".format(child.attrib[qn("w:id")]))
 
             elif tag == IMAGE:
                 rId = child.attrib[qn("r:embed")]
@@ -245,7 +254,7 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.set_caret(1)
 
             elif tag == HYPERLINK:
-                tables.insert('</a>')
+                tables.insert("</a>")
 
     branches(ElementTree.fromstring(xml))
 

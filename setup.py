@@ -1,11 +1,11 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name='docx2python',
-    version='1.23',
+    version='1.24',
     author="Shay Hill",
     author_email="shay_public@hotmail.com",
     description="Extract content from docx files",

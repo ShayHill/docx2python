@@ -6,7 +6,7 @@
 :created: 4/19/2020
 """
 
-from main import docx2python
+from docx2python.main import docx2python
 import os
 
 
