@@ -7,7 +7,9 @@
 
 There are two types of checkboxes in Word
 
-
+This file references "\u2610" and "\u2612" a few times. These are open and
+crossed-out checkboxes. Pypi doesn't like them in my file, so I have to reference
+them by their escape sequences.
 """
 
 from contextlib import suppress
@@ -24,12 +26,12 @@ def get_checkBox_entry(checkBox: Element) -> str:
 
     :param checkBox: a checkBox xml element
     :returns:
-        1. attempt to get checked.w:val and return ☐ or ☒
-        2. attempt to get default.w:val and return ☐ or ☒
+        1. attempt to get checked.w:val and return "\u2610" or "\u2612"
+        2. attempt to get default.w:val and return "\u2610" or "\u2612"
         3. return ``--checkbox failed--``
 
     checkBox can only be checked when the form is locked. Does not print text.
-    checkbox can be checked any time. Prints text as "☐" or "☒"
+    checkbox can be checked any time. Prints text as "\u2610" or "\u2612".
 
     <w:checkBox>
         <w:sizeAuto/>
@@ -47,7 +49,7 @@ def get_checkBox_entry(checkBox: Element) -> str:
         with suppress(AttributeError, KeyError):
             return checkBox.find(qn("w:default")).attrib[qn("w:val")]
 
-    return {"0": "☐", "1": "☒", None: "----checkbox failed----"}[get_wval()]
+    return {"0": "\u2610", "1": "\u2612", None: "----checkbox failed----"}[get_wval()]
 
 
 # noinspection PyPep8Naming

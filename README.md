@@ -253,7 +253,7 @@ def html_map(tables) -> str:
 Some fine print about checkboxes:
 
 MS Word has checkboxes that can be checked any time, and others that can only be checked when the form is locked.
-The previous print as. ``☐`` or ``☒``. Which this module, the latter will too. I gave checkboxes a bailout value of
-``----checkbox failed----`` if the xml doesn't look like I expect it to, because I don't have several-thousand test
-files with checkboxes (as I did with most of the other form elements). Checkboxes *should* work, but please let me know
-if you encounter any that do not.
+The previous print as. ``\u2610`` (open checkbox) or ``\u2612`` (crossed checkbox). Which this module, the latter will
+too. I gave checkboxes a bailout value of ``----checkbox failed----`` if the xml doesn't look like I expect it to,
+because I don't have several-thousand test files with checkboxes (as I did with most of the other form elements).
+Checkboxes *should* work, but please let me know if you encounter any that do not.
