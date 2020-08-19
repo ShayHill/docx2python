@@ -206,7 +206,8 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                     tables.insert("endnote{})\t".format(child.attrib[qn("w:id")]))
 
             elif tag == HYPERLINK:
-                rId = child.attrib[qn("r:id")]
+                # look for an href, ignore internal references (anchors)
+                rId = child.attrib.get(qn("r:id"))
                 link = context["rId2Target"].get(rId)
                 if link:
                     tables.insert('<a href="{}">'.format(link))
