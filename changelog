@@ -1,0 +1,9 @@
+---- version 1.25 - 200820 Added support for Table of Contents text
+
+A docx table of contents is built like a set of hyperlinks, with each hyperlink element's having an anchor (internal
+link) instead of an href (external link).
+
+Previously any document with a Table of Contents would fail with
+`KeyError: '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'` after failing to find an href.
+Now, docx2python will fail silently if an href is not found in a hyperlink element. Anchor (internal link) elements are
+meaningless outside the docx and are therefore ignored by docx2python.
