@@ -8,3 +8,14 @@ Previously any document with a Table of Contents would fail with
 Now, docx2python will continue without warning if an href is not found in a hyperlink element. In an href is found,
 docx2python will print the href inside '<a href="{}">' as before. Anchor (internal link) elements are meaningless
 outside the docx and are therefore ignored by docx2python
+
+
+---- version 1.26 - 201005 Continue (with bullet) when numbering-format lookup fails
+
+Some documents created in Pages use a different indexing scheme to specify numbered-list formats and values. I cannot
+infer formats or values from such files without potentially changing existing behavior. The previous behavior in such
+cases was to fail with an IndexError. v1.26 will now replace any numbering format with a "bullet" (--) when the format
+or value cannot be inferred.
+
+This will only happen where the program would previously have failed with an IndexError, so no previous behavior (which
+allowed the program to complete) has been altered.
