@@ -19,3 +19,13 @@ or value cannot be inferred.
 
 This will only happen where the program would previously have failed with an IndexError, so no previous behavior (which
 allowed the program to complete) has been altered.
+
+
+---- version 1.27 - 201102 Continue when document properties are not found
+
+`docx2python(file).properties` returns a dictionary of document properties (e.g., {'Author': 'Shay Hill'}). Google Docs
+(and perhaps others) do not store such properties. When document properties cannot be found, v1.27 will continue and
+return an empty dictionary for `docx2python(file).properties`.
+
+This will only happen where the program would previously have failed with a KeyError, so no previous behavior (which
+allowed the program to complete) has been altered.
