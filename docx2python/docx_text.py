@@ -11,6 +11,7 @@ Content in the extracted docx is found in the ``word`` folder:
     ``word/footer1.html``
 """
 import warnings
+from contextlib import suppress
 from typing import Any, Dict, List
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -103,7 +104,7 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
             numFmt = context["numId2numFmts"][numId][int(ilvl)]
         except IndexError:
             # give up and put a bullet
-            numFmt = 'bullet'
+            numFmt = "bullet"
     except (AttributeError, KeyError):
         # not a numbered paragraph
         return ""
@@ -211,9 +212,9 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
             elif tag == HYPERLINK:
                 # look for an href, ignore internal references (anchors)
-                rId = child.attrib.get(qn("r:id"))
-                link = context["rId2Target"].get(rId)
-                if link:
+                with suppress(KeyError):
+                    rId = child.attrib[qn("r:id")]
+                    link = context["rId2Target"][rId]
                     tables.insert('<a href="{}">'.format(link))
 
             elif tag == FORM_CHECKBOX:
@@ -230,15 +231,15 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.insert("----endnote{}----".format(child.attrib[qn("w:id")]))
 
             elif tag == IMAGE:
-                rId = child.attrib[qn("r:embed")]
-                image = context["rId2Target"].get(rId)
-                if image:
+                with suppress(KeyError):
+                    rId = child.attrib[qn("r:embed")]
+                    image = context["rId2Target"][rId]
                     tables.insert("----{}----".format(image))
 
             elif tag == IMAGEDATA:
-                rId = child.attrib[qn("r:id")]
-                image = context["rId2Target"].get(rId)
-                if image:
+                with suppress(KeyError):
+                    rId = child.attrib[qn("r:id")]
+                    image = context["rId2Target"][rId]
                     tables.insert("----{}----".format(image))
 
             elif tag == TAB:
