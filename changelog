@@ -31,7 +31,7 @@ This will only happen where the program would previously have failed with a KeyE
 allowed the program to complete) has been altered.
 
 
----- version 1.28 - 201115 Continue when image r:id is not found
+---- version 1.27.1 - 201115 Continue when image r:id is not found
 
 A user found a docx `imagedata` element with a missing `r:id` element. The `r:id` number gives the location of an image
 filename. I presume this `imagedata` element is a vector graphic, which `docx2python` does not and will not support.
