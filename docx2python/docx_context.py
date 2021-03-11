@@ -39,7 +39,7 @@ def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
 
     :background:
 
-    ``trash/numbering.xml`` will have two sections.
+    ``word/numbering.xml`` will have two sections.
 
     **SECTION 1** - Some abstractNum elements defining numbering formats for multiple
     indentation levels::

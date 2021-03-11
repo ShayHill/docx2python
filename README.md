@@ -54,7 +54,7 @@ docx2python('path/to/file.docx', html=True)
 Note on html feature:
 * font size, font color, bold, italics, and underline supported
 * hyperlinks will always be exported as html (``<a href="http:/...">link text</a>``), even if ``export_font_style=False``, because I couldn't think of a more cononical representation.
-* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph q</b>`, `<b>paragraph 2</b>`. This is intentional to make  each paragraph its own entity. 
+* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph a</b>`, `<b>paragraph b</b>`. This is intentional to make  each paragraph its own entity. 
 * if you specify `export_font_style=True`, `>` and `<` in your docx text will be encoded as `&gt;` and `&lt;`
 
 ## Return Value
@@ -89,7 +89,7 @@ for name, image in result.images.items():
 
 Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., `output.body[i][j][k][l]` will be a paragraph).
 
-If your docx has no tables, output.body will appear as one a table with all contents in one cell:
+If your docx has no tables, output.body will appear as one a table with all content in one cell:
 
 ```python
 [  # document
@@ -115,7 +115,9 @@ If your docx has no tables, output.body will appear as one a table with all cont
 Table cells will appear as table cells. Text outside tables will appear as table cells.
 
 
-To preserve the even depth (text always at depth 4), nested tables will appear as new, top-level tables. This is clearer with an example:
+A docx document can be tables within tables within tables. Docx2Python flattens most of this to more easily navigate
+within the content. To preserve this "flat" depth (text always at depth 4), nested tables will appear as new, top-level
+tables. This is clearer with an example:
 
 ```python
 #  docx structure
