@@ -2,8 +2,8 @@
 
 To assist with reading the project documentation or extending `docx2python`.
 
-    + rels  # named references to data (links, values, etc. for entire document)
-        - _rels  # map to locations of major files (e.g., document.xml)
+    + _rels  # named references to data (links, values, etc. for entire document)
+        - .rels  # map to locations of major files (e.g., document.xml)
 
     + customXml  # all ignored by docx2python
         - item1.xml
@@ -38,7 +38,7 @@ To assist with reading the project documentation or extending `docx2python`.
         - footer1.xml
         - footnotes.xml
         - fontTable.xml  # "long-hand" font descriptions. Ignored by docx2python
-        - numbering.xml  # required data to auto number paragraphs (doxc2python) reads this
+        - numbering.xml  # required data to auto number paragraphs. doxc2python reads this
         - settings.xml  # global file specifications. Ignored by docx2python
         - styles.xml # table styles, etc. Ignored by docx2python
         - webSettings.xml  # ignored by docx2python

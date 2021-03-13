@@ -55,18 +55,18 @@ def docx2python(
             unzipped = zipf.read("/".join(Path(filename_).parts[1:]))
         return get_text(unzipped, context)
 
-    header = [file_text(filename) for filename in context["headers"]]
+    header = [file_text(filename) for filename in context.get("header", [])]
     header = [x for y in header for x in y]
 
     body = file_text(context["officeDocument"])
 
-    footer = [file_text(filename) for filename in context["footers"]]
+    footer = [file_text(filename) for filename in context.get("footer", [])]
     footer = [x for y in footer for x in y]
 
-    footnotes = [file_text(filename) for filename in context["footnotes"]]
+    footnotes = [file_text(filename) for filename in context.get("footnotes", [])]
     footnotes = [x for y in footnotes for x in y]
 
-    endnotes = [file_text(filename) for filename in context["endnotes"]]
+    endnotes = [file_text(filename) for filename in context.get("endnotes", [])]
     endnotes = [x for y in endnotes for x in y]
 
     if extract_image:

@@ -21,8 +21,9 @@ import pathlib
 import re
 import zipfile
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
+from contextlib import suppress
 
 # namespace map. see qn
 from docx2python.namespace import qn
@@ -125,7 +126,8 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
 
     **E.g, Given**::
 
-        # one of several files
+    # one of several files
+
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <Relationships xmlns="http://schemas.../relationships">
             <Relationship Id="rId3" Type="http://schemas... \
@@ -164,40 +166,41 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
 # noinspection PyPep8Naming
 def collect_docProps(xml: bytes) -> Dict[str, str]:
     # noinspection SpellCheckingInspection
-    """ Get author, modified, etc. from docProps
+    """
+    Get author, modified, etc. from docProps
 
-        :param xml: ``DocProps/core.xml`` from a decompressed docx file
-        :return: document property names mapped to values
+    :param xml: ``DocProps/core.xml`` from a decompressed docx file
+    :return: document property names mapped to values
 
-        **E.g., Given**::
+    **E.g., Given**::
 
-            <cp:coreProperties xmlns:cp="http://schemas.openxmlformats...">
-                <dc:title>SG-DOP-5009 - Operate ROMAR swarf unit
-                </dc:title>
-                <dc:creator>Shay Hill
-                </dc:creator>
-                <cp:lastModifiedBy>Shay Hill
-                </cp:lastModifiedBy>
-                <cp:revision>6
-                </cp:revision>
-                <cp:lastPrinted>2017-11-17T15:47:00Z
-                </cp:lastPrinted>
-                <dcterms:created xsi:type="dcterms:W3CDTF">2019-01-10T07:21:00Z
-                </dcterms:created>
-                <dcterms:modified xsi:type="dcterms:W3CDTF">2019-01-11T11:41:00Z
-                </dcterms:modified>
-            </cp:coreProperties>
+        <cp:coreProperties xmlns:cp="http://schemas.openxmlformats...">
+            <dc:title>SG-DOP-5009 - Operate ROMAR swarf unit
+            </dc:title>
+            <dc:creator>Shay Hill
+            </dc:creator>
+            <cp:lastModifiedBy>Shay Hill
+            </cp:lastModifiedBy>
+            <cp:revision>6
+            </cp:revision>
+            <cp:lastPrinted>2017-11-17T15:47:00Z
+            </cp:lastPrinted>
+            <dcterms:created xsi:type="dcterms:W3CDTF">2019-01-10T07:21:00Z
+            </dcterms:created>
+            <dcterms:modified xsi:type="dcterms:W3CDTF">2019-01-11T11:41:00Z
+            </dcterms:modified>
+        </cp:coreProperties>
 
-        **E.g., Returns**::
+    **E.g., Returns**::
 
-            {
-                "title": "SG-DOP-5009 - Operate ROMAR swarf unit",
-                "creator": "Shay Hill",
-                "lastModifiedBy": "Shay Hill",
-                "revision": "6",
-                ...
-            }
-        """
+        {
+            "title": "SG-DOP-5009 - Operate ROMAR swarf unit",
+            "creator": "Shay Hill",
+            "lastModifiedBy": "Shay Hill",
+            "revision": "6",
+            ...
+        }
+    """
     docProp2text = {}
     root = ElementTree.fromstring(xml)
     capture_tag_name = re.compile(r"{.+}(?P<tag_name>\w+)")
@@ -219,6 +222,41 @@ def get_path_rels(path: str) -> str:
     folder, file = os.path.split(path)
     return "".join([folder, "/_rels/", file, ".rels"])
 
+def map_type_to_target(rels: List[Dict[str, str]]) -> Dict[str,str]:
+    """
+    Map type basename of a rel to rel target
+
+    :param rels: list of rels dicts (output from ``collect_rels``)
+    :return: for each rel, basename(x['Type']) mapped to the ``x['Target']
+
+    **E.g, Given**::
+
+        [
+            {
+                "Id": "rId3",
+                "Type": "http://schemas.../extended-properties",
+                "Target": "docProps/app.xml",
+            },
+            {
+                "Id": "rId2",
+                "Type": "http://schemas.../core-properties",
+                "Target": "docProps/core.xml",
+            },
+        ]
+
+    **Returns**::
+
+        {
+            'extended-properties': 'docProps/app.xml',
+            'core-properties': 'docProps/core.xml',
+        {
+
+    The chief purpose of this is to simplify extraction of
+    ``'officeDocument': 'word/document.xml'`` from ``_rels/.rels``
+
+    But it may also be used to gather the property-file paths from ``_rels/.rels``
+    """
+    return {os.path.basename(x['Type']): x['Target'] for x in rels}
 
 # noinspection PyPep8Naming
 def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
@@ -236,40 +274,30 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
         The last two will only be present in documents with bulleted or numbered lists.
     """
     path2rels = collect_rels(zipf)
-    officeDocument = next(
-        x["Target"]
-        for x in path2rels["_rels/.rels"]
-        if os.path.basename(x["Type"]) == "officeDocument"
-    )
-    officeDocument_rels = get_path_rels(officeDocument)
-    content_dir = os.path.dirname(officeDocument)
 
-    headers, footers, endnotes, footnotes = [], [], [], []
+    rels_rels = map_type_to_target(path2rels.get("_rels/.rels", {}))
+    officeDocument = rels_rels.get('officeDocument', 'word/document.xml')
+    officeDocument_rels = get_path_rels(officeDocument)
+    content_dir: Union[str, Any] = os.path.dirname(officeDocument)
+
+    # for each rel['Type'] (e.g., header), a list of paths to files of that type.
+    context = {}
+    # for rel in sum(path2rels.values(), start=[]): #path2rels[officeDocument_rels]:
     for rel in path2rels[officeDocument_rels]:
         rel_type = os.path.basename(rel["Type"])
-        if rel_type == "header":
-            headers.append("/".join([content_dir, rel["Target"]]))
-        elif rel_type == "footer":
-            footers.append("/".join([content_dir, rel["Target"]]))
-        elif rel_type == "footnotes":
-            footnotes.append("/".join([content_dir, rel["Target"]]))
-        elif rel_type == "endnotes":
-            endnotes.append("/".join([content_dir, rel["Target"]]))
+        rel_path = "/".join([content_dir, rel["Target"]])
+        context[rel_type] = context.get(rel_type, []) + [rel_path]
 
     content_path2rels = {
         x: path2rels.get(get_path_rels(x), {})
-        for x in [officeDocument] + headers + footers + footnotes + endnotes
+        for x in [officeDocument] + sum(context.values(), start=[])
     }
+    context['officeDocument'] = officeDocument
 
-    context = {
-        "content_dir": content_dir,
+    context.update({
         "officeDocument": officeDocument,
-        "headers": headers,
-        "footers": footers,
-        "footnotes": footnotes,
-        "endnotes": endnotes,
         "content_path2rels": content_path2rels,
-    }
+    })
     try:
         context["docProp2text"] = collect_docProps(zipf.read("docProps/core.xml"))
     except KeyError:
@@ -307,10 +335,11 @@ def pull_image_files(
 
     :side effects: Given an optional image_directory, will write the images out to file.
     """
+    content_dir = os.path.dirname(context['officeDocument'])
     images = {
         os.path.basename(x): zipf.read(x)
         for x in zipf.namelist()
-        if re.match(context["content_dir"] + r"/media/image\d+", x)
+        if re.match(content_dir + r"/media/image\d+", x)
     }
     if image_directory is not None:
         pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
