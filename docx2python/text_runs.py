@@ -123,6 +123,8 @@ def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
             font_styles.append('size="{}"'.format(val))
         elif tag == "color":
             font_styles.append('color="{}"'.format(val))
+        elif tag == "smallCaps":
+            style.append(('span', 'style="font-variant-caps: small-caps;"'))
 
     if font_styles:
         style = [("font", " ".join(sorted(font_styles)))] + style
