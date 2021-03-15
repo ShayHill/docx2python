@@ -68,6 +68,7 @@ def gather_rPr(run_element: ElementTree.Element) -> Dict[str, Optional[str]]:
                 <w:sz w:val="32"/>
                 <w:szCs w:val="32"/>
                 <w:u w:val="single"/>
+                <w:smallCaps/>
             </w:rPr>
             <w:t>text styled  with rPr
             </w:t>
@@ -83,6 +84,7 @@ def gather_rPr(run_element: ElementTree.Element) -> Dict[str, Optional[str]]:
             "sz": "32",
             "color": "red",
             "szCs": "32",
+            "smallCaps": None,
         }
     """
     try:

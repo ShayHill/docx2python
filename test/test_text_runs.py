@@ -31,6 +31,7 @@ ONE_TEXT_RUN = valid_xml(
     '<w:color w:val="red"/>'
     '<w:szCs w:val="32"/>'
     '<w:u w:val="single"/>'
+    '<w:smallCaps/>'
     "</w:rPr>"
     "<w:t>text styled  with rPr"
     "</w:t>"
@@ -66,6 +67,7 @@ class TestGatherRpr:
             "sz": "32",
             "color": "red",
             "szCs": "32",
+            "smallCaps": None,
         }
 
     def test_no_styles(self):
@@ -85,6 +87,7 @@ class TestGetRunStyle:
             ("b", ""),
             ("i", ""),
             ("u", ""),
+            ('span', 'style="font-variant-caps: small-caps;"'),
         ]
 
 
@@ -93,10 +96,10 @@ class TestStyleStrings:
 
     def test_style_open(self) -> None:
         """Produce valid html for all defined styles."""
-        style = [("font", 'color="red" size="32"'), ("b", ""), ("i", ""), ("u", "")]
-        assert style_open(style) == '<font color="red" size="32"><b><i><u>'
+        style = [("font", 'color="red" size="32"'), ("b", ""), ("i", ""), ("u", ""), ('span', 'style="font-variant-caps: small-caps;"')]
+        assert style_open(style) == '<font color="red" size="32"><b><i><u><span style="font-variant-caps: small-caps;>'
 
     def test_style_close(self) -> None:
         """Produce valid html for all defined styles."""
-        style = [("font", 'color="red" size="32"'), ("b", ""), ("i", ""), ("u", "")]
-        assert style_close(style) == "</u></i></b></font>"
+        style = [("font", 'color="red" size="32"'), ("b", ""), ("i", ""), ("u", ""), ('span', 'style="font-variant-caps: small-caps;"')]
+        assert style_close(style) == "</span></u></i></b></font>"
