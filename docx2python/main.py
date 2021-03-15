@@ -15,6 +15,25 @@ from .docx_context import get_context, pull_image_files
 from .docx_output import DocxContent
 from .docx_text import get_text
 
+from .docx_context import get_path
+from typing import List, Dict, Iterator
+import os
+
+
+def filter_files_by_type(
+    files: List[Dict[str, str]], type_: str
+) -> Iterator[Dict[str, str]]:
+    """
+    Take file objects (rels.attribs) and select with matching type.
+    TODO: complete docstring and move to new module
+
+    :param files:
+    :return:
+    """
+    for file in files:
+        if os.path.basename(file["Type"]) == type_:
+            yield file
+
 
 def docx2python(
     docx_filename: str,
@@ -44,30 +63,17 @@ def docx2python(
         header identified as ``word/header.xml``. After trying with
         ``content_dir/file``, try again with just ``file``.
         """
-        context["rId2Target"] = {
-            x["Id"]: x["Target"] for x in context["content_path2rels"][filename_]
-        }
-
-        try:
-            unzipped = zipf.read(filename_)
-        except KeyError:
-            # content dir specified twice
-            unzipped = zipf.read("/".join(Path(filename_).parts[1:]))
+        rels = filename_.get("rels", [])
+        #TODO: pass rels file objects into context, not Id: Target
+        context["rId2Target"] = {x["Id"]: x["Target"] for x in rels}
+        unzipped = zipf.read(get_path(filename_))
         return get_text(unzipped, context)
 
-    header = [file_text(filename) for filename in context.get("header", [])]
-    header = [x for y in header for x in y]
-
-    body = file_text(context["officeDocument"])
-
-    footer = [file_text(filename) for filename in context.get("footer", [])]
-    footer = [x for y in footer for x in y]
-
-    footnotes = [file_text(filename) for filename in context.get("footnotes", [])]
-    footnotes = [x for y in footnotes for x in y]
-
-    endnotes = [file_text(filename) for filename in context.get("endnotes", [])]
-    endnotes = [x for y in endnotes for x in y]
+    type2content = {}
+    for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):
+        type_files = filter_files_by_type(context['files'], type_)
+        type_content = sum([file_text(x) for x in type_files], start=[])
+        type2content[type_] = type_content
 
     if extract_image:
         images = pull_image_files(zipf, context, image_folder)
@@ -76,11 +82,11 @@ def docx2python(
 
     zipf.close()
     return DocxContent(
-        header=header,
-        body=body,
-        footer=footer,
-        footnotes=footnotes,
-        endnotes=endnotes,
+        header=type2content['header'],
+        body=type2content['officeDocument'],
+        footer=type2content['footer'],
+        footnotes=type2content['footnotes'],
+        endnotes=type2content['endnotes'],
         images=images,
         properties=context["docProp2text"],
     )
