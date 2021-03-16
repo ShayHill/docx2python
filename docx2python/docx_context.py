@@ -21,13 +21,12 @@ import pathlib
 import re
 import zipfile
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Union
-from xml.etree import ElementTree
 from contextlib import suppress
-from itertools import chain
+from typing import Any, Dict, List, Optional, Union, cast
+from xml.etree import ElementTree
 
-# namespace map. see qn
-from docx2python.namespace import qn
+from .attribute_dicts import filter_files_by_type, get_path, get_path_rels
+from .namespace import qn
 
 
 # noinspection PyPep8Naming
@@ -210,92 +209,6 @@ def collect_docProps(xml: bytes) -> Dict[str, str]:
     return docProp2text
 
 
-def old_get_path_rels(path: str) -> str:
-    """
-    Get path/to/rels for path/to/xml
-
-    :param path: path to a docx content file.
-    :returns: path to rels (which may not exist)
-
-    Every content file (``document.xml``, ``header1.xml``, ...) will have its own
-    ``.rels`` file--if any relationships are defined.
-    """
-    folder, file = os.path.split(path)
-    return "".join([folder, "/_rels/", file, ".rels"])
-
-def get_path_rels(path: str) -> str:
-    # TODO: update docstring and ditch previous get_path_rels
-    """
-    Get path/to/rels for path/to/xml
-
-    :param path: path to a docx content file.
-    :returns: path to rels (which may not exist)
-
-    Every content file (``document.xml``, ``header1.xml``, ...) will have its own
-    ``.rels`` file--if any relationships are defined.
-    """
-    dirs = [os.path.dirname(x) for x in (path['dir'], path['Target'])]
-    dirname = '/'.join([x for x in dirs if x])
-    filename = os.path.basename(path['Target'])
-    return '/'.join([dirname, '_rels', filename+'.rels'])
-    # folder, file = os.path.split(path)
-    # return "".join([folder, "/_rels/", file, ".rels"])
-
-def get_path(path: str) -> str:
-    # TODO: update docstring and ditch previous get_path_rels
-    """
-    Get path/to/rels for path/to/xml
-
-    :param path: path to a docx content file.
-    :returns: path to rels (which may not exist)
-
-    Every content file (``document.xml``, ``header1.xml``, ...) will have its own
-    ``.rels`` file--if any relationships are defined.
-    """
-    dirs = [os.path.dirname(x) for x in (path['dir'], path['Target'])]
-    dirname = '/'.join([x for x in dirs if x])
-    filename = os.path.basename(path['Target'])
-    return '/'.join([dirname, filename])
-    # folder, file = os.path.split(path)
-    # return "".join([folder, "/_rels/", file, ".rels"])
-
-def map_type_to_target(rels: List[Dict[str, str]]) -> Dict[str, str]:
-    """
-    Map type basename of a rel to rel target
-
-    :param rels: list of rels dicts (output from ``collect_rels``)
-    :return: for each rel, basename(x['Type']) mapped to the ``x['Target']
-
-    **E.g, Given**::
-
-        [
-            {
-                "Id": "rId3",
-                "Type": "http://schemas.../extended-properties",
-                "Target": "docProps/app.xml",
-            },
-            {
-                "Id": "rId2",
-                "Type": "http://schemas.../core-properties",
-                "Target": "docProps/core.xml",
-            },
-        ]
-
-    **Returns**::
-
-        {
-            'extended-properties': 'docProps/app.xml',
-            'core-properties': 'docProps/core.xml',
-        {
-
-    The chief purpose of this is to simplify extraction of
-    ``'officeDocument': 'word/document.xml'`` from ``_rels/.rels``
-
-    But it may also be used to gather the property-file paths from ``_rels/.rels``
-    """
-    return {os.path.basename(x["Type"]): x["Target"] for x in rels}
-
-
 # noinspection PyPep8Naming
 def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
     """
@@ -326,40 +239,18 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
 
     rel_type = Dict[str, str]
     file_type = Dict[str, Union[str, rel_type]]
-    path2rels: Dict[str, file_type] = collect_rels(zipf)
+    path2rels = cast(Dict[str, file_type], collect_rels(zipf))
 
     files = []
     for k, v in path2rels.items():
-        files += [{**x, 'dir': os.path.dirname(k)} for x in v]
-    # files = sum(path2rels.values(), start=[])
+        files += [{**x, "dir": os.path.dirname(k)} for x in v]
     for file in files:
         with suppress(KeyError):
             rels = path2rels[get_path_rels(file)]
-            file['rels'] = rels
+            file["rels"] = rels
 
-    rels_rels = map_type_to_target(path2rels.get("_rels/.rels", {}))
-    officeDocument = rels_rels.get("officeDocument", "word/document.xml")
+    context = {"files": files}
 
-    # for each rel['Type'] (e.g., header), a list of paths to files of that type.
-    context = {}
-    for rel in files:
-        rel_type = os.path.basename(rel["Type"])
-        rel_path = "/".join([os.path.dirname(officeDocument), rel["Target"]])
-        context[rel_type] = context.get(rel_type, []) + [rel_path]
-
-    content_path2rels = {
-        x: path2rels.get(old_get_path_rels(x), {})
-        for x in [officeDocument] + sum(context.values(), start=[])
-    }
-    context["officeDocument"] = officeDocument
-
-    context.update(
-        {
-            "files": files,
-            # "officeDocument": officeDocument,
-            # "content_path2rels": content_path2rels,
-        }
-    )
     try:
         context["docProp2text"] = collect_docProps(zipf.read("docProps/core.xml"))
     except KeyError:
@@ -397,11 +288,9 @@ def pull_image_files(
 
     :side effects: Given an optional image_directory, will write the images out to file.
     """
-    content_dir = os.path.dirname(context["officeDocument"])
     images = {
-        os.path.basename(x): zipf.read(x)
-        for x in zipf.namelist()
-        if re.match(content_dir + r"/media/image\d+", x)
+        os.path.basename(x["Target"]): zipf.read(get_path(x))
+        for x in filter_files_by_type(context["files"], "image")
     }
     if image_directory is not None:
         pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)

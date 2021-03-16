@@ -8,31 +8,13 @@
 Some private methods are here because I wanted to keep them with their tests.
 """
 import zipfile
-from pathlib import Path
 from typing import Optional
 
-from .docx_context import get_context, pull_image_files
+from .docx_context import get_context, pull_image_files, collect_docProps
 from .docx_output import DocxContent
 from .docx_text import get_text
 
-from .docx_context import get_path
-from typing import List, Dict, Iterator
-import os
-
-
-def filter_files_by_type(
-    files: List[Dict[str, str]], type_: str
-) -> Iterator[Dict[str, str]]:
-    """
-    Take file objects (rels.attribs) and select with matching type.
-    TODO: complete docstring and move to new module
-
-    :param files:
-    :return:
-    """
-    for file in files:
-        if os.path.basename(file["Type"]) == type_:
-            yield file
+from .attribute_dicts import filter_files_by_type, get_path
 
 
 def docx2python(
@@ -80,6 +62,13 @@ def docx2python(
     else:
         images = None
 
+    try:
+        docProps = next(filter_files_by_type(context['files'], 'core-properties'))
+        docProps = collect_docProps(zipf.read(get_path(docProps)))
+    except StopIteration:
+        docProps = {}
+
+
     zipf.close()
     return DocxContent(
         header=type2content['header'],
@@ -88,5 +77,5 @@ def docx2python(
         footnotes=type2content['footnotes'],
         endnotes=type2content['endnotes'],
         images=images,
-        properties=context["docProp2text"],
+        properties=docProps,
     )
