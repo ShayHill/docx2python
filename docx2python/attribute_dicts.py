@@ -13,7 +13,9 @@ dir (added by docx2python)
 rels (possibly, for xml files with relationships)
 """
 import os
-from typing import Dict, Iterator, List
+from typing import Dict, Iterator, List, Union
+
+ExpandedAttribDict = Dict[str, Union[str, Dict[str, str]]]
 
 
 def get_path_rels(path: Dict[str, str]) -> str:

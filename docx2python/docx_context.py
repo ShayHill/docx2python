@@ -25,7 +25,12 @@ from contextlib import suppress
 from typing import Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
-from .attribute_dicts import filter_files_by_type, get_path, get_path_rels
+from .attribute_dicts import (
+    ExpandedAttribDict,
+    filter_files_by_type,
+    get_path,
+    get_path_rels,
+)
 from .namespace import qn
 
 
@@ -237,9 +242,7 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
         }
     """
 
-    rel_type = Dict[str, str]
-    file_type = Dict[str, Union[str, rel_type]]
-    path2rels = cast(Dict[str, file_type], collect_rels(zipf))
+    path2rels = cast(ExpandedAttribDict, collect_rels(zipf))
 
     files = []
     for k, v in path2rels.items():
@@ -251,11 +254,6 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
 
     context = {"files": files}
 
-    try:
-        context["docProp2text"] = collect_docProps(zipf.read("docProps/core.xml"))
-    except KeyError:
-        # no document properties. This file may have come from Google Docs
-        context["docProp2text"] = {}
     try:
         numId2numFmts = collect_numFmts(zipf.read("word/numbering.xml"))
         context["numId2numFmts"] = numId2numFmts

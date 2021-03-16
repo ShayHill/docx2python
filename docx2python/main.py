@@ -46,14 +46,14 @@ def docx2python(
         ``content_dir/file``, try again with just ``file``.
         """
         rels = filename_.get("rels", [])
-        #TODO: pass rels file objects into context, not Id: Target
+        # TODO: pass rels file objects into context, not Id: Target
         context["rId2Target"] = {x["Id"]: x["Target"] for x in rels}
         unzipped = zipf.read(get_path(filename_))
         return get_text(unzipped, context)
 
     type2content = {}
     for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):
-        type_files = filter_files_by_type(context['files'], type_)
+        type_files = filter_files_by_type(context["files"], type_)
         type_content = sum([file_text(x) for x in type_files], start=[])
         type2content[type_] = type_content
 
@@ -62,20 +62,15 @@ def docx2python(
     else:
         images = None
 
-    try:
-        docProps = next(filter_files_by_type(context['files'], 'core-properties'))
-        docProps = collect_docProps(zipf.read(get_path(docProps)))
-    except StopIteration:
-        docProps = {}
-
-
     zipf.close()
     return DocxContent(
-        header=type2content['header'],
-        body=type2content['officeDocument'],
-        footer=type2content['footer'],
-        footnotes=type2content['footnotes'],
-        endnotes=type2content['endnotes'],
+        header=type2content["header"],
+        body=type2content["officeDocument"],
+        footer=type2content["footer"],
+        footnotes=type2content["footnotes"],
+        endnotes=type2content["endnotes"],
         images=images,
-        properties=docProps,
+        # properties=docProps,
+        files=context["files"],
+        zipf=zipf,
     )
