@@ -202,8 +202,8 @@ def _has_content(tree: Element) -> Optional[str]:
         """ Yield all known tags in tree """
         if tree_.tag in KNOWN_TAGS:
             yield tree_.tag
-            for branch in tree_:
-                yield from iter_known_tags(branch)
+        for branch in tree_:
+            yield from iter_known_tags(branch)
 
     return next(iter_known_tags(tree), None)
 
@@ -229,11 +229,12 @@ def get_run_text(branch: Element) -> Union[str, None]:
 
 
 def merge_runs(branch: Element) -> None:
+    return
     for child in branch:
         tag = child.tag
         if tag == Tags.PARAGRAPH:
             consecutive_types = []
-            for elem in child:
+            for elem in (x for x in child if x.tag in KNOWN_TAGS):
                 if not consecutive_types:
                     consecutive_types.append([elem])
                     continue
@@ -245,8 +246,9 @@ def merge_runs(branch: Element) -> None:
             while consecutive_types:
                 attribs = [x.attrib for x in consecutive_types[0]]
                 texts = [get_run_text(x) for x in consecutive_types[0]]
-                # if any(attribs) or any(texts) or any([x.text for x in child]):
-                #     breakpoint()
+                print(texts)
+                if any(attribs) or any(texts) or any([x.text for x in child]):
+                    breakpoint()
                 consecutive_types = consecutive_types[1:]
 
 
@@ -279,6 +281,7 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
         :param branch: An Element from an xml file (ElementTree)
         :return: None. Adds text cells to outer variable `tables`.
         """
+        merge_runs(branch)
         for child in branch:
             tag = child.tag
             if tag not in KNOWN_TAGS:
@@ -381,7 +384,6 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.insert("</a>")
 
     root = ElementTree.fromstring(xml)
-    merge_runs(root)
     branches(root)
 
     tree = tables.tree

@@ -35,16 +35,19 @@ def _elem_tag_str(elem: ElementTree.Element) -> str:
     **E.g., returns**:
 
         'document'
-        """
+    """
     return re.match(r"{.*}(?P<tag_name>\w+)", elem.tag).group("tag_name")
 
 
 # noinspection PyPep8Naming
-def gather_rPr(run_element: ElementTree.Element) -> Dict[str, Optional[str]]:
+def _gather_sub_vals(
+    element: ElementTree.Element, qname: str
+) -> Dict[str, Optional[str]]:
     """
-    Gather formatting elements for a text run.
+    Gather formatting elements for a paragraph or text run.
 
-    :param run_element: a ``<w:r>`` xml element
+    :param element: a ``<w:r>`` or ``<w:p>`` xml element. Maybe others
+    :param qname: qualified name for child element
 
     create with::
 
@@ -86,11 +89,47 @@ def gather_rPr(run_element: ElementTree.Element) -> Dict[str, Optional[str]]:
         }
     """
     try:
-        rPr = run_element.find(qn("w:rPr"))
-        return {_elem_tag_str(x): x.attrib.get(qn("w:val"), None) for x in rPr}
+        sub_element = element.find(qname)
+        return {_elem_tag_str(x): x.attrib.get(qn("w:val"), None) for x in sub_element}
     except TypeError:
-        # no formatting for run
+        # no formatting for element
         return {}
+
+
+def gather_rPr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
+    """Gather style values for a `<w.r>` element (e.g., b, u, i, sz)
+
+    :param element: `<w.r>` xml element
+    :returns: run element's rPr sub-element values
+    """
+    return _gather_sub_vals(element, qn("w:rPr"))
+
+
+def gather_pPr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
+    """Gather style values for a `<w.p>` element (e.g., pStyle)
+
+    :param element: `<w.r>` xml element
+    :returns: paragraphs element's pPr sub-element values
+    """
+    return _gather_sub_vals(element, qn("w:pPr"))
+
+
+# noinspection PyPep8Naming
+def get_paragraph_style(
+    paragraph_element: ElementTree.Element,
+) -> List[Tuple[str, str]]:
+    """Collect and format paragraph -> pPr -> pStyle value.
+
+    :param paragraph_element: a ``<w:p>`` xml element
+
+    :return: ``[(pStyle value, '')]``
+
+    Also see docstring for ``gather_pPr``
+    """
+    pStyle = gather_pPr(paragraph_element).get("pStyle")
+    if pStyle:
+        return [(pStyle, "")]
+    return []
 
 
 # noinspection PyPep8Naming
