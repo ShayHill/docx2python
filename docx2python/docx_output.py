@@ -79,8 +79,9 @@ class DocxContent:
             return collect_docProps(self.zipf.read(get_path(docProps)))
         except StopIteration:
             warn(
-                "Could not find core-properties.xml file in DOCX, so returning an "
-                "empty core_properties dictionary. Docx files created in Google Docs "
-                "do not have a core-properties.docx file, so this may be expected."
+                "Could not find core-properties file (should be in docProps/core.xml) "
+                "in DOCX, so returning an empty core_properties dictionary. Docx files "
+                "created in Google Docs do not have a core-properties file, so this "
+                "may be expected."
             )
             return {}

@@ -10,11 +10,10 @@ Some private methods are here because I wanted to keep them with their tests.
 import zipfile
 from typing import Optional
 
-from .docx_context import get_context, pull_image_files, collect_docProps
+from .attribute_dicts import filter_files_by_type, get_path
+from .docx_context import get_context, pull_image_files
 from .docx_output import DocxContent
 from .docx_text import get_text
-
-from .attribute_dicts import filter_files_by_type, get_path
 
 
 def docx2python(
@@ -38,12 +37,7 @@ def docx2python(
 
     def file_text(filename_):
         """
-        There's a bit of ugly try/except toward the bottom.
-
-        One file in 5300 had the headers and footers mislabeled in
-        ``word/_rels.document.xml.rels``. Instead of ``header.xml``, this had the
-        header identified as ``word/header.xml``. After trying with
-        ``content_dir/file``, try again with just ``file``.
+        Pull the text from a word/something.xml file
         """
         rels = filename_.get("rels", [])
         # TODO: pass rels file objects into context, not Id: Target
@@ -70,7 +64,6 @@ def docx2python(
         footnotes=type2content["footnotes"],
         endnotes=type2content["endnotes"],
         images=images,
-        # properties=docProps,
         files=context["files"],
         zipf=zipf,
     )
