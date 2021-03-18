@@ -11,6 +11,7 @@ those elements to extract formatting information.
 import re
 from typing import Dict, List, Optional, Sequence, Tuple
 from xml.etree import ElementTree
+from .attribute_register import Tags
 
 from .namespace import qn
 
@@ -41,13 +42,13 @@ def _elem_tag_str(elem: ElementTree.Element) -> str:
 
 # noinspection PyPep8Naming
 def _gather_sub_vals(
-    element: ElementTree.Element, qname: str
+    element: ElementTree.Element, qname: str = None
 ) -> Dict[str, Optional[str]]:
     """
     Gather formatting elements for a paragraph or text run.
 
     :param element: a ``<w:r>`` or ``<w:p>`` xml element. Maybe others
-    :param qname: qualified name for child element
+    :param qname: qualified name for child element.
 
     create with::
 
@@ -96,22 +97,20 @@ def _gather_sub_vals(
         return {}
 
 
-def gather_rPr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
-    """Gather style values for a `<w.r>` element (e.g., b, u, i, sz)
-
-    :param element: `<w.r>` xml element
-    :returns: run element's rPr sub-element values
+def gather_Pr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
     """
-    return _gather_sub_vals(element, qn("w:rPr"))
+    Gather style values for a <w:r> or <w:p> element (maybe others)
 
+    :param element: any xml element. r and p elems typically have Pr values.
+    :return: Style names ('b/', 'sz', etc.) mapped to values.
 
-def gather_pPr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
-    """Gather style values for a `<w.p>` element (e.g., pStyle)
+    Will infer a style element qualified name: p -> pPr; r -> rPr
 
-    :param element: `<w.r>` xml element
-    :returns: paragraphs element's pPr sub-element values
+    Call this with any element. Runs and Paragraphs may have a Pr element. Most
+    elements will not, but the function will will quietly return an empty dict.
     """
-    return _gather_sub_vals(element, qn("w:pPr"))
+    qname = qn(f"w:{element.tag.split('}')[-1]}Pr")
+    return _gather_sub_vals(element, qname)
 
 
 # noinspection PyPep8Naming
@@ -126,7 +125,7 @@ def get_paragraph_style(
 
     Also see docstring for ``gather_pPr``
     """
-    pStyle = gather_pPr(paragraph_element).get("pStyle")
+    pStyle = gather_Pr(paragraph_element).get("pStyle")
     if pStyle:
         return [(pStyle, "")]
     return []
@@ -151,7 +150,7 @@ def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
 
     Also see docstring for ``gather_rPr``
     """
-    rPr2val = gather_rPr(run_element)
+    rPr2val = gather_Pr(run_element)
     style = []
     font_styles = []
 
@@ -166,6 +165,22 @@ def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
     if font_styles:
         style = [("font", " ".join(sorted(font_styles)))] + style
     return style
+
+
+def get_style(elem: ElementTree.Element) -> List[Tuple[str, str]]:
+    """
+    Get style for an element (if available)
+
+    :param elem: any element, but it's likely only runs and paragraphs will have a
+        useable style.
+
+    :return: ``[(rPr, val), (rPr, val) ...]``
+    """
+    if elem.tag == Tags.RUN:
+        return get_run_style(elem)
+    if elem.tag == Tags.PARAGRAPH:
+        return get_paragraph_style(elem)
+    return []
 
 
 def style_open(style: Sequence[Tuple[str, str]]) -> str:

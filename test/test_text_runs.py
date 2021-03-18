@@ -14,7 +14,7 @@ from helpers.utils import valid_xml
 # noinspection PyProtectedMember
 from docx2python.text_runs import (
     _elem_tag_str,
-    gather_rPr,
+    gather_Pr,
     get_run_style,
     style_close,
     style_open,
@@ -58,7 +58,7 @@ class TestGatherRpr:
     def test_get_styles(self):
         """Map styles to values."""
         document = ElementTree.fromstring(ONE_TEXT_RUN)
-        assert gather_rPr(document[0]) == {
+        assert gather_Pr(document[0]) == {
             "rFonts": None,
             "b": None,
             "u": "single",
@@ -71,7 +71,7 @@ class TestGatherRpr:
     def test_no_styles(self):
         """Return empty dict when no rPr for text run."""
         document = ElementTree.fromstring(NO_STYLE_RUN)
-        assert gather_rPr(document[0]) == {}
+        assert gather_Pr(document[0]) == {}
 
 
 class TestGetRunStyle:

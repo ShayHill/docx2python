@@ -10,50 +10,26 @@ Content in the extracted docx is found in the ``word`` folder:
     ``word/header1.html``
     ``word/footer1.html``
 """
+from itertools import groupby
+from itertools import takewhile
 import warnings
-from itertools import chain
 from contextlib import suppress
-from typing import Any, Dict, List, Union, Set, Iterator, Optional
+from typing import Any, Dict, List, Union, Iterator, Optional, Tuple
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
+from .globs import DocxContext
 
+from .attribute_register import KNOWN_ATTRIBUTES, KNOWN_TAGS, Tags
 from . import numbering_formats as nums
 from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
 from .iterators import enum_at_depth
 from .namespace import qn
-from .text_runs import get_run_style, style_close, style_open
-from dataclasses import dataclass
+from .text_runs import get_run_style, style_close, style_open, gather_Pr, get_style
 
 TablesList = List[List[List[List[str]]]]
 
-
-@dataclass
-class Tags:
-    """
-    These are the tags that provoke some action in docx2python.
-    """
-
-    TABLE: str = qn("w:tbl")
-    TABLE_ROW: str = qn("w:tr")
-    TABLE_CELL: str = qn("w:tc")
-    PARAGRAPH: str = qn("w:p")
-    RUN: str = qn("w:r")
-    TEXT: str = qn("w:t")
-    IMAGE: str = qn("a:blip")
-    IMAGEDATA: str = qn("v:imagedata")
-    TAB: str = qn("w:tab")
-    FOOTNOTE_REFERENCE: str = qn("w:footnoteReference")
-    ENDNOTE_REFERENCE: str = qn("w:endnoteReference")
-    FOOTNOTE: str = qn("w:footnote")
-    ENDNOTE: str = qn("w:endnote")
-    HYPERLINK: str = qn("w:hyperlink")
-    FORM_CHECKBOX: str = qn("w:checkBox")
-    FORM_DDLIST: str = qn("w:ddList")  # drop-down form
-
-
 """ Property 'known_tags' to help filter xml for meaningful content. """
-KNOWN_TAGS = {x.default for x in Tags.__dataclass_fields__.values()}
 
 
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
@@ -151,13 +127,58 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         return format_bullet(nums.bullet())
 
 
+def get_text_child(elem: Element) -> Optional[Element]:
+    """
+    Consolidate any text element children in elem. Return <w:t> or None if none
+
+    :param elem: any xml element
+    :return: search one level down and return text element if found
+
+    There may be a potential for multiple text elements. In that case, this alters
+    the parent elem by consolidating all <w:t> children.
+    """
+    text_elements = [x for x in elem if x.tag == Tags.TEXT]
+    if text_elements:
+        text_elements[0].text = "".join(x.text for x in text_elements)
+        for elem in text_elements[1:]:
+            del elem
+        return text_elements[0]
+
+
+def elem_key(elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
+    """
+    Enough information to tell if two elements are more-or-less identical.
+
+    :param elem:
+    :return:
+
+    Docx2Text joins consecutive runs and links of the same style. Comparing two
+    elem_key return values will tell you if
+        * elements are the same type
+        * element attributes are same excluding revision 'rsid'
+        * element styles are the (as far as docx2python understands them)
+
+    Elem rId attributes are replaces with rId['Target'] because different rIds can
+    point to identical targets. This is important for hyperlinks, which can look
+    different but point to the same address.
+    """
+    tag = elem.tag
+    attrib = {k: v for k, v in elem.attrib.items() if k in KNOWN_ATTRIBUTES}
+    for k, v in attrib.items():
+        with suppress(KeyError):
+            attrib[k] = DocxContext.current_file_rels[v]["Target"]
+    style = get_style(elem)
+    return tag, attrib, style
+
+
+# TODO: delete is_equivalent
 def is_equivalent(elem_a: Element, elem_b: Element) -> bool:
     """
-    Elements are of the same type and have the same attrib (excluding rsid keys)
+    Elements are of the same type, attrib (excluding rsid keys), and Pr
 
     :param elem_a: any xml element
     :param elem_b: any xml element
-    :return: are same type with same attrib (excluding rsid keys)
+    :return: are same type with same attrib (excluding rsid keys) and Pr
 
     rsid attributes mark revisions. These are not considered by docx2python.
     """
@@ -177,9 +198,10 @@ def is_equivalent(elem_a: Element, elem_b: Element) -> bool:
             if not k.split("}")[-1].startswith("rsid")
         }
 
-    attrib_a = attrib_without_rsid(elem_a)
-    attrib_b = attrib_without_rsid(elem_b)
-    return attrib_a == attrib_b
+    if attrib_without_rsid(elem_a) != attrib_without_rsid(elem_b):
+        return False
+
+    return gather_Pr(elem_a) == gather_Pr(elem_b)
 
 
 def _has_content(tree: Element) -> Optional[str]:
@@ -208,6 +230,7 @@ def _has_content(tree: Element) -> Optional[str]:
     return next(iter_known_tags(tree), None)
 
 
+# TODO: factor out get_run_text
 def get_run_text(branch: Element) -> Union[str, None]:
     """
     Find the text element in a run and return the text.
@@ -228,28 +251,24 @@ def get_run_text(branch: Element) -> Union[str, None]:
     return "".join(yield_text(branch))
 
 
-def merge_runs(branch: Element) -> None:
-    return
-    for child in branch:
-        tag = child.tag
-        if tag == Tags.PARAGRAPH:
-            consecutive_types = []
-            for elem in (x for x in child if x.tag in KNOWN_TAGS):
-                if not consecutive_types:
-                    consecutive_types.append([elem])
-                    continue
-                if is_equivalent(consecutive_types[-1][-1], elem):
-                    consecutive_types[-1].append(elem)
-                else:
-                    consecutive_types.append([elem])
-            consecutive_types = [x for x in consecutive_types if len(x) != 1]
-            while consecutive_types:
-                attribs = [x.attrib for x in consecutive_types[0]]
-                texts = [get_run_text(x) for x in consecutive_types[0]]
-                print(texts)
-                if any(attribs) or any(texts) or any([x.text for x in child]):
-                    breakpoint()
-                consecutive_types = consecutive_types[1:]
+def _is_run(elem: Element) -> bool:
+    return elem.tag == Tags.RUN
+
+
+def merge_runs(tree: Element) -> None:
+    # TODO: docstromg
+    # TODO: make recursive
+    elems = [x for x in tree if x.tag in KNOWN_TAGS]
+    runs = [list(y) for x, y in groupby(elems, key=elem_key)]
+    runs = [x for x in runs if len(x) > 1 and x[0].tag in {Tags.HYPERLINK}]
+
+    for run in (x for x in runs if x[0].tag == Tags.RUN):
+        text_elems = [get_text_child(x) for x in run]
+        text_elems = [x for x in text_elems if x is not None]
+        if text_elems:
+            text_elems[0].text = "".join(x.text for x in text_elems)
+            for elem in run[1:]:
+                tree.remove(elem)
 
 
 def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:

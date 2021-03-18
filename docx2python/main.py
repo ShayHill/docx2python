@@ -10,6 +10,7 @@ Some private methods are here because I wanted to keep them with their tests.
 import zipfile
 from typing import Optional
 
+from .globs import DocxContext
 from .attribute_dicts import filter_files_by_type, get_path
 from .docx_context import get_context, pull_image_files
 from .docx_output import DocxContent
@@ -39,8 +40,11 @@ def docx2python(
         """
         Pull the text from a word/something.xml file
         """
+        global DocxContext
+        DocxContext.current_file_rels = {x["Id"]: x for x in filename_.get("rels", [])}
+
         rels = filename_.get("rels", [])
-        # TODO: pass rels file objects into context, not Id: Target
+        # TODO: factor our rId2Target (use global DocxContext)
         context["rId2Target"] = {x["Id"]: x["Target"] for x in rels}
         unzipped = zipf.read(get_path(filename_))
         return get_text(unzipped, context)
