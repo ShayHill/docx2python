@@ -12,6 +12,7 @@ import re
 from typing import Dict, List, Optional, Sequence, Tuple
 from xml.etree import ElementTree
 from .attribute_register import Tags
+from .attribute_register import has_content
 
 from .namespace import qn
 

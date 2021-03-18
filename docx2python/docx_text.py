@@ -10,26 +10,23 @@ Content in the extracted docx is found in the ``word`` folder:
     ``word/header1.html``
     ``word/footer1.html``
 """
-from itertools import groupby
-from itertools import takewhile
 import warnings
 from contextlib import suppress
-from typing import Any, Dict, List, Union, Iterator, Optional, Tuple
+from itertools import groupby
+from typing import Any, Dict, List, Tuple, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-from .globs import DocxContext
 
-from .attribute_register import KNOWN_ATTRIBUTES, KNOWN_TAGS, Tags
 from . import numbering_formats as nums
+from .attribute_register import KNOWN_ATTRIBUTES, Tags, has_content
 from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
+from .globs import DocxContext
 from .iterators import enum_at_depth
 from .namespace import qn
-from .text_runs import get_run_style, style_close, style_open, gather_Pr, get_style
+from .text_runs import get_run_style, get_style, style_close, style_open
 
 TablesList = List[List[List[List[str]]]]
-
-""" Property 'known_tags' to help filter xml for meaningful content. """
 
 
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
@@ -127,25 +124,7 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         return format_bullet(nums.bullet())
 
 
-def get_text_child(elem: Element) -> Optional[Element]:
-    """
-    Consolidate any text element children in elem. Return <w:t> or None if none
-
-    :param elem: any xml element
-    :return: search one level down and return text element if found
-
-    There may be a potential for multiple text elements. In that case, this alters
-    the parent elem by consolidating all <w:t> children.
-    """
-    text_elements = [x for x in elem if x.tag == Tags.TEXT]
-    if text_elements:
-        text_elements[0].text = "".join(x.text for x in text_elements)
-        for elem in text_elements[1:]:
-            del elem
-        return text_elements[0]
-
-
-def elem_key(elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
+def _elem_key(elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
     """
     Enough information to tell if two elements are more-or-less identical.
 
@@ -171,71 +150,11 @@ def elem_key(elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]
     return tag, attrib, style
 
 
-# TODO: delete is_equivalent
-def is_equivalent(elem_a: Element, elem_b: Element) -> bool:
-    """
-    Elements are of the same type, attrib (excluding rsid keys), and Pr
-
-    :param elem_a: any xml element
-    :param elem_b: any xml element
-    :return: are same type with same attrib (excluding rsid keys) and Pr
-
-    rsid attributes mark revisions. These are not considered by docx2python.
-    """
-    if elem_a.tag != elem_b.tag:
-        return False
-
-    def attrib_without_rsid(elem: Element) -> Dict[str, str]:
-        """
-        Attrib dict of an element without 'rsid...' keys.
-
-        :param elem: xml element
-        :return: attributes that are not rsid (version markers)
-        """
-        return {
-            k: v
-            for k, v in elem.attrib.items()
-            if not k.split("}")[-1].startswith("rsid")
-        }
-
-    if attrib_without_rsid(elem_a) != attrib_without_rsid(elem_b):
-        return False
-
-    return gather_Pr(elem_a) == gather_Pr(elem_b)
-
-
-def _has_content(tree: Element) -> Optional[str]:
-    """
-    Does the element have any descendent content elements?
-
-    :param tree: xml element
-    :return: first content tag found or None if no content tags are found?
-
-    This is to check for text in any skipped elements.
-
-    Docx2Python ignores spell check, revision, and other elements. This function checks
-    that no content (paragraphs, run, text, link, ...) is contained in children of any
-    ignored elements.
-
-    If no content is found, the element can be safely ignored.
-    """
-
-    def iter_known_tags(tree_: Element) -> Iterator[str]:
-        """ Yield all known tags in tree """
-        if tree_.tag in KNOWN_TAGS:
-            yield tree_.tag
-        for branch in tree_:
-            yield from iter_known_tags(branch)
-
-    return next(iter_known_tags(tree), None)
-
-
-# TODO: factor out get_run_text
+# TODO: factor out get_run_text (keep it around just a while for debugging)
 def get_run_text(branch: Element) -> Union[str, None]:
     """
     Find the text element in a run and return the text.
 
-    # TODO: improve docstring for get_run_text
     :param elem:
     :return:
     """
@@ -251,24 +170,95 @@ def get_run_text(branch: Element) -> Union[str, None]:
     return "".join(yield_text(branch))
 
 
-def _is_run(elem: Element) -> bool:
-    return elem.tag == Tags.RUN
+def _merge_elems(tree: Element) -> None:
+    """
+    Recursively merge duplicate (as far as docx2python is concerned) elements.
 
+    :param tree: element from an xml file
+    :return: None
+    :effects: Merges consecutive elements if tag, attrib, and style are the same
 
-def merge_runs(tree: Element) -> None:
-    # TODO: docstromg
-    # TODO: make recursive
-    elems = [x for x in tree if x.tag in KNOWN_TAGS]
-    runs = [list(y) for x, y in groupby(elems, key=elem_key)]
-    runs = [x for x in runs if len(x) > 1 and x[0].tag in {Tags.HYPERLINK}]
+    There are a few ways consecutive elements can be "identical":
+        * same link
+        * same style
 
-    for run in (x for x in runs if x[0].tag == Tags.RUN):
-        text_elems = [get_text_child(x) for x in run]
-        text_elems = [x for x in text_elems if x is not None]
-        if text_elems:
-            text_elems[0].text = "".join(x.text for x in text_elems)
-            for elem in run[1:]:
-                tree.remove(elem)
+    Often, consecutive, "identical" elements are written as separate elements,
+    because they aren't identical to Word. Work keeps track of revision history,
+    spelling errors, etc., which are meaningless to docx2python.
+
+    <w:p>
+        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
+            <w:r>
+                <w:t>hy</w:t>
+            </w:r>
+        </w:hyperlink>
+        <w:proofErr/>  <!-- docx2python will ignore this proofErr -->
+        <w:hyperlink r:id="rId8">  <!-- points to http://www.shayallenhill.com -->
+            <w:r>
+                <w:t>per</w:t>
+            </w:r>
+        </w:hyperlink>
+        <w:hyperlink r:id="rId9">  <!-- points to http://www.shayallenhill.com -->
+            <w:r w:rsid="asdfas">  <!-- docx2python will ignore this rsid -->
+                <w:t>link</w:t>
+            </w:r>
+        </w:hyperlink>
+    </w:p>
+
+    Docx2python condenses the above to (by merging links)
+
+    <w:p>
+        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
+            <w:r>
+                <w:t>hy</w:t>
+            </w:r>
+            <w:r>
+                <w:t>per</w:t>
+            </w:r>
+            <w:r w:rsid="asdfas">  <!-- docx2python will ignore this rsid -->
+                <w:t>link</w:t>
+            </w:r>
+        </w:hyperlink>
+    </w:p>
+
+    Then to (by merging runs)
+
+    <w:p>
+        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
+            <w:r>
+                <w:t>hy</w:t>
+                <w:t>per</w:t>
+                <w:t>link</w:t>
+            </w:r>
+        </w:hyperlink>
+    </w:p>
+
+    Then finally to (by merging text)
+
+    <w:p>
+        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
+            <w:r>
+                <w:t>hyperlink</w:t>
+            </w:r>
+        </w:hyperlink>
+    </w:p>
+
+    This function only merges runs, text, and hyperlinks, because merging (e.g.)
+    paragraphs would ignore information docx2python DOES want to preserve.
+    """
+    merge_tags = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT}
+    elems = [x for x in tree if has_content(x)]
+    runs = [list(y) for x, y in groupby(elems, key=_elem_key)]
+
+    for run in (x for x in runs if len(x) > 1 and x[0].tag in merge_tags):
+        if run[0].tag == Tags.TEXT:
+            run[0].text = "".join(x.text for x in run)
+        for elem in run[1:]:
+            run[0].extend(elem)
+            tree.remove(elem)
+
+    for branch in tree:
+        _merge_elems(branch)
 
 
 def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
@@ -300,16 +290,8 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
         :param branch: An Element from an xml file (ElementTree)
         :return: None. Adds text cells to outer variable `tables`.
         """
-        merge_runs(branch)
         for child in branch:
             tag = child.tag
-            if tag not in KNOWN_TAGS:
-                content_tag = _has_content(child)
-                if content_tag:
-                    warnings.warn(
-                        f"Ignoring tag {tag} with content in {content_tag}. "
-                        f"Tag {tag} is not implemented in docx2python."
-                    )
 
             # set caret depth
             if tag == Tags.TABLE:
@@ -403,6 +385,7 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.insert("</a>")
 
     root = ElementTree.fromstring(xml)
+    _merge_elems(root)
     branches(root)
 
     tree = tables.tree

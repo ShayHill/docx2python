@@ -10,7 +10,8 @@ record spelling errors, revision history, etc. Docx2Python will ignore (by desig
 much of this.
 """
 from dataclasses import dataclass
-
+from typing import Optional, Iterator
+from xml.etree import ElementTree
 from docx2python.namespace import qn
 
 
@@ -39,4 +40,34 @@ class Tags:
 
 
 KNOWN_TAGS = {x.default for x in Tags.__dataclass_fields__.values()}
+
+
+def has_content(tree: ElementTree.Element) -> Optional[str]:
+    """
+    Does the element have any descendent content elements?
+
+    :param tree: xml element
+    :return: first content tag found or None if no content tags are found?
+
+    This is to check for text in any skipped elements.
+
+    Docx2Python ignores spell check, revision, and other elements. This function checks
+    that no content (paragraphs, run, text, link, ...) is contained in children of any
+    ignored elements.
+
+    If no content is found, the element can be safely ignored.
+    """
+    if tree.tag in KNOWN_TAGS:
+        yield tree.tag
+
+    def iter_known_tags(tree_: ElementTree.Element) -> Iterator[str]:
+        """ Yield all known tags in tree """
+        if tree_.tag in KNOWN_TAGS:
+            yield tree_.tag
+        for branch in tree_:
+            yield from iter_known_tags(branch)
+
+    return next(iter_known_tags(tree), None)
+
+
 KNOWN_ATTRIBUTES = {qn("r:id")}

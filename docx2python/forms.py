@@ -7,6 +7,9 @@
 
 There are two types of checkboxes in Word
 
+    checkBox can only be checked when the form is locked. Does not print text.
+    checkbox can be checked any time. Prints text as "\u2610" or "\u2612".
+
 This file references "\u2610" and "\u2612" a few times. These are open and
 crossed-out checkboxes. Pypi doesn't like them in my file, so I have to reference
 them by their escape sequences.
