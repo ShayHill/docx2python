@@ -286,10 +286,10 @@ def pull_image_files(
 
     :side effects: Given an optional image_directory, will write the images out to file.
     """
-    images = {
-        os.path.basename(x["Target"]): zipf.read(get_path(x))
-        for x in filter_files_by_type(context["files"], "image")
-    }
+    images = {}
+    for image in filter_files_by_type(context["files"], "image"):
+        with suppress(KeyError):
+            images[os.path.basename(image["Target"])] = zipf.read(get_path(image))
     if image_directory is not None:
         pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
         for file, image in images.items():

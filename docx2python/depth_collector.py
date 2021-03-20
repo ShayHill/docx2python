@@ -31,7 +31,8 @@ Shorthand for this package. Instances of this class should not escape the packag
 Pass out of package with depth_collector_instance.tree.
 """
 
-from typing import Any, List
+from typing import Any, List, Tuple
+from .text_runs import style_open, style_close
 
 
 class CaretDepthError(Exception):
@@ -51,6 +52,20 @@ class DepthCollector:
         """
         self.item_depth = item_depth
         self.rightmost_branches = [[]]
+        self._run_styles = []
+        self._par_styles = []
+
+    def add_run_style(self, style: List[Tuple[str, str]]) -> None:
+        self._run_styles.append(style)
+
+    def del_run_style(self, style: List[Tuple[str, str]]) -> None:
+        self._run_styles = self._run_styles[:-1]
+
+    def add_par_style(self, style: List[Tuple[str, str]]) -> None:
+        self._par_styles.append(style)
+
+    def del_par_style(self, style: List[Tuple[str, str]]) -> None:
+        self._par_styles = self._par_styles[:-1]
 
     @property
     def tree(self) -> List:
@@ -82,7 +97,14 @@ class DepthCollector:
         while len(self.rightmost_branches) > depth:
             self.raise_caret()
 
-    def insert(self, item: Any) -> None:
+    def insert(self, item: str) -> None:
         """Add item at item_depth. Add branches if necessary to reach depth."""
         self.set_caret(self.item_depth)
-        self.caret.append(item)
+        if item.strip(" \t\n"):
+            prefix = style_open(self._run_styles)
+            suffix = style_close(self._run_styles)
+        else:
+            prefix = ""
+            suffix = ""
+        self.caret.append(f"{prefix}{item}{suffix}")
+        self._run_styles = []

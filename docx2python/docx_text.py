@@ -309,12 +309,13 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
             elif tag == Tags.RUN and do_html is True:
                 # new text run
-                run_style = get_run_style(child)
-                open_style = getattr(tables, "open_style", ())
-                if run_style != open_style:
-                    tables.insert(style_close(open_style))
-                    tables.insert(style_open(run_style))
-                    tables.open_style = run_style
+                tables._run_styles = get_run_style(child)
+                # run_style = get_run_style(child)
+                # open_style = getattr(tables, "open_style", ())
+                # if run_style != open_style:
+                #     tables.insert(style_close(open_style))
+                #     tables.insert(style_open(run_style))
+                #     tables.open_style = run_style
 
             elif tag == Tags.TEXT:
                 # new text object. oddly enough, these don't all contain text
