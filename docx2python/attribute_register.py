@@ -37,6 +37,8 @@ class Tags:
     HYPERLINK: str = qn("w:hyperlink")
     FORM_CHECKBOX: str = qn("w:checkBox")
     FORM_DDLIST: str = qn("w:ddList")  # drop-down form
+    RUN_PROPERTIES: str = qn("w:rPr")
+    PAR_PROPERTIES: str = qn("w:pPr")
 
 
 KNOWN_TAGS = {x.default for x in Tags.__dataclass_fields__.values()}

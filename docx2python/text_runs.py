@@ -168,6 +168,43 @@ def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
     return style
 
 
+# noinspection PyPep8Naming
+def get_run_style2(elem: ElementTree.Element) -> List[Tuple[str, str]]:
+    """Select only rPr2 tags you'd like to implement.
+
+    :param run_element: a ``<w:r>`` xml element
+
+    create with::
+
+        document = ElementTree.fromstring('bytes string')
+        # recursively search document for <w:r> elements.
+
+    :return: ``[(rPr, val), (rPr, val) ...]``
+
+    Tuples are always returned in order:
+
+    ``"font"`` first then any other styles in alphabetical order.
+
+    Also see docstring for ``gather_rPr``
+    """
+    # rPr2val = gather_Pr(run_element)
+    rPr2val = {_elem_tag_str(x): x.attrib.get(qn("w:val"), None) for x in elem}
+    style = []
+    font_styles = []
+
+    for tag, val in sorted(rPr2val.items()):
+        if tag in {"b", "i", "u"}:
+            style.append((tag, ""))
+        elif tag == "sz":
+            font_styles.append('size="{}"'.format(val))
+        elif tag == "color":
+            font_styles.append('color="{}"'.format(val))
+
+    if font_styles:
+        style = [("font", " ".join(sorted(font_styles)))] + style
+    return style
+
+
 def get_style(elem: ElementTree.Element) -> List[Tuple[str, str]]:
     """
     Get style for an element (if available)

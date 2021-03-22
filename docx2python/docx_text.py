@@ -24,7 +24,14 @@ from .forms import get_checkBox_entry, get_ddList_entry
 from .globs import DocxContext
 from .iterators import enum_at_depth
 from .namespace import qn
-from .text_runs import get_run_style, get_style, style_close, style_open
+from .text_runs import (
+    get_run_style,
+    get_style,
+    style_close,
+    style_open,
+    get_run_style2,
+    gather_Pr,
+)
 
 TablesList = List[List[List[List[str]]]]
 
@@ -300,7 +307,7 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.set_caret(2)
             elif tag == Tags.TABLE_CELL:
                 tables.set_caret(3)
-            elif tag == Tags.PARAGRAPH:
+            if tag == Tags.PARAGRAPH:
                 tables.set_caret(4)
 
             # open elements
@@ -308,14 +315,19 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.insert(_get_bullet_string(child, context))
 
             elif tag == Tags.RUN and do_html is True:
+                pass
                 # new text run
-                tables._run_styles = get_run_style(child)
+                # tables._run_styles = get_run_style(child)
                 # run_style = get_run_style(child)
                 # open_style = getattr(tables, "open_style", ())
                 # if run_style != open_style:
                 #     tables.insert(style_close(open_style))
                 #     tables.insert(style_open(run_style))
                 #     tables.open_style = run_style
+
+            elif tag == Tags.RUN_PROPERTIES and do_html:
+                tables._run_styles = get_run_style2(child)
+                # tables._run_styles = get_run_style(child)
 
             elif tag == Tags.TEXT:
                 # new text object. oddly enough, these don't all contain text
@@ -375,6 +387,9 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
             if tag == Tags.PARAGRAPH and do_html is True:
                 tables.insert(style_close(getattr(tables, "open_style", ())))
                 tables.open_style = ()
+
+            # if tag == Tags.PARAGRAPH:
+            #     tables.raise_caret()
 
             if tag in {Tags.TABLE_ROW, Tags.TABLE_CELL, Tags.PARAGRAPH}:
                 tables.raise_caret()

@@ -33,6 +33,7 @@ Pass out of package with depth_collector_instance.tree.
 
 from typing import Any, List, Tuple
 from .text_runs import style_open, style_close
+import re
 
 
 class CaretDepthError(Exception):
@@ -77,6 +78,10 @@ class DepthCollector:
         """Lowest open child."""
         return self.rightmost_branches[-1]
 
+    @property
+    def caret_depth(self) -> int:
+        return len(self.rightmost_branches)
+
     def drop_caret(self) -> None:
         """Create a new branch under caret."""
         if len(self.rightmost_branches) >= self.item_depth:
@@ -100,7 +105,7 @@ class DepthCollector:
     def insert(self, item: str) -> None:
         """Add item at item_depth. Add branches if necessary to reach depth."""
         self.set_caret(self.item_depth)
-        if item.strip(" \t\n"):
+        if item.strip(" \t\n") and not re.match("----.*----", item):
             prefix = style_open(self._run_styles)
             suffix = style_close(self._run_styles)
         else:
