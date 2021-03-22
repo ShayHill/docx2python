@@ -5,11 +5,12 @@
 :author: Shay Hill
 :created: 7/5/2019
 """
-from typing import Dict, List
+from typing import Dict, List, Any
 
 from .attribute_dicts import filter_files_by_type, get_path
 from .docx_context import collect_docProps
 from .docx_text import TablesList
+from .iterators import enum_at_depth
 from .iterators import get_html_map, iter_at_depth
 import zipfile
 from warnings import warn
@@ -30,19 +31,47 @@ class DocxContent:
         files: List[Dict[str, str]],
         zipf: zipfile.ZipFile
     ) -> None:
-        self.header = header
-        self.footer = footer
-        self.body = body
-        self.footnotes = footnotes
-        self.endnotes = endnotes
+        self.header_runs = header
+        self.footer_runs = footer
+        self.body_runs = body
+        self.footnotes_runs = footnotes
+        self.endnotes_runs = endnotes
         self.images = images
         self.files = files
         self.zipf = zipf
+
+    def __getattr__(self, item) -> Any:
+        """
+        Create depth-four paragraph tables form depth-fice run tables.
+
+        :param item:
+        :return:
+
+        Docx2Python v1 joined runs into paragraphs earlier in the code. Docx2Python v2
+        exposes runs to the user, but still returns paragraphs by default.
+        """
+        if item in {"header", "footer", "body", "footnotes", "endnotes"}:
+            runs = getattr(self, item + "_runs")
+            for (i, j, k, l), paragraph in enum_at_depth(runs, 4):
+                runs[i][j][k][l] = "".join(paragraph)
+            return runs
+        raise AttributeError()
 
     @property
     def document(self) -> TablesList:
         """All docx "tables" concatenated."""
         return self.header + self.body + self.footer + self.footnotes + self.endnotes
+
+    @property
+    def document_runs(self) -> TablesList:
+        """All docx x_runs properties concatenated."""
+        return (
+            self.header_runs
+            + self.body_runs
+            + self.footer_runs
+            + self.footnotes_runs
+            + self.endnotes_runs
+        )
 
     @property
     def text(self) -> str:

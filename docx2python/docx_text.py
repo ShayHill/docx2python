@@ -405,7 +405,7 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
     branches(root)
 
     tree = tables.tree
-    for (i, j, k, l), paragraph in enum_at_depth(tree, 4):
-        tree[i][j][k][l] = "".join(paragraph)
+    # for (i, j, k, l), paragraph in enum_at_depth(tree, 4):
+    #     tree[i][j][k][l] = "".join(paragraph)
 
     return tree

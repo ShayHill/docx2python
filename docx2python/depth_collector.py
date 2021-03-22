@@ -108,8 +108,7 @@ class DepthCollector:
         if item.strip(" \t\n") and not re.match("----.*----", item):
             prefix = style_open(self._run_styles)
             suffix = style_close(self._run_styles)
-        else:
-            prefix = ""
-            suffix = ""
-        self.caret.append(f"{prefix}{item}{suffix}")
+            self.caret.append(f"{prefix}{item}{suffix}")
+        elif item:
+            self.caret.append(f"{item}")
         self._run_styles = []

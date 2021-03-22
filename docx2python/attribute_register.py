@@ -60,7 +60,7 @@ def has_content(tree: ElementTree.Element) -> Optional[str]:
     If no content is found, the element can be safely ignored.
     """
     if tree.tag in KNOWN_TAGS:
-        yield tree.tag
+        return tree.tag
 
     def iter_known_tags(tree_: ElementTree.Element) -> Iterator[str]:
         """ Yield all known tags in tree """
