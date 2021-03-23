@@ -5,13 +5,56 @@
 :author: Shay Hill
 :created: 7/5/2019
 """
-
+# # TODO: delete big string below this TODO
+# [
+#     [
+#         [],
+#         [
+#             [
+#                 ""
+#             ]
+#         ],
+#         [
+#             [
+#                 ""
+#             ],
+#             [
+#                 "footnote1)\t"
+#             ],
+#             [
+#                 "",
+#                 " First footnote"
+#             ],
+#             [
+#                 "footnote2)\t"
+#             ],
+#             [
+#                 "",
+#                 " Second footnote",
+#                 "----media/image1.png----"
+#             ],
+#         ],
+#     ]
+# ] != [
+#     [
+#         [
+#             [
+#                 "",
+#                 "",
+#                 "footnote1)\t",
+#                 " First footnote",
+#                 "footnote2)\t",
+#                 " Second footnote----media/image1.png----",
+#             ]
+#         ]
+#     ]
+# ]
 import os
-import shutil
 import re
+import shutil
 
-from docx2python.main import docx2python
 from docx2python.iterators import iter_at_depth
+from docx2python.main import docx2python
 
 OUTPUT = docx2python("resources/example.docx")
 HTML_OUTPUT = docx2python("resources/example.docx", html=True)
@@ -177,16 +220,39 @@ def test_header_runs() -> None:
                             "result.document_runs return different things."
                         )
                     ],
-                    [],
+                    [],  # empty paragraph
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
-                    [],
+                    [],  # empty paragraph
                 ]
             ]
         ],
         [[[["Multiple ", "Runs in the", " Footer"]]]],
-        [[[[], []]]],
-        [[[[], []]]],
+        [[[[], []]]],  # empty table (footnotes)
+        [[[[], []]]],  # empty table (endnotes)
+    ]
+    assert docx2python("resources/multiple_runs_per_paragraph.docx").document == [
+        [[["Multiple Runs in the Header"]]],
+        [
+            [
+                [
+                    (
+                        "This document contains paragraphs with multiple runs per "
+                        "paragraph. This ensures result.document and "
+                        "result.document_runs return different things."
+                    ),
+                    "",  # empty paragraph
+                    "Multiple Runs in the Body",
+                    "Multiple Runs in the Body",
+                    "Multiple Runs in the Body",
+                    "Multiple Runs in the Body",
+                    "",  # empty paragraph
+                ]
+            ]
+        ],
+        [[["Multiple Runs in the Footer"]]],
+        [[["", ""]]],  # empty table (footnotes)
+        [[["", ""]]],  # empty table (endnotes)
     ]

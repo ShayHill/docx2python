@@ -4,6 +4,39 @@
 
 :author: Shay Hill
 :created: 7/5/2019
+
+Holds runs in a 5-deep nested list (paragraphs are lists of text runs [strings])::
+
+    [  # tables
+        [  # table
+            [  # row
+                [  # cell
+                    [  # paragraph
+                        "run 1 ",  # text run
+                        "run 2 ",  # text run
+                        "run 3"  # text run
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+_runs properties (e.g., ``header_runs``) return text in this format.
+
+Also returns a 4-deep nested list (paragraphs are strings)::
+
+    [  # tables
+        [  # table
+            [  # row
+                [  # cell
+                    "run 1 run 2 run 3"  # paragraph
+                ]
+            ]
+        ]
+    ]
+
+This is the format for default (no trailing "_runs", e.g ``header``) properties.
+
 """
 from typing import Dict, List, Any
 
@@ -42,7 +75,7 @@ class DocxContent:
 
     def __getattr__(self, item) -> Any:
         """
-        Create depth-four paragraph tables form depth-fice run tables.
+        Create depth-four paragraph tables form depth-five run tables.
 
         :param item:
         :return:

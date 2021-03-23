@@ -13,7 +13,7 @@ Content in the extracted docx is found in the ``word`` folder:
 import warnings
 from contextlib import suppress
 from itertools import groupby
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, Sequence
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -268,6 +268,58 @@ def _merge_elems(tree: Element) -> None:
         _merge_elems(branch)
 
 
+def _get_elem_depth(tree: Element) -> int:
+    """
+    What depth is this element in a nested list, relative to paragraphs (depth 4)?
+
+    :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
+    :param depth: internal use (tracks recursion depth)
+    :return: 4 - recursion depth
+
+    Typically, the docx is a table of tables::
+
+        [  # entire document
+            [  # table
+                [  # table row
+                    [  # table cell
+                        [  # paragraph
+                            "",  # run
+                            "",  # run
+                            "",  # run
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+    But this isn't always the case. Instead of looking explicitly for tables,
+    table rows, and table cells, look inside elements for paragraphs to determine
+    depth in the nested list.
+
+    E.g., given a table row element with a paragraph two levels in, return 2.
+    So, depth of element will be 4 - 2 = 3.
+
+    document = depth 0
+    table = depth 1
+    table row = depth 2
+    table cell = depth 3
+    paragraph = depth 4
+    below paragraph = depth 5
+
+    There will only ever be one document list, so the min depth returned is 1
+    """
+
+    def search_at_depth(elems: Sequence[ElementTree.Element], _depth=0):
+        """ Width-first recursive search for Tags.PARAGRAPH """
+        if not elems:
+            return
+        if any(x.tag == Tags.PARAGRAPH for x in elems):
+            return max(4 - _depth, 1)
+        return search_at_depth(sum([list(x) for x in elems], start=[]), _depth + 1)
+
+    return search_at_depth([tree])
+
+
 def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
     """Xml as a string to a list of cell strings.
 
@@ -297,18 +349,25 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
         :param branch: An Element from an xml file (ElementTree)
         :return: None. Adds text cells to outer variable `tables`.
         """
+        tables.set_caret(_get_elem_depth(branch))
         for child in branch:
             tag = child.tag
 
+            tables.set_caret(_get_elem_depth(child))
+
             # set caret depth
             if tag == Tags.TABLE:
-                tables.set_caret(1)
+                assert tables.caret_depth == 1
+                # tables.set_caret(1)
             elif tag == Tags.TABLE_ROW:
-                tables.set_caret(2)
+                assert tables.caret_depth == 2
+                # tables.set_caret(2)
             elif tag == Tags.TABLE_CELL:
-                tables.set_caret(3)
+                assert tables.caret_depth == 3
+                # tables.set_caret(3)
             if tag == Tags.PARAGRAPH:
-                tables.set_caret(4)
+                assert tables.caret_depth == 4
+                # tables.set_caret(4)
 
             # open elements
             if tag == Tags.PARAGRAPH:
@@ -390,12 +449,12 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
             # if tag == Tags.PARAGRAPH:
             #     tables.raise_caret()
-
-            if tag in {Tags.TABLE_ROW, Tags.TABLE_CELL, Tags.PARAGRAPH}:
-                tables.raise_caret()
-
-            elif tag == Tags.TABLE:
-                tables.set_caret(1)
+            #
+            # if tag in {Tags.TABLE_ROW, Tags.TABLE_CELL, Tags.PARAGRAPH}:
+            #     tables.raise_caret()
+            #
+            # elif tag == Tags.TABLE:
+            #     tables.set_caret(1)
 
             elif tag == Tags.HYPERLINK:
                 tables.insert("</a>")

@@ -84,22 +84,26 @@ class DepthCollector:
 
     def drop_caret(self) -> None:
         """Create a new branch under caret."""
-        if len(self.rightmost_branches) >= self.item_depth:
+        if self.caret_depth >= self.item_depth:
             raise CaretDepthError("will not lower caret beneath item_depth")
         self.rightmost_branches[-1].append([])
         self.rightmost_branches.append(self.rightmost_branches[-1][-1])
 
     def raise_caret(self) -> None:
         """Close branch at caret and move up to parent."""
-        if len(self.rightmost_branches) == 1:
+        if self.caret_depth == 1:
             raise CaretDepthError("will not raise caret above root")
         self.rightmost_branches = self.rightmost_branches[:-1]
 
     def set_caret(self, depth: int) -> None:
         """Set caret at given depth."""
-        while len(self.rightmost_branches) < depth:
+        if depth == None:
+            return
+        if self.caret_depth > 1 and depth == self.caret_depth:
+            self.raise_caret()
+        while self.caret_depth < depth:
             self.drop_caret()
-        while len(self.rightmost_branches) > depth:
+        while self.caret_depth > depth:
             self.raise_caret()
 
     def insert(self, item: str) -> None:
