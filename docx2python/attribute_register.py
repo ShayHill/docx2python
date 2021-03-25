@@ -21,6 +21,8 @@ class Tags:
     These are the tags that provoke some action in docx2python.
     """
 
+    DOCUMENT: str = qn("w:document")
+    BODY: str = qn("w:body")
     TABLE: str = qn("w:tbl")
     TABLE_ROW: str = qn("w:tr")
     TABLE_CELL: str = qn("w:tc")

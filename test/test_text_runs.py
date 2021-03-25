@@ -93,10 +93,10 @@ class TestStyleStrings:
 
     def test_style_open(self) -> None:
         """Produce valid html for all defined styles."""
-        style = [("font", 'color="red" size="32"'), ("b", ""), ("i", ""), ("u", "")]
-        assert style_open(style) == '<font color="red" size="32"><b><i><u>'
+        style = ['font style="color:red"', "b", "i", "u"]
+        assert style_open(style) == '<font style="color:red"><b><i><u>'
 
     def test_style_close(self) -> None:
         """Produce valid html for all defined styles."""
-        style = [("font", 'color="red" size="32"'), ("b", ""), ("i", ""), ("u", "")]
+        style = ['font style="color:red"', "b", "i", "u"]
         assert style_close(style) == "</u></i></b></font>"

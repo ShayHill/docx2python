@@ -68,6 +68,16 @@ allowed the program to complete) has been altered.
 
     ``_runs`` attributes will return ``[<b>"bold text </b>", "<b><i>bold-italic</i></b>", "<b> more bold text</b>]``.
 
+--  More html run styles.
+
+    Now supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript,
+    ``<font style="font-variant: small-caps">``small caps, ``<font style="text-transform:uppercase">``all caps,
+    ``<span style="background-color: yellow">``highlighted yellow, ``<font style="font-size:32">``font size,
+    ``<font style="color:#ff0000">``colored text.
+
+    This is extensible. Styles can be added and removed. Note that the style change for font size has been updated from
+    ``<font size="32">`` to ``<font style="font_size:32">``
+
 --  Slightly more structure is preserved (more empty sublists and strings).
 
     Docx2Python v1 assumed a document was a series of tables and formatted output that way:

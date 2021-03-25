@@ -5,55 +5,11 @@
 :author: Shay Hill
 :created: 7/5/2019
 """
-# # TODO: delete big string below this TODO
-# [
-#     [
-#         [],
-#         [
-#             [
-#                 ""
-#             ]
-#         ],
-#         [
-#             [
-#                 ""
-#             ],
-#             [
-#                 "footnote1)\t"
-#             ],
-#             [
-#                 "",
-#                 " First footnote"
-#             ],
-#             [
-#                 "footnote2)\t"
-#             ],
-#             [
-#                 "",
-#                 " Second footnote",
-#                 "----media/image1.png----"
-#             ],
-#         ],
-#     ]
-# ] != [
-#     [
-#         [
-#             [
-#                 "",
-#                 "",
-#                 "footnote1)\t",
-#                 " First footnote",
-#                 "footnote2)\t",
-#                 " Second footnote----media/image1.png----",
-#             ]
-#         ]
-#     ]
-# ]
 import os
 import re
 import shutil
 
-from docx2python.iterators import iter_at_depth
+from docx2python.iterators import iter_at_depth, get_text
 from docx2python.main import docx2python
 
 OUTPUT = docx2python("resources/example.docx")
@@ -75,40 +31,37 @@ class TestFormatting:
 
     def test_footnotes(self) -> None:
         """Footnotes extracted."""
-        assert OUTPUT.footnotes == [
+        assert OUTPUT.footnotes_runs == [
             [
                 [
-                    [
-                        "",
-                        "",
-                        "footnote1)\t",
-                        " First footnote",
-                        "footnote2)\t",
-                        " Second footnote----media/image1.png----",
-                    ]
+                    [],
+                    [],
+                    [["footnote1)\t"]],
+                    [[" First footnote"]],
+                    [["footnote2)\t"]],
+                    [[" Second footnote", "----media/image1.png----"]],
                 ]
             ]
         ]
 
     def test_endnotes(self) -> None:
         """Endnotes extracted."""
-        assert OUTPUT.endnotes == [
+        assert OUTPUT.endnotes_runs == [
             [
                 [
-                    [
-                        "",
-                        "",
-                        "endnote1)\t",
-                        " First endnote",
-                        "endnote2)\t",
-                        " Second endnote----media/image1.png----",
-                    ]
+                    [],
+                    [],
+                    [["endnote1)\t"]],
+                    [[" First endnote"]],
+                    [["endnote2)\t"]],
+                    [[" Second endnote", "----media/image1.png----"]],
                 ]
             ]
         ]
 
     def test_numbered_lists(self) -> None:
         """Sublists reset. Expected formatting."""
+
         assert OUTPUT.body[0][0][0] == [
             "I)\texpect I",
             "\tA)\texpect A",
@@ -167,7 +120,6 @@ class TestFormatting:
                     "Reference footnote 2----footnote2----",
                     "Reference endnote 1----endnote1----",
                     "Reference endnote 2----endnote2----",
-                    "",
                     "----media/image2.jpg----",
                 ]
             ]
@@ -187,11 +139,11 @@ class TestHtmlFormatting:
             "<b>Bold</b>",
             "<i>Italics</i>",
             "<u>Underlined</u>",
-            '<font size="40">Large Font</font>',
-            '<font color="FF0000">Colored</font>',
-            '<font color="FF0000" size="40">Large Colored</font>',
-            '<font size="40"><b>Large Bold</b></font>',
-            '<font size="40"><b><i><u>Large Bold Italics Underlined</u></i></b></font>',
+            '<font style="font-size:40pt">Large Font</font>',
+            '<font style="color:FF0000">Colored</font>',
+            '<font style="color:FF0000;font-size:40pt">Large Colored</font>',
+            '<font style="font-size:40pt"><b>Large Bold</b></font>',
+            '<font style="font-size:40pt"><b><i><u>Large Bold Italics Underlined</u></i></b></font>',
         ]
 
 
@@ -220,18 +172,16 @@ def test_header_runs() -> None:
                             "result.document_runs return different things."
                         )
                     ],
-                    [],  # empty paragraph
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
-                    [],  # empty paragraph
                 ]
             ]
         ],
         [[[["Multiple ", "Runs in the", " Footer"]]]],
-        [[[[], []]]],  # empty table (footnotes)
-        [[[[], []]]],  # empty table (endnotes)
+        [[[], []]],  # empty table (footnotes)
+        [[[], []]],  # empty table (endnotes)
     ]
     assert docx2python("resources/multiple_runs_per_paragraph.docx").document == [
         [[["Multiple Runs in the Header"]]],
@@ -243,16 +193,14 @@ def test_header_runs() -> None:
                         "paragraph. This ensures result.document and "
                         "result.document_runs return different things."
                     ),
-                    "",  # empty paragraph
                     "Multiple Runs in the Body",
                     "Multiple Runs in the Body",
                     "Multiple Runs in the Body",
                     "Multiple Runs in the Body",
-                    "",  # empty paragraph
                 ]
             ]
         ],
         [[["Multiple Runs in the Footer"]]],
-        [[["", ""]]],  # empty table (footnotes)
-        [[["", ""]]],  # empty table (endnotes)
+        [[[], []]],  # empty table (footnotes)
+        [[[], []]],  # empty table (endnotes)
     ]

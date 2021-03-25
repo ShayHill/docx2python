@@ -10,6 +10,7 @@ Content in the extracted docx is found in the ``word`` folder:
     ``word/header1.html``
     ``word/footer1.html``
 """
+from copy import deepcopy
 import warnings
 from contextlib import suppress
 from itertools import groupby
@@ -23,6 +24,7 @@ from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
 from .globs import DocxContext
 from .iterators import enum_at_depth
+from .iterators import get_text as gett_text
 from .namespace import qn
 from .text_runs import (
     get_run_style,
@@ -32,6 +34,8 @@ from .text_runs import (
     get_run_style2,
     gather_Pr,
 )
+
+# TODO: rename iterators.get_text
 
 TablesList = List[List[List[List[str]]]]
 
@@ -309,6 +313,9 @@ def _get_elem_depth(tree: Element) -> int:
     There will only ever be one document list, so the min depth returned is 1
     """
 
+    if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
+        return
+
     def search_at_depth(elems: Sequence[ElementTree.Element], _depth=0):
         """ Width-first recursive search for Tags.PARAGRAPH """
         if not elems:
@@ -320,7 +327,7 @@ def _get_elem_depth(tree: Element) -> int:
     return search_at_depth([tree])
 
 
-def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
+def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
     """Xml as a string to a list of cell strings.
 
     :param xml: an xml bytes object which might contain text
@@ -341,52 +348,39 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
     tables = DepthCollector(5)
     do_html = context["do_html"]
 
+    import random
+
+    big_run = random.random()
+    stop_every_step = False
+
     # noinspection PyPep8Naming
-    def branches(branch: Element) -> None:
+    def branches(branch: Element, recur=0) -> None:
         """
         Recursively iterate over descendents of branch. Add text when found.
 
         :param branch: An Element from an xml file (ElementTree)
         :return: None. Adds text cells to outer variable `tables`.
         """
-        tables.set_caret(_get_elem_depth(branch))
+        # tables.set_caret(_get_elem_depth(branch))
+        # aaa = (branch.tag, tables.caret_depth)
+        # breakpoint()
+        prev_depth = tables.caret_depth
+
+        tree_depth = _get_elem_depth(branch)
+        tables.set_caret(tree_depth, reason="ts_" + branch.tag.split("}")[-1])
         for child in branch:
             tag = child.tag
 
-            tables.set_caret(_get_elem_depth(child))
-
-            # set caret depth
-            if tag == Tags.TABLE:
-                assert tables.caret_depth == 1
-                # tables.set_caret(1)
-            elif tag == Tags.TABLE_ROW:
-                assert tables.caret_depth == 2
-                # tables.set_caret(2)
-            elif tag == Tags.TABLE_CELL:
-                assert tables.caret_depth == 3
-                # tables.set_caret(3)
-            if tag == Tags.PARAGRAPH:
-                assert tables.caret_depth == 4
-                # tables.set_caret(4)
-
             # open elements
+            # TODO: implement run_queue for footnotes, endnotes, etc.
             if tag == Tags.PARAGRAPH:
-                tables.insert(_get_bullet_string(child, context))
-
-            elif tag == Tags.RUN and do_html is True:
-                pass
-                # new text run
-                # tables._run_styles = get_run_style(child)
-                # run_style = get_run_style(child)
-                # open_style = getattr(tables, "open_style", ())
-                # if run_style != open_style:
-                #     tables.insert(style_close(open_style))
-                #     tables.insert(style_open(run_style))
-                #     tables.open_style = run_style
+                tables.run_queue += _get_bullet_string(child, context)
 
             elif tag == Tags.RUN_PROPERTIES and do_html:
                 tables._run_styles = get_run_style2(child)
-                # tables._run_styles = get_run_style(child)
+
+            # elif tag == Tags.RUN and "Nested" in get_run_text(child):
+            #     breakpoint()
 
             elif tag == Tags.TEXT:
                 # new text object. oddly enough, these don't all contain text
@@ -395,6 +389,9 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                     text = text.replace("<", "&lt;")
                     text = text.replace(">", "&gt;")
                 tables.insert(text)
+
+                # if "Table" in text:
+                #     breakpoint()
 
             elif tag == Tags.FOOTNOTE:
                 if "separator" not in child.attrib.get(qn("w:type"), "").lower():
@@ -440,12 +437,12 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
                 tables.insert("\t")
 
             # enter child element
-            branches(child)
+            branches(child, recur + 1)
 
-            # close elements
-            if tag == Tags.PARAGRAPH and do_html is True:
-                tables.insert(style_close(getattr(tables, "open_style", ())))
-                tables.open_style = ()
+            # # close elements
+            # if tag == Tags.PARAGRAPH and do_html is True:
+            #     tables.insert(style_close(getattr(tables, "open_style", ())))
+            #     tables.open_style = ()
 
             # if tag == Tags.PARAGRAPH:
             #     tables.raise_caret()
@@ -456,8 +453,47 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
             # elif tag == Tags.TABLE:
             #     tables.set_caret(1)
 
-            elif tag == Tags.HYPERLINK:
+            if tag == Tags.HYPERLINK:
                 tables.insert("</a>")
+
+        aaa = deepcopy(tables.rightmost_branches[-1])
+        nonlocal stop_every_step
+        if aaa and aaa[0] and aaa[0][0] == "Nested":
+            stop_every_step = True
+
+        this_depth = tables.caret_depth
+        ccc = deepcopy(tables.rightmost_branches)
+
+        next_depth = tables.caret_depth
+
+        # TODO: factor out caret reasons
+        tables.set_caret(
+            tree_depth,
+            reset=False,
+            reason="bs_" + branch.tag.split("}")[-1],
+        )
+
+        if stop_every_step:
+            bbb = tables.rightmost_branches
+            # breakpoint()
+
+        if branch.tag == Tags.TABLE:
+            assert tables.caret_depth == 1
+            # breakpoint()
+            ccc = tables.rightmost_branches
+            # breakpoint()
+        if branch.tag == Tags.TABLE_ROW:
+            assert tables.caret_depth == 2
+            bbb = tables.rightmost_branches[-1]
+            # breakpoint()
+        if branch.tag == Tags.TABLE_CELL:
+            assert tables.caret_depth == 3
+            aaa = tables.rightmost_branches
+            # breakpoint()
+        if branch.tag == Tags.PARAGRAPH:
+            assert tables.caret_depth == 4
+            aaa = tables.rightmost_branches
+            # breakpoint()
 
     root = ElementTree.fromstring(xml)
     _merge_elems(root)

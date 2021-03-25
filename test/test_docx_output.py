@@ -7,6 +7,8 @@
 """
 
 from docx2python.main import docx2python
+from docx2python.iterators import iter_at_depth
+from itertools import islice
 
 INST = docx2python("resources/example.docx")
 
@@ -33,15 +35,10 @@ class TestDocument:
 class TestText:
     def test_function(self) -> None:
         """Return '\n\n'-delimited paragraphs as instance.text. """
-        assert INST.text[:50] == (
-            "\n\n\n\nHeader text----media/image1.png----\n\nI)	expect"
-        )
-        assert INST.text[-51:] == (
-            "endnote2)\t\n\n Second endnote----media/image1.png----"
-        )
+        assert INST.text == "\n\n".join(iter_at_depth(INST.document, 4))
 
 
 class TestHtmlMap:
     def test_function(self) -> None:
         """Return html tables."""
-        assert INST.html_map[:49] == '<html><body><table border="1"><tr><td><pre>(0, 0,'
+        assert INST.html_map[:48] == '<html><body><table border="1"><tr><td></td></tr>'

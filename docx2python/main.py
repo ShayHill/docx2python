@@ -47,7 +47,7 @@ def docx2python(
         # TODO: factor our rId2Target (use global DocxContext)
         context["rId2Target"] = {x["Id"]: x["Target"] for x in rels}
         unzipped = zipf.read(get_path(filename_))
-        return get_text(unzipped, context)
+        return get_text(unzipped, context, filename_)
 
     type2content = {}
     for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):
@@ -71,3 +71,16 @@ def docx2python(
         files=context["files"],
         zipf=zipf,
     )
+
+
+# TODO: sort headers and footers
+# TODO: remove this block
+if __name__ == "__main__":
+    # TODO: run the CRB manual again and have a look at the hyperlinks
+    from time import time
+
+    TIME = time.time()
+    pars = docx2python("test/resources/CRB EHS Manual.docx", html=True)
+    total_time = time.time() - TIME
+    print(f"{total_time=}")
+    breakpoint()

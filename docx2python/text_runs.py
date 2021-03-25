@@ -13,6 +13,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 from xml.etree import ElementTree
 from .attribute_register import Tags
 from .attribute_register import has_content
+from collections import defaultdict
 
 from .namespace import qn
 
@@ -168,6 +169,20 @@ def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
     return style
 
 
+RUN_STYLES = {
+    "b": (lambda tag, val: tag,),
+    "i": (lambda tag, val: tag,),
+    "u": (lambda tag, val: tag,),
+    "strike": (lambda tag, val: "s",),
+    # 'dstrike': (lambda tag, val: "del",),
+    "vertAlign": (lambda tag, val: val[:3],),  # subscript and superscript
+    "smallCaps": (lambda tag, val: "font-variant:small-caps", "font", "style"),
+    "caps": (lambda tag, val: "text-transform:uppercase", "font", "style"),
+    "highlight": (lambda tag, val: f"background-color:{val}", "span", "style"),
+    "sz": (lambda tag, val: f"font-size:{val}pt", "font", "style"),
+    "color": (lambda tag, val: f"color:{val}", "font", "style"),
+}
+
 # noinspection PyPep8Naming
 def get_run_style2(elem: ElementTree.Element) -> List[Tuple[str, str]]:
     """Select only rPr2 tags you'd like to implement.
@@ -192,17 +207,49 @@ def get_run_style2(elem: ElementTree.Element) -> List[Tuple[str, str]]:
     style = []
     font_styles = []
 
-    for tag, val in sorted(rPr2val.items()):
-        if tag in {"b", "i", "u"}:
-            style.append((tag, ""))
-        elif tag == "sz":
-            font_styles.append('size="{}"'.format(val))
-        elif tag == "color":
-            font_styles.append('color="{}"'.format(val))
+    groups = defaultdict(list)
+    for tag, val in ((k, v) for k, v in rPr2val.items() if k in RUN_STYLES):
+        format = RUN_STYLES[tag]
+        groups[format[1:]].append(format[0](tag, val))
 
-    if font_styles:
-        style = [("font", " ".join(sorted(font_styles)))] + style
+    for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 2):
+        groups[(k[0],)].append(f'{k[1]}="{";".join(sorted(v))}"')
+
+    for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 1):
+        style.append(f"{k[0]} {' '.join(v)}")
+
+    style += sorted(groups[()])
+
+    # TODO: delete below commented-out lines
+    # print(style)
+
+    # if len(style) > 3:
+    #     breakpoint()
+
+    # groups[k] = sorted[groups[k]]
+    # breakpoint()
+    # groups[k] = sorted()
+    # style.append(f"<{k[0], }")
+    # breakpoint()
+    # for k in sorted(k for k in groups if len(k) == 2):
+    #     vals = sorted(groups[k])
+    #     style.append(f"<{k[0], }")
+    #     breakpoint()
+
+    # TODO: fix return type to List[str]
     return style
+
+    # for tag, val in sorted(rPr2val.items()):
+    #     if tag in {"b", "i", "u"}:
+    #         style.append((tag, ""))
+    #     elif tag == "sz":
+    #         font_styles.append('size="{}"'.format(val))
+    #     elif tag == "color":
+    #         font_styles.append('color="{}"'.format(val))
+    #
+    # if font_styles:
+    #     style = [("font", " ".join(sorted(font_styles)))] + style
+    # return style
 
 
 def get_style(elem: ElementTree.Element) -> List[Tuple[str, str]]:
@@ -234,8 +281,11 @@ def style_open(style: Sequence[Tuple[str, str]]) -> str:
     >>> style_open(style)
     '<font color="red" size="32"><b><i><u>'
     """
+    # TODO: remove try/except in style_open and style_close
+    # TODO: update docstrings for style_open and style_close
     text = [" ".join(x for x in y if x) for y in style]
-    return "".join("<{}>".format(x) for x in text)
+    return "".join((f"<{x}>" for x in style))
+    # return "".join("<{}>".format(x) for x in text)
 
 
 def style_close(style: List[Tuple[str, str]]) -> str:
@@ -255,4 +305,7 @@ def style_close(style: List[Tuple[str, str]]) -> str:
 
         <b><i><u>text</u></i></b>
     """
-    return "".join("</{}>".format(x) for x, _ in reversed(style))
+    try:
+        return "".join("</{}>".format(x) for x, _ in reversed(style))
+    except:
+        return "".join("</{}>".format(x.split()[0]) for x in reversed(style))

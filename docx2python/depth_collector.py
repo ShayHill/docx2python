@@ -55,6 +55,8 @@ class DepthCollector:
         self.rightmost_branches = [[]]
         self._run_styles = []
         self._par_styles = []
+        self.run_queue = ""  # prefix for next run (for bullets, footnotes, etc.)
+        self.log = []
 
     def add_run_style(self, style: List[Tuple[str, str]]) -> None:
         self._run_styles.append(style)
@@ -82,33 +84,53 @@ class DepthCollector:
     def caret_depth(self) -> int:
         return len(self.rightmost_branches)
 
-    def drop_caret(self) -> None:
+    def drop_caret(self, reason="") -> None:
         """Create a new branch under caret."""
         if self.caret_depth >= self.item_depth:
             raise CaretDepthError("will not lower caret beneath item_depth")
         self.rightmost_branches[-1].append([])
         self.rightmost_branches.append(self.rightmost_branches[-1][-1])
+        reason = reason + f"_dc_{self.caret_depth}"
+        self.log.append(reason)
 
-    def raise_caret(self) -> None:
+    def raise_caret(self, reason="") -> None:
         """Close branch at caret and move up to parent."""
+        # TODO: factor out self log
         if self.caret_depth == 1:
             raise CaretDepthError("will not raise caret above root")
         self.rightmost_branches = self.rightmost_branches[:-1]
+        reason = reason + f"_rc_{self.caret_depth}"
+        self.log.append(reason)
 
-    def set_caret(self, depth: int) -> None:
+    def set_caret(self, depth: int, reset: bool = True, reason="setting caret") -> None:
+        """
+        Set caret at given depth.
+
+        :param depth: depth level for caret (between 1 and item_depth inclusive)
+        :param reset: if caret is already at depth, close nested list and open
+        another at the same depth. This is how consecutive paragraphs avoid being
+        merged into one paragraph. You'll want this true for every element except
+        text runs.
+        """
         """Set caret at given depth."""
         if depth == None:
             return
-        if self.caret_depth > 1 and depth == self.caret_depth:
-            self.raise_caret()
+        # if reset and self.caret_depth > 1 and depth == self.caret_depth:
+        #     self.raise_caret(reason + f"_{self.caret_depth} -> {depth}")
         while self.caret_depth < depth:
-            self.drop_caret()
+            self.drop_caret(reason)
         while self.caret_depth > depth:
-            self.raise_caret()
+            self.raise_caret(reason)
 
     def insert(self, item: str) -> None:
         """Add item at item_depth. Add branches if necessary to reach depth."""
-        self.set_caret(self.item_depth)
+        if self.run_queue:
+            run_queue = self.run_queue
+            self.run_queue = ""
+            self.insert(run_queue)
+
+        if item:
+            self.set_caret(self.item_depth, reset=False)
         if item.strip(" \t\n") and not re.match("----.*----", item):
             prefix = style_open(self._run_styles)
             suffix = style_close(self._run_styles)

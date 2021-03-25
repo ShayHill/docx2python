@@ -9,6 +9,25 @@
 from docx2python.main import docx2python
 import os
 
+# TODO: fix hyperlink runs. The following produces runs:
+# [
+#     [
+#         [
+#             [
+#                 [
+#                     "This is a link to ",
+#                     '<a href="http://www.shayallenhill.com/">',
+#                     "my we",
+#                     "b",
+#                     "site",
+#                     "</a>",
+#                     ".",
+#                 ]
+#             ]
+#         ]
+#     ]
+# ]
+
 
 class TestHyperlink:
     def test_prints(self) -> None:

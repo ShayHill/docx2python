@@ -57,17 +57,32 @@ open/close html tags at the beginning and end of each *output* paragraph.
 from docx2python.main import docx2python
 
 
+# def test_paragraphs_only(self) -> None:
+#     """Run without issue"""
+#     aaa = pars.document[0][0][0][0]
+#     bbb = pars.document[0][0][0]
+#     ccc = pars.document[0][0]
+#     ddd = pars.document[0]
+#     # TODO: fix this test
+#     # assert pars.text == (
+#     #     "\n\nThis is a document for testing docx2python module.\n\n\n\nThis "
+#     #     "document contains paragraphs.\n\n\n\nThis document does not contain any "
+#     #     "bulleted lists.\n\n"
+#     # )
+
+
 class TestParsNestedInTables:
     """ Close html and paragraph tags when paragraphs are nested """
 
     def test_paragraphs_only(self) -> None:
         """Run without issue"""
         pars = docx2python("resources/CRB EHS Manual.docx", html=True)
+        breakpoint()
         aaa = pars.document[0][0][0][0]
         bbb = pars.document[0][0][0]
         ccc = pars.document[0][0]
         ddd = pars.document[0]
-        breakpoint()
+        # TODO: fix this test
         # assert pars.text == (
         #     "\n\nThis is a document for testing docx2python module.\n\n\n\nThis "
         #     "document contains paragraphs.\n\n\n\nThis document does not contain any "
