@@ -27,16 +27,15 @@ an href.
 """
 
 from docx2python.main import docx2python
-import pytest
 
 
 class TestTocText:
-    @pytest.mark.xfail
     def test_get_toc_text(self) -> None:
         """Extract header text from table-of-contents header."""
         extraction = docx2python("resources/zen_of_python.docx")
-        # TODO: remove trailing </a> tag for toc text
-        assert docx2python("resources/zen_of_python.docx").text[:66] == (
-            "Contents\n\n\tBeautiful is better than ugly."
-            "\t1</a>\n\n\n\n\n\n\n\nBeautiful i"
-        )
+        assert extraction.document_runs[0][0][0][1] == [
+            "\t",
+            "Beautiful is better than ugly.",
+            "\t",
+            "1",
+        ]

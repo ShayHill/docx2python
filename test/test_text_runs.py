@@ -81,10 +81,10 @@ class TestGetRunStyle:
         """Return font first, then other styles."""
         document = ElementTree.fromstring(ONE_TEXT_RUN)
         assert get_run_style(document[0]) == [
-            ("font", 'color="red" size="32"'),
-            ("b", ""),
-            ("i", ""),
-            ("u", ""),
+            'font style="color:red;font-size:32pt"',
+            "b",
+            "i",
+            "u",
         ]
 
 

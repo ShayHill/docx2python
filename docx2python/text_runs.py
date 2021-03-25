@@ -9,7 +9,7 @@ Text runs are formatted inline in the ``trash/document.xml`` or header files. Re
 those elements to extract formatting information.
 """
 import re
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 from xml.etree import ElementTree
 from .attribute_register import Tags
 from .attribute_register import has_content
@@ -134,8 +134,9 @@ def get_paragraph_style(
 
 
 # noinspection PyPep8Naming
-def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
+def get_run_style(run_element: ElementTree.Element) -> List[str]:
     """Select only rPr2 tags you'd like to implement.
+    # TODO: redo this docstring
 
     :param run_element: a ``<w:r>`` xml element
 
@@ -152,23 +153,11 @@ def get_run_style(run_element: ElementTree.Element) -> List[Tuple[str, str]]:
 
     Also see docstring for ``gather_rPr``
     """
-    rPr2val = gather_Pr(run_element)
-    style = []
-    font_styles = []
-
-    for tag, val in sorted(rPr2val.items()):
-        if tag in {"b", "i", "u"}:
-            style.append((tag, ""))
-        elif tag == "sz":
-            font_styles.append('size="{}"'.format(val))
-        elif tag == "color":
-            font_styles.append('color="{}"'.format(val))
-
-    if font_styles:
-        style = [("font", " ".join(sorted(font_styles)))] + style
-    return style
+    properties_tag = qn(f'w:{_elem_tag_str(run_element) + "Pr"}')
+    return get_Pr_as_html_strings(run_element.find(properties_tag))
 
 
+# TODO: put run styles into a dictionary with paragraphs styles (mapped to tags)
 RUN_STYLES = {
     "b": (lambda tag, val: tag,),
     "i": (lambda tag, val: tag,),
@@ -184,72 +173,48 @@ RUN_STYLES = {
 }
 
 # noinspection PyPep8Naming
-def get_run_style2(elem: ElementTree.Element) -> List[Tuple[str, str]]:
-    """Select only rPr2 tags you'd like to implement.
+def get_Pr_as_html_strings(
+    properties_elem: Union[ElementTree.Element, None]
+) -> List[str]:
+    """
+    Encode a properties element into a list of html strings.
 
-    :param run_element: a ``<w:r>`` xml element
+    :param properties_elem: a ``<w:rPr>`` or ``<w:pPr>`` element. Maybe others.
 
     create with::
 
         document = ElementTree.fromstring('bytes string')
-        # recursively search document for <w:r> elements.
+        # recursively search document for <w:rPr> or <w:pPr> elements.
 
-    :return: ``[(rPr, val), (rPr, val) ...]``
-
-    Tuples are always returned in order:
+    :return: ``['font style="font-size:36"', 'b', 'i' ...]``
 
     ``"font"`` first then any other styles in alphabetical order.
-
-    Also see docstring for ``gather_rPr``
     """
-    # rPr2val = gather_Pr(run_element)
-    rPr2val = {_elem_tag_str(x): x.attrib.get(qn("w:val"), None) for x in elem}
     style = []
-    font_styles = []
+    if properties_elem is None:
+        return style
+
+    Pr2val = {_elem_tag_str(x): x.attrib.get(qn("w:val")) for x in properties_elem}
 
     groups = defaultdict(list)
-    for tag, val in ((k, v) for k, v in rPr2val.items() if k in RUN_STYLES):
-        format = RUN_STYLES[tag]
-        groups[format[1:]].append(format[0](tag, val))
 
+    # from formatter, 'font', 'style' ->
+    #     ('font', 'style') : [formatter(v[0]), formatter(v[1]), ...]
+    for tag, val in ((k, v) for k, v in Pr2val.items() if k in RUN_STYLES):
+        groups[RUN_STYLES[tag][1:]].append(RUN_STYLES[tag][0](tag, val))
+
+    # from ('font', 'style') : [x, y, z, ...] ->
+    #     ('font',) : style={"x; y; z; ..."}
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 2):
         groups[(k[0],)].append(f'{k[1]}="{";".join(sorted(v))}"')
 
+    # from ('font',) : string ->
+    #     'font string'
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 1):
         style.append(f"{k[0]} {' '.join(v)}")
 
     style += sorted(groups[()])
-
-    # TODO: delete below commented-out lines
-    # print(style)
-
-    # if len(style) > 3:
-    #     breakpoint()
-
-    # groups[k] = sorted[groups[k]]
-    # breakpoint()
-    # groups[k] = sorted()
-    # style.append(f"<{k[0], }")
-    # breakpoint()
-    # for k in sorted(k for k in groups if len(k) == 2):
-    #     vals = sorted(groups[k])
-    #     style.append(f"<{k[0], }")
-    #     breakpoint()
-
-    # TODO: fix return type to List[str]
     return style
-
-    # for tag, val in sorted(rPr2val.items()):
-    #     if tag in {"b", "i", "u"}:
-    #         style.append((tag, ""))
-    #     elif tag == "sz":
-    #         font_styles.append('size="{}"'.format(val))
-    #     elif tag == "color":
-    #         font_styles.append('color="{}"'.format(val))
-    #
-    # if font_styles:
-    #     style = [("font", " ".join(sorted(font_styles)))] + style
-    # return style
 
 
 def get_style(elem: ElementTree.Element) -> List[Tuple[str, str]]:

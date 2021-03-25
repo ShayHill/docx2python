@@ -88,3 +88,7 @@ allowed the program to complete) has been altered.
     table cell, any element 2-levels above a paragraph as a table row, etc. The upshot of this is that there will be
     more whitespace in your exports. This whitespace is potentially useful information, but you can easily filter it out
     if you don't need it.
+
+--  No longer supports Python 3.4 or 3.5
+
+    Now only supports Python 3.6+

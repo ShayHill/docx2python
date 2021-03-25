@@ -31,7 +31,7 @@ from .text_runs import (
     get_style,
     style_close,
     style_open,
-    get_run_style2,
+    get_Pr_as_html_strings,
     gather_Pr,
 )
 
@@ -377,7 +377,7 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
                 tables.run_queue += _get_bullet_string(child, context)
 
             elif tag == Tags.RUN_PROPERTIES and do_html:
-                tables._run_styles = get_run_style2(child)
+                tables._run_styles = get_Pr_as_html_strings(child)
 
             # elif tag == Tags.RUN and "Nested" in get_run_text(child):
             #     breakpoint()
@@ -407,6 +407,7 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
                     rId = child.attrib[qn("r:id")]
                     link = context["rId2Target"][rId]
                     tables.insert('<a href="{}">'.format(link))
+                    close_elem = "</a>"
 
             elif tag == Tags.FORM_CHECKBOX:
                 tables.insert(get_checkBox_entry(child))
@@ -453,8 +454,8 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
             # elif tag == Tags.TABLE:
             #     tables.set_caret(1)
 
-            if tag == Tags.HYPERLINK:
-                tables.insert("</a>")
+            with suppress(UnboundLocalError):
+                tables.insert(close_elem)
 
         aaa = deepcopy(tables.rightmost_branches[-1])
         nonlocal stop_every_step
