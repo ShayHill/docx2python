@@ -129,8 +129,8 @@ def get_paragraph_style(
     """
     pStyle = gather_Pr(paragraph_element).get("pStyle")
     if pStyle:
-        return [(pStyle, "")]
-    return []
+        return pStyle
+    return ""
 
 
 # noinspection PyPep8Naming

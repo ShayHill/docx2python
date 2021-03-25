@@ -47,6 +47,7 @@ from .iterators import enum_at_depth
 from .iterators import get_html_map, iter_at_depth
 import zipfile
 from warnings import warn
+from copy import deepcopy
 
 
 class DocxContent:
@@ -84,7 +85,7 @@ class DocxContent:
         exposes runs to the user, but still returns paragraphs by default.
         """
         if item in {"header", "footer", "body", "footnotes", "endnotes"}:
-            runs = getattr(self, item + "_runs")
+            runs = deepcopy(getattr(self, item + "_runs"))
             for (i, j, k, l), paragraph in enum_at_depth(runs, 4):
                 runs[i][j][k][l] = "".join(paragraph)
             return runs

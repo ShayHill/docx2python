@@ -61,12 +61,13 @@ def has_content(tree: ElementTree.Element) -> Optional[str]:
 
     If no content is found, the element can be safely ignored.
     """
-    if tree.tag in KNOWN_TAGS:
+    content_tags = KNOWN_TAGS - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
+    if tree.tag in content_tags:
         return tree.tag
 
     def iter_known_tags(tree_: ElementTree.Element) -> Iterator[str]:
         """ Yield all known tags in tree """
-        if tree_.tag in KNOWN_TAGS:
+        if tree_.tag in content_tags:
             yield tree_.tag
         for branch in tree_:
             yield from iter_known_tags(branch)

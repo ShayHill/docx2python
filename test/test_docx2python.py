@@ -79,10 +79,10 @@ class TestFormatting:
 
     def test_bullets(self) -> None:
         """Expected bullet format and indent."""
-        assert OUTPUT.body[0][1][0] == [
-            "--\tbullet no indent",
-            "\t--\tbullet indent 1",
-            "\t\t--\tbullet indent 2",
+        assert OUTPUT.body_runs[0][1][0] == [
+            ["--\t", "bullet no indent"],
+            ["\t--\t", "bullet indent 1"],
+            ["\t\t--\t", "bullet indent 2"],
         ]
 
     def test_ignore_formatting(self) -> None:

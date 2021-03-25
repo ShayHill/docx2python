@@ -21,6 +21,7 @@ def docx2python(
     docx_filename: str,
     image_folder: Optional[str] = None,
     html: bool = False,
+    paragraph_styles: bool = False,
     extract_image: bool = True,
 ) -> DocxContent:
     """Unzip a docx file and extract contents.
@@ -29,12 +30,15 @@ def docx2python(
     :param image_folder: optionally specify an image folder
         (images in docx will be copied to this folder)
     :param html: bool, extract some formatting as html
+    :param paragraph_styles: prepend the paragraphs style (if any, else "") to each
+        paragraph. This will only be useful with ``*_runs`` attributes.
     :param extract_image: bool, extract images from document (default True)
     :return: DocxContent object
     """
     zipf = zipfile.ZipFile(docx_filename)
     context = get_context(zipf)
     context["do_html"] = html
+    context["do_paragraph_styles"] = paragraph_styles
 
     def file_text(filename_):
         """

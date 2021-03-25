@@ -35,3 +35,62 @@ TODO: Implement all and test against resources/run_styles.docx
 <span style="background-color: yellow">highlighted yellow
 <span style="background-color: green">highlighted green
 """
+from docx2python.main import docx2python
+
+OUTPUT = docx2python("resources/run_styles.docx", html=True)
+
+
+class TestParStyles:
+    def test_par_styles(self) -> None:
+        """
+        If do_html, paragraphs style is the first element of every run
+
+        :return:
+        """
+        assert OUTPUT.document_runs == [
+            [
+                [
+                    [
+                        ["Normal"],
+                        ['<font style="font-size:32pt">16 point</font>'],
+                        ['<font style="color:FF0000">Red</font>'],
+                        ["Courier new"],
+                        ["<i>Italic</i>"],
+                        ["<b>Bold</b>"],
+                        ["<u>Underline</u>"],
+                        ["<s>Strikethrough</s>"],
+                        # double strike does nothing. saving <del> for tracked changes
+                        ["Double Strikethough"],
+                        ["<sup>Superscript</sup>"],
+                        ["<sub>Subscript</sub>"],
+                        ['<font style="font-variant:small-caps">Small Caps</font>'],
+                        ['<font style="text-transform:uppercase">All Caps</font>'],
+                        [
+                            '<span style="background-color:yellow">'
+                            "Highlighted yellow</span>"
+                        ],
+                        [
+                            '<span style="background-color:green">'
+                            "Highlighted green</span>"
+                        ],
+                        ["<b>Consecutive</b>"],
+                        ["<b>Bold</b>"],
+                        ["<b>Paragraphs</b>"],
+                        [
+                            '<font style="font-size:24pt"><sub>'
+                            "Subscript </sub></font>",
+                            '<font style="font-size:24pt;font-variant:small-caps">'
+                            "Small Caps </font>",
+                            '<font style="font-size:24pt;text-transform:uppercase">'
+                            "All Caps </font>",
+                            '<font style="font-size:24pt">'
+                            '<span style="background-color:yellow">'
+                            "Highlighted yellow </span></font>",
+                            '<font style="font-size:24pt">'
+                            '<span style="background-color:green">'
+                            "Highlighted green</span></font>",
+                        ],
+                    ]
+                ]
+            ]
+        ]

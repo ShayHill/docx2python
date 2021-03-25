@@ -27,6 +27,8 @@ from .iterators import enum_at_depth
 from .iterators import get_text as gett_text
 from .namespace import qn
 from .text_runs import (
+    get_paragraph_style,
+    _elem_tag_str,
     get_run_style,
     get_style,
     style_close,
@@ -332,7 +334,7 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
 
     :param xml: an xml bytes object which might contain text
     :param context: dictionary of document attributes generated in get_docx_text
-    :returns: A 4-deep nested list of strings.
+    :returns: A 5-deep nested list of strings.
 
     Sorts the text into the DepthCollector instance, five-levels deep
 
@@ -368,19 +370,26 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
 
         tree_depth = _get_elem_depth(branch)
         tables.set_caret(tree_depth, reason="ts_" + branch.tag.split("}")[-1])
+        # open elements
+        # TODO: implement run_queue for footnotes, endnotes, etc.
+
+        if branch.tag == Tags.PARAGRAPH:
+            if context["do_paragraph_styles"]:
+                tables.add_par_style(get_paragraph_style(branch))
+            tables.insert(_get_bullet_string(branch, context))
+            # tables.run_queue = _get_bullet_string(child, context)
+
         for child in branch:
             tag = child.tag
 
-            # open elements
-            # TODO: implement run_queue for footnotes, endnotes, etc.
-            if tag == Tags.PARAGRAPH:
-                tables.run_queue += _get_bullet_string(child, context)
-
-            elif tag == Tags.RUN_PROPERTIES and do_html:
+            if tag == Tags.RUN_PROPERTIES and do_html:
                 tables._run_styles = get_Pr_as_html_strings(child)
 
-            # elif tag == Tags.RUN and "Nested" in get_run_text(child):
-            #     breakpoint()
+            # elif tag == Tags.PAR_PROPERTIES and do_html:
+            #     par_style = {
+            #         _elem_tag_str(x): x.attrib.get(qn("w:val")) for x in child
+            #     }.get("pStyle", "")
+            #     tables.run_queue = par_style + tables.run_queue
 
             elif tag == Tags.TEXT:
                 # new text object. oddly enough, these don't all contain text
@@ -440,19 +449,8 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
             # enter child element
             branches(child, recur + 1)
 
-            # # close elements
-            # if tag == Tags.PARAGRAPH and do_html is True:
-            #     tables.insert(style_close(getattr(tables, "open_style", ())))
-            #     tables.open_style = ()
-
-            # if tag == Tags.PARAGRAPH:
-            #     tables.raise_caret()
-            #
-            # if tag in {Tags.TABLE_ROW, Tags.TABLE_CELL, Tags.PARAGRAPH}:
-            #     tables.raise_caret()
-            #
-            # elif tag == Tags.TABLE:
-            #     tables.set_caret(1)
+            if tag == Tags.PARAGRAPH and do_html:
+                tables.del_par_style()
 
             with suppress(UnboundLocalError):
                 tables.insert(close_elem)
@@ -501,6 +499,7 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
     branches(root)
 
     tree = tables.tree
+
     # for (i, j, k, l), paragraph in enum_at_depth(tree, 4):
     #     tree[i][j][k][l] = "".join(paragraph)
 

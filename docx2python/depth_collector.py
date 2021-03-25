@@ -58,16 +58,13 @@ class DepthCollector:
         self.run_queue = ""  # prefix for next run (for bullets, footnotes, etc.)
         self.log = []
 
-    def add_run_style(self, style: List[Tuple[str, str]]) -> None:
-        self._run_styles.append(style)
-
-    def del_run_style(self, style: List[Tuple[str, str]]) -> None:
-        self._run_styles = self._run_styles[:-1]
+    def set_run_style(self, style: List[str]) -> None:
+        self._run_styles = style
 
     def add_par_style(self, style: List[Tuple[str, str]]) -> None:
         self._par_styles.append(style)
 
-    def del_par_style(self, style: List[Tuple[str, str]]) -> None:
+    def del_par_style(self) -> None:
         self._par_styles = self._par_styles[:-1]
 
     @property
@@ -124,13 +121,10 @@ class DepthCollector:
 
     def insert(self, item: str) -> None:
         """Add item at item_depth. Add branches if necessary to reach depth."""
-        if self.run_queue:
-            run_queue = self.run_queue
-            self.run_queue = ""
-            self.insert(run_queue)
-
         if item:
             self.set_caret(self.item_depth, reset=False)
+            if not self.caret and self._par_styles:
+                self.caret.append(self._par_styles[-1])
         if item.strip(" \t\n") and not re.match("----.*----", item):
             prefix = style_open(self._run_styles)
             suffix = style_close(self._run_styles)
