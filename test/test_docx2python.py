@@ -120,6 +120,8 @@ class TestFormatting:
                     "Reference footnote 2----footnote2----",
                     "Reference endnote 1----endnote1----",
                     "Reference endnote 2----endnote2----",
+                    "Heading 1",
+                    "Heading 2",
                     "----media/image2.jpg----",
                 ]
             ]
@@ -144,6 +146,23 @@ class TestHtmlFormatting:
             '<font style="color:FF0000;font-size:40pt">Large Colored</font>',
             '<font style="font-size:40pt"><b>Large Bold</b></font>',
             '<font style="font-size:40pt"><b><i><u>Large Bold Italics Underlined</u></i></b></font>',
+        ]
+
+    def test_paragraph_formatting(self) -> None:
+        """Text formatting converted to html."""
+        assert HTML_OUTPUT.body_runs[3] == [
+            [
+                [
+                    ["Text outside table"],
+                    ["Reference footnote 1", "----footnote1----"],
+                    ["Reference footnote 2", "----footnote2----"],
+                    ["Reference endnote 1", "----endnote1----"],
+                    ["Reference endnote 2", "----endnote2----"],
+                    ["<h1>", "Heading 1", "</h1>"],
+                    ["<h2>", "Heading 2", "</h2>"],
+                    ["----media/image2.jpg----"],
+                ]
+            ]
         ]
 
 

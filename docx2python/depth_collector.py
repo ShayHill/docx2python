@@ -55,17 +55,34 @@ class DepthCollector:
         self.rightmost_branches = [[]]
         self._run_styles = []
         self._par_styles = []
+        self._pStyles = []
         self.run_queue = ""  # prefix for next run (for bullets, footnotes, etc.)
         self.log = []
 
     def set_run_style(self, style: List[str]) -> None:
         self._run_styles = style
 
-    def add_par_style(self, style: List[Tuple[str, str]]) -> None:
+    def add_pStyle(self, style: str) -> None:
+        self._pStyles.append(style)
+
+    def del_pStyle(self) -> None:
+        self._pStyles = self._par_styles[:-1]
+
+    def add_par_style(self, style: List[str]) -> None:
         self._par_styles.append(style)
 
     def del_par_style(self) -> None:
         self._par_styles = self._par_styles[:-1]
+
+    def close_paragraph(self) -> None:
+        if self._par_styles and self._par_styles[-1]:
+            if self._par_styles[-1]:
+                self.insert(style_close(self._par_styles[-1]))
+            self.del_par_style()
+
+    def open_paragraph(self) -> None:
+        if self._par_styles and self._par_styles[-1]:
+            self.insert(style_open(self._par_styles[-1]))
 
     @property
     def tree(self) -> List:
@@ -89,12 +106,16 @@ class DepthCollector:
         self.rightmost_branches.append(self.rightmost_branches[-1][-1])
         reason = reason + f"_dc_{self.caret_depth}"
         self.log.append(reason)
+        if self.caret_depth == self.item_depth:
+            self.open_paragraph()
 
     def raise_caret(self, reason="") -> None:
         """Close branch at caret and move up to parent."""
         # TODO: factor out self log
         if self.caret_depth == 1:
             raise CaretDepthError("will not raise caret above root")
+        if self.caret_depth == self.item_depth:
+            self.close_paragraph()
         self.rightmost_branches = self.rightmost_branches[:-1]
         reason = reason + f"_rc_{self.caret_depth}"
         self.log.append(reason)
@@ -123,8 +144,8 @@ class DepthCollector:
         """Add item at item_depth. Add branches if necessary to reach depth."""
         if item:
             self.set_caret(self.item_depth, reset=False)
-            if not self.caret and self._par_styles:
-                self.caret.append(self._par_styles[-1])
+            # if not self.caret and self._par_styles:
+            #     self.caret.append(self._par_styles[-1])
         if item.strip(" \t\n") and not re.match("----.*----", item):
             prefix = style_open(self._run_styles)
             suffix = style_close(self._run_styles)

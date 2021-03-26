@@ -20,8 +20,8 @@ class TestParStyles:
         :return:
         """
         assert OUTPUT.document_runs == [
-            [[[]]],
-            [[[]]],
+            [[[["Header"]]]],
+            [[[["Header"]]]],
             [[[["Header", "Header text", "----media/image1.png----"]]]],
             [
                 [
@@ -49,46 +49,48 @@ class TestParStyles:
                 ],
                 [
                     [
-                        ["", "Bold"],
-                        ["", "Italics"],
-                        ["", "Underlined"],
-                        ["", "Large Font"],
-                        ["", "Colored"],
-                        ["", "Large Colored"],
-                        ["", "Large Bold"],
-                        ["", "Large Bold Italics Underlined"],
+                        ["Bold"],
+                        ["Italics"],
+                        ["Underlined"],
+                        ["Large Font"],
+                        ["Colored"],
+                        ["Large Colored"],
+                        ["Large Bold"],
+                        ["Large Bold Italics Underlined"],
                     ]
                 ],
                 [],
             ],
-            [[[["", "Nested"]], [["", "Table"]]], [[["", "A"]], [["", "B"]]]],
+            [[[["Nested"]], [["Table"]]], [[["A"]], [["B"]]]],
             [
                 [[]],
-                [[["", "Tab", "\t", "delimited", "\t", "text"]]],
-                [[["", "10 < 20 and 20 > 10"]]],
+                [[["Tab", "\t", "delimited", "\t", "text"]]],
+                [[["10 < 20 and 20 > 10"]]],
             ],
             [
                 [
                     [
-                        ["", "Text outside table"],
-                        ["", "Reference footnote 1", "----footnote1----"],
-                        ["", "Reference footnote 2", "----footnote2----"],
-                        ["", "Reference endnote 1", "----endnote1----"],
-                        ["", "Reference endnote 2", "----endnote2----"],
-                        ["", "----media/image2.jpg----"],
+                        ["Text outside table"],
+                        ["Reference footnote 1", "----footnote1----"],
+                        ["Reference footnote 2", "----footnote2----"],
+                        ["Reference endnote 1", "----endnote1----"],
+                        ["Reference endnote 2", "----endnote2----"],
+                        ["Heading1", "Heading 1"],
+                        ["Heading2", "Heading 2"],
+                        ["----media/image2.jpg----"],
                     ]
                 ]
             ],
-            [[[]]],
+            [[[["Footer"]]]],
             [[[["Footer", "Footer text", "----media/image1.png----"]]]],
-            [[[]]],
+            [[[["Footer"]]]],
             [
                 [
                     [],
                     [],
-                    [["", "footnote1)\t"]],
+                    [["footnote1)\t"]],
                     [["FootnoteText", " First footnote"]],
-                    [["FootnoteText", "footnote2)\t"]],
+                    [["footnote2)\t"]],
                     [["FootnoteText", " Second footnote", "----media/image1.png----"]],
                 ]
             ],
@@ -96,9 +98,9 @@ class TestParStyles:
                 [
                     [],
                     [],
-                    [["", "endnote1)\t"]],
+                    [["endnote1)\t"]],
                     [["EndnoteText", " First endnote"]],
-                    [["EndnoteText", "endnote2)\t"]],
+                    [["endnote2)\t"]],
                     [["EndnoteText", " Second endnote", "----media/image1.png----"]],
                 ]
             ],

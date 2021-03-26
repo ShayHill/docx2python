@@ -116,9 +116,7 @@ def gather_Pr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
 
 
 # noinspection PyPep8Naming
-def get_paragraph_style(
-    paragraph_element: ElementTree.Element,
-) -> List[Tuple[str, str]]:
+def get_pStyle(paragraph_element: ElementTree.Element) -> str:
     """Collect and format paragraph -> pPr -> pStyle value.
 
     :param paragraph_element: a ``<w:p>`` xml element
@@ -131,6 +129,18 @@ def get_paragraph_style(
     if pStyle:
         return pStyle
     return ""
+
+
+def get_paragraph_style(paragraph_element: ElementTree.Element) -> List[str]:
+    """
+    Get html formatting for paragraph
+
+    :param paragraph_element:
+    :return:
+
+    Right now, this only works with heading styles.
+    """
+    return [get_pStyle(paragraph_element)]
 
 
 # noinspection PyPep8Naming
@@ -170,6 +180,12 @@ RUN_STYLES = {
     "highlight": (lambda tag, val: f"background-color:{val}", "span", "style"),
     "sz": (lambda tag, val: f"font-size:{val}pt", "font", "style"),
     "color": (lambda tag, val: f"color:{val}", "font", "style"),
+    "Heading1": (lambda tag, val: "h1",),
+    "Heading2": (lambda tag, val: "h2",),
+    "Heading3": (lambda tag, val: "h3",),
+    "Heading4": (lambda tag, val: "h4",),
+    "Heading5": (lambda tag, val: "h5",),
+    "Heading6": (lambda tag, val: "h6",),
 }
 
 # noinspection PyPep8Naming
@@ -190,29 +206,36 @@ def get_Pr_as_html_strings(
 
     ``"font"`` first then any other styles in alphabetical order.
     """
-    style = []
     if properties_elem is None:
-        return style
+        return []
 
     Pr2val = {_elem_tag_str(x): x.attrib.get(qn("w:val")) for x in properties_elem}
 
-    groups = defaultdict(list)
+    style = format_Pr(Pr2val)
+    return style
 
+
+def format_Pr(Pr2val: Dict[str, Union[str, None]]) -> List[str]:
+    """
+    Format tags and values into html strings.
+
+    :param Pr2val: tags mapped to values (extracted from xml)
+    :return:the interior part of html opening tags, e.g., ['b', 'i', 'font style=""']
+    """
+    style = []
+    groups = defaultdict(list)
     # from formatter, 'font', 'style' ->
     #     ('font', 'style') : [formatter(v[0]), formatter(v[1]), ...]
     for tag, val in ((k, v) for k, v in Pr2val.items() if k in RUN_STYLES):
         groups[RUN_STYLES[tag][1:]].append(RUN_STYLES[tag][0](tag, val))
-
     # from ('font', 'style') : [x, y, z, ...] ->
     #     ('font',) : style={"x; y; z; ..."}
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 2):
         groups[(k[0],)].append(f'{k[1]}="{";".join(sorted(v))}"')
-
     # from ('font',) : string ->
     #     'font string'
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 1):
         style.append(f"{k[0]} {' '.join(v)}")
-
     style += sorted(groups[()])
     return style
 
@@ -229,7 +252,7 @@ def get_style(elem: ElementTree.Element) -> List[Tuple[str, str]]:
     if elem.tag == Tags.RUN:
         return get_run_style(elem)
     if elem.tag == Tags.PARAGRAPH:
-        return get_paragraph_style(elem)
+        return get_pStyle(elem)
     return []
 
 
@@ -270,7 +293,4 @@ def style_close(style: List[Tuple[str, str]]) -> str:
 
         <b><i><u>text</u></i></b>
     """
-    try:
-        return "".join("</{}>".format(x) for x, _ in reversed(style))
-    except:
-        return "".join("</{}>".format(x.split()[0]) for x in reversed(style))
+    return "".join("</{}>".format(x.split()[0]) for x in reversed(style))

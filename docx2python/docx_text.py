@@ -27,13 +27,14 @@ from .iterators import enum_at_depth
 from .iterators import get_text as gett_text
 from .namespace import qn
 from .text_runs import (
-    get_paragraph_style,
+    get_pStyle,
     _elem_tag_str,
     get_run_style,
     get_style,
     style_close,
     style_open,
     get_Pr_as_html_strings,
+    format_Pr,
     gather_Pr,
 )
 
@@ -368,6 +369,9 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
         # breakpoint()
         prev_depth = tables.caret_depth
 
+        # if branch.tag == Tags.PARAGRAPH and do_html:
+        #     tables.close_paragraph()
+
         tree_depth = _get_elem_depth(branch)
         tables.set_caret(tree_depth, reason="ts_" + branch.tag.split("}")[-1])
         # open elements
@@ -375,7 +379,10 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
 
         if branch.tag == Tags.PARAGRAPH:
             if context["do_paragraph_styles"]:
-                tables.add_par_style(get_paragraph_style(branch))
+                tables.add_pStyle(get_pStyle(branch))
+                tables.insert(get_pStyle(branch))
+            if do_html:
+                tables.add_par_style(format_Pr({get_pStyle(branch): None}))
             tables.insert(_get_bullet_string(branch, context))
             # tables.run_queue = _get_bullet_string(child, context)
 
@@ -449,11 +456,14 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
             # enter child element
             branches(child, recur + 1)
 
-            if tag == Tags.PARAGRAPH and do_html:
-                tables.del_par_style()
+            # if tag == Tags.PARAGRAPH and do_html:
+            #     tables.del_par_style()
 
             with suppress(UnboundLocalError):
                 tables.insert(close_elem)
+
+        # if branch.tag == Tags.PARAGRAPH:
+        #     tables.close_paragraph()
 
         aaa = deepcopy(tables.rightmost_branches[-1])
         nonlocal stop_every_step
