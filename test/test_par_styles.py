@@ -89,20 +89,30 @@ class TestParStyles:
                 [
                     [[]],
                     [[]],
-                    [["footnote1)\t"]],
-                    [["FootnoteText", " First footnote"]],
-                    [["footnote2)\t"]],
-                    [["FootnoteText", " Second footnote", "----media/image1.png----"]],
+                    [["FootnoteText", "footnote1)\t", " First footnote"]],
+                    [
+                        [
+                            "FootnoteText",
+                            "footnote2)\t",
+                            " Second footnote",
+                            "----media/image1.png----",
+                        ]
+                    ],
                 ]
             ],
             [
                 [
                     [[]],
                     [[]],
-                    [["endnote1)\t"]],
-                    [["EndnoteText", " First endnote"]],
-                    [["endnote2)\t"]],
-                    [["EndnoteText", " Second endnote", "----media/image1.png----"]],
+                    [["EndnoteText", "endnote1)\t", " First endnote"]],
+                    [
+                        [
+                            "EndnoteText",
+                            "endnote2)\t",
+                            " Second endnote",
+                            "----media/image1.png----",
+                        ]
+                    ],
                 ]
             ],
         ]

@@ -20,5 +20,5 @@ class TestHyperlink:
         and all references updated. Test that text extracts as expected."""
         extraction = docx2python(os.path.join("resources", "renamed_document_xml.docx"))
         assert (
-            '<a href="http://www.shayallenhill.com/">my website</a>' in extraction.text
+            '<a href="http://www.shayallenhill.com/">my website</a>.' in extraction.text
         )

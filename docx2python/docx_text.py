@@ -33,6 +33,7 @@ from .text_runs import (
     get_style,
     style_close,
     style_open,
+    get_run_style,
     get_Pr_as_html_strings,
     format_Pr,
     gather_Pr,
@@ -330,7 +331,7 @@ def _get_elem_depth(tree: Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
+def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
     """Xml as a string to a list of cell strings.
 
     :param xml: an xml bytes object which might contain text
@@ -352,143 +353,94 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
     do_html = context["do_html"]
 
     # noinspection PyPep8Naming
-    def branches(branch: Element) -> None:
+    def branches(tree: Element) -> None:
         """
-        Recursively iterate over descendents of branch. Add text when found.
+        Recursively iterate over tree. Add text when found.
 
-        :param branch: An Element from an xml file (ElementTree)
+        :param tree: An Element from an xml file (ElementTree)
         :return: None. Adds text cells to outer variable `tables`.
         """
 
-        if branch.tag == Tags.PARAGRAPH:
+        # queue up tags before opening any paragraphs or runs
+        if tree.tag == Tags.PARAGRAPH:
             if context["do_paragraph_styles"]:
-                tables.add_pStyle(get_pStyle(branch))
+                tables.add_pStyle(get_pStyle(tree))
             if context["do_html"]:
-                tables.add_par_style(format_Pr({get_pStyle(branch): None}))
+                tables.add_pPs(format_Pr({get_pStyle(tree): None}))
 
-        tree_depth = _get_elem_depth(branch)
-        tables.set_caret(tree_depth, reason="ts_" + branch.tag.split("}")[-1])
-        # TODO: implement run_queue for footnotes, endnotes, etc.
+        elif tree.tag == Tags.RUN:
+            if context["do_html"]:
+                tables.add_rPs(get_run_style(tree))
 
-        if branch.tag == Tags.PARAGRAPH:
-            tables.insert(_get_bullet_string(branch, context))
+        # set appropriate depth for element (this will trigger methods in ``tables``)
+        tree_depth = _get_elem_depth(tree)
+        tables.set_caret(tree_depth)
 
-        for child in branch:
-            tag = child.tag
+        # add text where found
+        if tree.tag == Tags.PARAGRAPH:
+            tables.insert(_get_bullet_string(tree, context))
 
-            if tag == Tags.RUN_PROPERTIES and do_html:
-                tables._rPss = get_Pr_as_html_strings(child)
+        elif tree.tag == Tags.TEXT:
+            # oddly enough, these don't all contain text
+            text = tree.text if tree.text is not None else ""
+            if do_html is True:
+                text = text.replace("<", "&lt;")
+                text = text.replace(">", "&gt;")
+            tables.insert_text(text)
 
-            # elif tag == Tags.PAR_PROPERTIES and do_html:
-            #     par_style = {
-            #         _elem_tag_str(x): x.attrib.get(qn("w:val")) for x in child
-            #     }.get("pStyle", "")
-            #     tables.run_queue = par_style + tables.run_queue
+        if tree.tag == Tags.FOOTNOTE:
+            if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
+                tables.queue_paragraph_text(
+                    "footnote{})\t".format(tree.attrib[qn("w:id")])
+                )
 
-            elif tag == Tags.TEXT:
-                # new text object. oddly enough, these don't all contain text
-                text = child.text if child.text is not None else ""
-                if do_html is True:
-                    text = text.replace("<", "&lt;")
-                    text = text.replace(">", "&gt;")
-                tables.insert(text)
+        elif tree.tag == Tags.ENDNOTE:
+            if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
+                tables.queue_paragraph_text(
+                    "endnote{})\t".format(tree.attrib[qn("w:id")])
+                )
 
-                # if "Table" in text:
-                #     breakpoint()
+        elif tree.tag == Tags.HYPERLINK:
+            # look for an href, ignore internal references (anchors)
+            with suppress(KeyError):
+                rId = tree.attrib[qn("r:id")]
+                link = context["rId2Target"][rId]
+                tables.queue_rPr(['a href="{}"'.format(link)])
 
-            elif tag == Tags.FOOTNOTE:
-                if "separator" not in child.attrib.get(qn("w:type"), "").lower():
-                    tables.insert("footnote{})\t".format(child.attrib[qn("w:id")]))
+        if tree.tag == Tags.FORM_CHECKBOX:
+            tables.insert(get_checkBox_entry(tree))
 
-            elif tag == Tags.ENDNOTE:
-                if "separator" not in child.attrib.get(qn("w:type"), "").lower():
-                    tables.insert("endnote{})\t".format(child.attrib[qn("w:id")]))
+        elif tree.tag == Tags.FORM_DDLIST:
+            tables.insert(get_ddList_entry(tree))
 
-            elif tag == Tags.HYPERLINK:
-                # look for an href, ignore internal references (anchors)
-                with suppress(KeyError):
-                    rId = child.attrib[qn("r:id")]
-                    link = context["rId2Target"][rId]
-                    tables.insert('<a href="{}">'.format(link))
-                    close_elem = "</a>"
+        elif tree.tag == Tags.FOOTNOTE_REFERENCE:
+            tables.insert("----footnote{}----".format(tree.attrib[qn("w:id")]))
 
-            elif tag == Tags.FORM_CHECKBOX:
-                tables.insert(get_checkBox_entry(child))
+        elif tree.tag == Tags.ENDNOTE_REFERENCE:
+            tables.insert("----endnote{}----".format(tree.attrib[qn("w:id")]))
 
-            elif tag == Tags.FORM_DDLIST:
-                tables.insert(get_ddList_entry(child))
+        elif tree.tag == Tags.IMAGE:
+            with suppress(KeyError):
+                rId = tree.attrib[qn("r:embed")]
+                image = context["rId2Target"][rId]
+                tables.insert("----{}----".format(image))
 
-            # add placeholders
-            elif tag == Tags.FOOTNOTE_REFERENCE:
-                tables.insert("----footnote{}----".format(child.attrib[qn("w:id")]))
+        elif tree.tag == Tags.IMAGEDATA:
+            with suppress(KeyError):
+                rId = tree.attrib[qn("r:id")]
+                image = context["rId2Target"][rId]
+                tables.insert("----{}----".format(image))
 
-            elif tag == Tags.ENDNOTE_REFERENCE:
-                tables.insert("----endnote{}----".format(child.attrib[qn("w:id")]))
+        elif tree.tag == Tags.TAB:
+            tables.insert("\t")
 
-            elif tag == Tags.IMAGE:
-                with suppress(KeyError):
-                    rId = child.attrib[qn("r:embed")]
-                    image = context["rId2Target"][rId]
-                    tables.insert("----{}----".format(image))
+        for branch in tree:
+            branches(branch)
 
-            elif tag == Tags.IMAGEDATA:
-                with suppress(KeyError):
-                    rId = child.attrib[qn("r:id")]
-                    image = context["rId2Target"][rId]
-                    tables.insert("----{}----".format(image))
-
-            elif tag == Tags.TAB:
-                tables.insert("\t")
-
-            # enter child element
-            branches(child)
-
-            # if tag == Tags.PARAGRAPH and do_html:
-            #     tables.del_par_style()
-
-            with suppress(UnboundLocalError):
-                tables.insert(close_elem)
-
-        # if branch.tag == Tags.PARAGRAPH:
-        #     tables.close_paragraph()
-
-        this_depth = tables.caret_depth
-        ccc = deepcopy(tables.rightmost_branches)
-
-        next_depth = tables.caret_depth
-
-        # TODO: factor out caret reasons
-        tables.set_caret(
-            tree_depth,
-            reset=False,
-            reason="bs_" + branch.tag.split("}")[-1],
-        )
-
-        if branch.tag == Tags.TABLE:
-            assert tables.caret_depth == 1
-            # breakpoint()
-            ccc = tables.rightmost_branches
-            # breakpoint()
-        if branch.tag == Tags.TABLE_ROW:
-            assert tables.caret_depth == 2
-            bbb = tables.rightmost_branches[-1]
-            # breakpoint()
-        if branch.tag == Tags.TABLE_CELL:
-            assert tables.caret_depth == 3
-            aaa = tables.rightmost_branches
-            # breakpoint()
-        if branch.tag == Tags.PARAGRAPH:
-            assert tables.caret_depth == 4
-            aaa = tables.rightmost_branches
-            # breakpoint()
+        tables.set_caret(tree_depth)
 
     root = ElementTree.fromstring(xml)
     _merge_elems(root)
     branches(root)
 
-    tree = tables.tree
-
-    # for (i, j, k, l), paragraph in enum_at_depth(tree, 4):
-    #     tree[i][j][k][l] = "".join(paragraph)
-
-    return tree
+    return tables.tree

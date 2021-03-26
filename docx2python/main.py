@@ -51,7 +51,7 @@ def docx2python(
         # TODO: factor our rId2Target (use global DocxContext)
         context["rId2Target"] = {x["Id"]: x["Target"] for x in rels}
         unzipped = zipf.read(get_path(filename_))
-        return get_text(unzipped, context, filename_)
+        return get_text(unzipped, context)
 
     type2content = {}
     for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):

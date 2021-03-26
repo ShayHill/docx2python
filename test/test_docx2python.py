@@ -36,10 +36,8 @@ class TestFormatting:
                 [
                     [[]],
                     [[]],
-                    [["footnote1)\t"]],
-                    [[" First footnote"]],
-                    [["footnote2)\t"]],
-                    [[" Second footnote", "----media/image1.png----"]],
+                    [["footnote1)\t", " First footnote"]],
+                    [["footnote2)\t", " Second footnote", "----media/image1.png----"]],
                 ]
             ]
         ]
@@ -51,10 +49,8 @@ class TestFormatting:
                 [
                     [[]],
                     [[]],
-                    [["endnote1)\t"]],
-                    [[" First endnote"]],
-                    [["endnote2)\t"]],
-                    [[" Second endnote", "----media/image1.png----"]],
+                    [["endnote1)\t", " First endnote"]],
+                    [["endnote2)\t", " Second endnote", "----media/image1.png----"]],
                 ]
             ]
         ]
