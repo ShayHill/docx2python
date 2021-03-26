@@ -41,4 +41,4 @@ class TestText:
 class TestHtmlMap:
     def test_function(self) -> None:
         """Return html tables."""
-        assert INST.html_map[:48] == '<html><body><table border="1"><tr><td></td></tr>'
+        assert INST.html_map[:48] == '<html><body><table border="1"><tr><td><pre>(0, 0'

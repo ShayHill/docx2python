@@ -40,9 +40,9 @@ class TestParagraphsOnly:
         """Run without issue"""
         pars = docx2python("resources/created-in-pages-paragraphs-only.docx")
         assert pars.text == (
-            "This is a document for testing docx2python module.\n\nThis "
-            "document contains paragraphs.\n\nThis document does not contain any "
-            "bulleted lists."
+            "\n\nThis is a document for testing docx2python module.\n\n\n\nThis "
+            "document contains paragraphs.\n\n\n\nThis document does not contain any "
+            "bulleted lists.\n\n"
         )
 
 
@@ -52,7 +52,7 @@ class TestBulletedLists:
     def test_bulleted_lists(self) -> None:
         pars = docx2python("resources/created-in-pages-bulleted-lists.docx")
         assert pars.text == (
-            "This is a document for testing docx2python module.\n\n"
+            "\n\nThis is a document for testing docx2python module.\n\n\n\n"
             "--\tWhy did the chicken cross the road?\n\n"
             "\t--\tJust because\n\n"
             "\t--\tDon't know\n\n"
@@ -60,5 +60,5 @@ class TestBulletedLists:
             "--\tWhat's the meaning of life, universe and everything?\n\n"
             "\t--\t42\n\n"
             "\t--\t0\n\n"
-            "\t--\t-1"
+            "\t--\t-1\n\n"
         )

@@ -14,7 +14,7 @@ from copy import deepcopy
 import warnings
 from contextlib import suppress
 from itertools import groupby
-from typing import Any, Dict, List, Tuple, Union, Sequence
+from typing import Any, Dict, List, Tuple, Union, Sequence, Optional
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -275,7 +275,7 @@ def _merge_elems(tree: Element) -> None:
         _merge_elems(branch)
 
 
-def _get_elem_depth(tree: Element) -> int:
+def _get_elem_depth(tree: Element) -> Optional[int]:
     """
     What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
@@ -351,46 +351,33 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
     tables = DepthCollector(5)
     do_html = context["do_html"]
 
-    import random
-
-    big_run = random.random()
-    stop_every_step = False
-
     # noinspection PyPep8Naming
-    def branches(branch: Element, recur=0) -> None:
+    def branches(branch: Element) -> None:
         """
         Recursively iterate over descendents of branch. Add text when found.
 
         :param branch: An Element from an xml file (ElementTree)
         :return: None. Adds text cells to outer variable `tables`.
         """
-        # tables.set_caret(_get_elem_depth(branch))
-        # aaa = (branch.tag, tables.caret_depth)
-        # breakpoint()
-        prev_depth = tables.caret_depth
-
-        # if branch.tag == Tags.PARAGRAPH and do_html:
-        #     tables.close_paragraph()
-
-        tree_depth = _get_elem_depth(branch)
-        tables.set_caret(tree_depth, reason="ts_" + branch.tag.split("}")[-1])
-        # open elements
-        # TODO: implement run_queue for footnotes, endnotes, etc.
 
         if branch.tag == Tags.PARAGRAPH:
             if context["do_paragraph_styles"]:
                 tables.add_pStyle(get_pStyle(branch))
-                tables.insert(get_pStyle(branch))
-            if do_html:
+            if context["do_html"]:
                 tables.add_par_style(format_Pr({get_pStyle(branch): None}))
+
+        tree_depth = _get_elem_depth(branch)
+        tables.set_caret(tree_depth, reason="ts_" + branch.tag.split("}")[-1])
+        # TODO: implement run_queue for footnotes, endnotes, etc.
+
+        if branch.tag == Tags.PARAGRAPH:
             tables.insert(_get_bullet_string(branch, context))
-            # tables.run_queue = _get_bullet_string(child, context)
 
         for child in branch:
             tag = child.tag
 
             if tag == Tags.RUN_PROPERTIES and do_html:
-                tables._run_styles = get_Pr_as_html_strings(child)
+                tables._rPss = get_Pr_as_html_strings(child)
 
             # elif tag == Tags.PAR_PROPERTIES and do_html:
             #     par_style = {
@@ -454,7 +441,7 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
                 tables.insert("\t")
 
             # enter child element
-            branches(child, recur + 1)
+            branches(child)
 
             # if tag == Tags.PARAGRAPH and do_html:
             #     tables.del_par_style()
@@ -464,11 +451,6 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
 
         # if branch.tag == Tags.PARAGRAPH:
         #     tables.close_paragraph()
-
-        aaa = deepcopy(tables.rightmost_branches[-1])
-        nonlocal stop_every_step
-        if aaa and aaa[0] and aaa[0][0] == "Nested":
-            stop_every_step = True
 
         this_depth = tables.caret_depth
         ccc = deepcopy(tables.rightmost_branches)
@@ -481,10 +463,6 @@ def get_text(xml: bytes, context: Dict[str, Any], file_dict=None) -> TablesList:
             reset=False,
             reason="bs_" + branch.tag.split("}")[-1],
         )
-
-        if stop_every_step:
-            bbb = tables.rightmost_branches
-            # breakpoint()
 
         if branch.tag == Tags.TABLE:
             assert tables.caret_depth == 1

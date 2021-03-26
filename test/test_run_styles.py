@@ -59,37 +59,29 @@ class TestParStyles:
                         ["<b>Bold</b>"],
                         ["<u>Underline</u>"],
                         ["<s>Strikethrough</s>"],
-                        # double strike does nothing. saving <del> for tracked changes
                         ["Double Strikethough"],
                         ["<sup>Superscript</sup>"],
                         ["<sub>Subscript</sub>"],
                         ['<font style="font-variant:small-caps">Small Caps</font>'],
                         ['<font style="text-transform:uppercase">All Caps</font>'],
                         [
-                            '<span style="background-color:yellow">'
-                            "Highlighted yellow</span>"
+                            '<span style="background-color:yellow">Highlighted yellow</span>'
                         ],
                         [
-                            '<span style="background-color:green">'
-                            "Highlighted green</span>"
+                            '<span style="background-color:green">Highlighted green</span>'
                         ],
                         ["<b>Consecutive</b>"],
                         ["<b>Bold</b>"],
                         ["<b>Paragraphs</b>"],
                         [
-                            '<font style="font-size:24pt"><sub>'
-                            "Subscript </sub></font>",
-                            '<font style="font-size:24pt;font-variant:small-caps">'
-                            "Small Caps </font>",
-                            '<font style="font-size:24pt;text-transform:uppercase">'
-                            "All Caps </font>",
-                            '<font style="font-size:24pt">'
-                            '<span style="background-color:yellow">'
-                            "Highlighted yellow </span></font>",
-                            '<font style="font-size:24pt">'
-                            '<span style="background-color:green">'
-                            "Highlighted green</span></font>",
+                            '<font style="font-size:24pt"><sub>Subscript </sub></font>',
+                            '<font style="font-size:24pt;font-variant:small-caps">Small Caps </font>',
+                            '<font style="font-size:24pt;text-transform:uppercase">All Caps </font>',
+                            '<font style="font-size:24pt"><span style="background-color:yellow">Highlighted yellow </span></font>',
+                            '<font style="font-size:24pt"><span style="background-color:green">Highlighted green</span></font>',
                         ],
+                        [],
+                        [],
                     ]
                 ]
             ]

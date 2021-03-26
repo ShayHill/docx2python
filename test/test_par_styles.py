@@ -63,7 +63,7 @@ class TestParStyles:
             ],
             [[[["Nested"]], [["Table"]]], [[["A"]], [["B"]]]],
             [
-                [[]],
+                [[[]]],
                 [[["Tab", "\t", "delimited", "\t", "text"]]],
                 [[["10 < 20 and 20 > 10"]]],
             ],
@@ -77,6 +77,7 @@ class TestParStyles:
                         ["Reference endnote 2", "----endnote2----"],
                         ["Heading1", "Heading 1"],
                         ["Heading2", "Heading 2"],
+                        [],
                         ["----media/image2.jpg----"],
                     ]
                 ]
@@ -86,8 +87,8 @@ class TestParStyles:
             [[[["Footer"]]]],
             [
                 [
-                    [],
-                    [],
+                    [[]],
+                    [[]],
                     [["footnote1)\t"]],
                     [["FootnoteText", " First footnote"]],
                     [["footnote2)\t"]],
@@ -96,8 +97,8 @@ class TestParStyles:
             ],
             [
                 [
-                    [],
-                    [],
+                    [[]],
+                    [[]],
                     [["endnote1)\t"]],
                     [["EndnoteText", " First endnote"]],
                     [["endnote2)\t"]],

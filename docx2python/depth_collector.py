@@ -53,36 +53,38 @@ class DepthCollector:
         """
         self.item_depth = item_depth
         self.rightmost_branches = [[]]
-        self._run_styles = []
-        self._par_styles = []
+        self._rPss = []
+        self._pPss = []
         self._pStyles = []
         self.run_queue = ""  # prefix for next run (for bullets, footnotes, etc.)
         self.log = []
 
     def set_run_style(self, style: List[str]) -> None:
-        self._run_styles = style
+        self._rPss = style
 
     def add_pStyle(self, style: str) -> None:
         self._pStyles.append(style)
 
     def del_pStyle(self) -> None:
-        self._pStyles = self._par_styles[:-1]
+        self._pStyles = self._pPss[:-1]
 
     def add_par_style(self, style: List[str]) -> None:
-        self._par_styles.append(style)
+        self._pPss.append(style)
 
     def del_par_style(self) -> None:
-        self._par_styles = self._par_styles[:-1]
+        self._pPss = self._pPss[:-1]
 
     def close_paragraph(self) -> None:
-        if self._par_styles and self._par_styles[-1]:
-            if self._par_styles[-1]:
-                self.insert(style_close(self._par_styles[-1]))
-            self.del_par_style()
+        if self._pPss and self._pPss[-1]:
+            self.insert(style_close(self._pPss[-1]))
+        self._pStyles = self._pStyles[:-1]
+        self._pPss = self._pPss[:-1]
 
     def open_paragraph(self) -> None:
-        if self._par_styles and self._par_styles[-1]:
-            self.insert(style_open(self._par_styles[-1]))
+        if self._pStyles:
+            self.insert(self._pStyles[-1])
+        if self._pPss and self._pPss[-1]:
+            self.insert(style_open(self._pPss[-1]))
 
     @property
     def tree(self) -> List:
@@ -142,14 +144,11 @@ class DepthCollector:
 
     def insert(self, item: str) -> None:
         """Add item at item_depth. Add branches if necessary to reach depth."""
-        if item:
-            self.set_caret(self.item_depth, reset=False)
-            # if not self.caret and self._par_styles:
-            #     self.caret.append(self._par_styles[-1])
+        self.set_caret(self.item_depth, reset=False)
         if item.strip(" \t\n") and not re.match("----.*----", item):
-            prefix = style_open(self._run_styles)
-            suffix = style_close(self._run_styles)
+            prefix = style_open(self._rPss)
+            suffix = style_close(self._rPss)
             self.caret.append(f"{prefix}{item}{suffix}")
         elif item:
             self.caret.append(f"{item}")
-        self._run_styles = []
+        self._rPss = []

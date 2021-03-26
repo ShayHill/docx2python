@@ -34,8 +34,8 @@ class TestFormatting:
         assert OUTPUT.footnotes_runs == [
             [
                 [
-                    [],
-                    [],
+                    [[]],
+                    [[]],
                     [["footnote1)\t"]],
                     [[" First footnote"]],
                     [["footnote2)\t"]],
@@ -49,8 +49,8 @@ class TestFormatting:
         assert OUTPUT.endnotes_runs == [
             [
                 [
-                    [],
-                    [],
+                    [[]],
+                    [[]],
                     [["endnote1)\t"]],
                     [[" First endnote"]],
                     [["endnote2)\t"]],
@@ -122,6 +122,7 @@ class TestFormatting:
                     "Reference endnote 2----endnote2----",
                     "Heading 1",
                     "Heading 2",
+                    "",
                     "----media/image2.jpg----",
                 ]
             ]
@@ -160,6 +161,7 @@ class TestHtmlFormatting:
                     ["Reference endnote 2", "----endnote2----"],
                     ["<h1>", "Heading 1", "</h1>"],
                     ["<h2>", "Heading 2", "</h2>"],
+                    [],
                     ["----media/image2.jpg----"],
                 ]
             ]
@@ -185,41 +187,20 @@ def test_header_runs() -> None:
             [
                 [
                     [
-                        (
-                            "This document contains paragraphs with multiple runs per "
-                            "paragraph. This ensures result.document and "
-                            "result.document_runs return different things."
-                        )
+                        "This document contains paragraphs with multiple runs per "
+                        "paragraph. This ensures result.document and "
+                        "result.document_runs return different things."
                     ],
+                    [],
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
                     ["Multiple ", "Runs in the", " Body"],
+                    [],
                 ]
             ]
         ],
         [[[["Multiple ", "Runs in the", " Footer"]]]],
-        [[[], []]],  # empty table (footnotes)
-        [[[], []]],  # empty table (endnotes)
-    ]
-    assert docx2python("resources/multiple_runs_per_paragraph.docx").document == [
-        [[["Multiple Runs in the Header"]]],
-        [
-            [
-                [
-                    (
-                        "This document contains paragraphs with multiple runs per "
-                        "paragraph. This ensures result.document and "
-                        "result.document_runs return different things."
-                    ),
-                    "Multiple Runs in the Body",
-                    "Multiple Runs in the Body",
-                    "Multiple Runs in the Body",
-                    "Multiple Runs in the Body",
-                ]
-            ]
-        ],
-        [[["Multiple Runs in the Footer"]]],
-        [[[], []]],  # empty table (footnotes)
-        [[[], []]],  # empty table (endnotes)
+        [[[[]], [[]]]],
+        [[[[]], [[]]]],
     ]
