@@ -95,13 +95,28 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
 
     bullet preceded by four spaces for every indentation level.
     """
+    # TODO: delete if block
+    if "numId2numFmts" in context:
+        aaa = DocxContext.numId2numFmts
+        bbb = context["numId2numFmts"]
+        if aaa != bbb:
+            breakpoint()
     try:
         pPr = paragraph.find(qn("w:pPr"))
         numPr = pPr.find(qn("w:numPr"))
         numId = numPr.find(qn("w:numId")).attrib[qn("w:val")]
         ilvl = numPr.find(qn("w:ilvl")).attrib[qn("w:val")]
         try:
+            # TODO: clean up this mess.
+            # aaa = DocxContext.numId2numFmts
+            # bbb = context["numId2numFmts"]
+            # if aaa != bbb:
+            #     breakpoint()
+            # numFmtb = DocxContext.numId2numFmts[numId][int(ilvl)]
             numFmt = context["numId2numFmts"][numId][int(ilvl)]
+            # numFmtb = DocxContext.numId2numFmts[numId][int(ilvl)]
+            # if numFmtb != numFmt:
+            #     breakpoint()
         except IndexError:
             # give up and put a bullet
             numFmt = "bullet"
@@ -160,7 +175,7 @@ def _elem_key(elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]
     attrib = {k: v for k, v in elem.attrib.items() if k in KNOWN_ATTRIBUTES}
     for k, v in attrib.items():
         with suppress(KeyError):
-            attrib[k] = DocxContext.current_file_rels[v]["Target"]
+            attrib[k] = DocxContext.current_file_rels[v]
     style = get_style(elem)
     return tag, attrib, style
 
@@ -331,7 +346,7 @@ def _get_elem_depth(tree: Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
+def get_text(xml: bytes, context: Dict[str, Any], filename_=None) -> TablesList:
     """Xml as a string to a list of cell strings.
 
     :param xml: an xml bytes object which might contain text
@@ -349,8 +364,12 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
     If you'd like to extend or edit this package, this function is probably where you
     want to do it. Nothing tricky here except keeping track of the text formatting.
     """
+
     tables = DepthCollector(5)
     do_html = context["do_html"]
+
+    root = filename_.tree
+    _merge_elems(root)
 
     # noinspection PyPep8Naming
     def branches(tree: Element) -> None:
@@ -378,6 +397,12 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
         # add text where found
         if tree.tag == Tags.PARAGRAPH:
+            # TODO: delete if block
+            if "numId2numFmts" in context:
+                aaa = DocxContext.numId2numFmts
+                bbb = context["numId2numFmts"]
+                if aaa != bbb:
+                    breakpoint()
             tables.insert(_get_bullet_string(tree, context))
 
         elif tree.tag == Tags.TEXT:
@@ -404,7 +429,7 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
             # look for an href, ignore internal references (anchors)
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:id")]
-                link = context["rId2Target"][rId]
+                link = filename_.rels[rId]
                 tables.queue_rPr(['a href="{}"'.format(link)])
 
         if tree.tag == Tags.FORM_CHECKBOX:
@@ -422,13 +447,13 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
         elif tree.tag == Tags.IMAGE:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:embed")]
-                image = context["rId2Target"][rId]
+                image = filename_.rels[rId]
                 tables.insert("----{}----".format(image))
 
         elif tree.tag == Tags.IMAGEDATA:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:id")]
-                image = context["rId2Target"][rId]
+                image = filename_.rels[rId]
                 tables.insert("----{}----".format(image))
 
         elif tree.tag == Tags.TAB:
@@ -439,8 +464,6 @@ def get_text(xml: bytes, context: Dict[str, Any]) -> TablesList:
 
         tables.set_caret(tree_depth)
 
-    root = ElementTree.fromstring(xml)
-    _merge_elems(root)
     branches(root)
 
     return tables.tree

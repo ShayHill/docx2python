@@ -10,7 +10,7 @@ Some private methods are here because I wanted to keep them with their tests.
 import zipfile
 from typing import Optional
 
-from .globs import DocxContext
+from .globs import DocxContext, File
 from .attribute_dicts import filter_files_by_type, get_path
 from .docx_context import get_context, pull_image_files
 from .docx_output import DocxContent
@@ -37,25 +37,29 @@ def docx2python(
     """
     zipf = zipfile.ZipFile(docx_filename)
     context = get_context(zipf)
+    DocxContext.zipf = zipfile.ZipFile(docx_filename)
+    DocxContext.file_specifiers = [File(x) for x in context["files"]]
     context["do_html"] = html
     context["do_paragraph_styles"] = paragraph_styles
+    DocxContext.numId2numFmts = context.get("numId2numFmts", {})
 
     def file_text(filename_):
         """
         Pull the text from a word/something.xml file
         """
         global DocxContext
-        DocxContext.current_file_rels = {x["Id"]: x for x in filename_.get("rels", [])}
+        DocxContext.current_file_rels = filename_.rels
 
-        rels = filename_.get("rels", [])
+        rels = filename_.rels
+        # breakpoint()
         # TODO: factor our rId2Target (use global DocxContext)
-        context["rId2Target"] = {x["Id"]: x["Target"] for x in rels}
-        unzipped = zipf.read(get_path(filename_))
-        return get_text(unzipped, context)
+        context["rId2Target"] = filename_.rels
+        unzipped = zipf.read(filename_.path)
+        return get_text(unzipped, context, filename_=filename_)
 
     type2content = {}
     for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):
-        type_files = filter_files_by_type(context["files"], type_)
+        type_files = DocxContext.files_of_type(type_)
         type_content = sum([file_text(x) for x in type_files], start=[])
         type2content[type_] = type_content
 

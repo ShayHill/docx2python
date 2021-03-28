@@ -21,8 +21,8 @@ class TestParStyles:
         """
         assert OUTPUT.document_runs == [
             [[[["Header"]]]],
-            [[[["Header"]]]],
             [[[["Header", "Header text", "----media/image1.png----"]]]],
+            [[[["Header"]]]],
             [
                 [
                     [
