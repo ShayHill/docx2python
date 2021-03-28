@@ -142,7 +142,7 @@ class DocxContent:
         `core-properties` is missing, return an empty dict."""
         # TODO: test for a successful call of core-properties
         try:
-            docProps = next(filter_files_by_type(self.files, "core-properties"))
+            docProps = next(iter(self.context.files_of_type("core-properties")))
             return collect_docProps(self.zipf.read(get_path(docProps)))
         except StopIteration:
             warn(

@@ -36,22 +36,15 @@ def docx2python(
     :return: DocxContent object
     """
     zipf = zipfile.ZipFile(docx_filename)
-    context = get_context(zipf)
     docx_context = DocxContext(
         docx_filename, image_folder, html, paragraph_styles, extract_image
     )
-
-    context["do_html"] = html
-    context["do_paragraph_styles"] = paragraph_styles
-    DocxContext.numId2numFmts = context.get("numId2numFmts", {})
-    docx_context.numId2numFmts = context.get("numId2numFmts", {})
-    # breakpoint()
 
     def file_text(filename_):
         """
         Pull the text from a word/something.xml file
         """
-        return get_text(file=filename_, context=context)
+        return get_text(file=filename_)
 
     type2content = {}
     for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):
@@ -59,8 +52,9 @@ def docx2python(
         type_content = sum([file_text(x) for x in type_files], start=[])
         type2content[type_] = type_content
 
+    # TODO: factor this out to return value
     if extract_image:
-        images = pull_image_files(zipf, context, image_folder)
+        images = pull_image_files(docx_context, image_folder)
     else:
         images = None
 
@@ -72,7 +66,7 @@ def docx2python(
         footnotes=type2content["footnotes"],
         endnotes=type2content["endnotes"],
         images=images,
-        files=context["files"],
+        files=docx_context.files,
         zipf=zipf,
         context=docx_context,
     )

@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Set, Union, List, Optional
 from operator import attrgetter
 import os
+from .docx_context import collect_numFmts
 from xml.etree import ElementTree
 from contextlib import suppress
 from .docx_context import collect_rels
@@ -128,7 +129,7 @@ class File:
         return self._unzipped
 
     @property
-    def tree(self) -> bytes:
+    def tree(self) -> ElementTree.Element:
         if not self._tree:
             self._tree = ElementTree.fromstring(self.unzipped)
         return self._tree
@@ -141,8 +142,6 @@ class DocxContext:
     # update this value before parsing text for each xml content file.
     # file_specifiers: File
     zipf: zipfile.ZipFile
-
-    current_file_rels: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
     def __init__(
         self,
@@ -157,8 +156,6 @@ class DocxContext:
         self.do_html = html
         self.do_pStyle = paragraph_styles
         self.extract_image = extract_image
-
-        self._numId2numFmts = None
 
     @cached_property
     def zipf(self) -> zipfile.ZipFile:
@@ -180,15 +177,12 @@ class DocxContext:
             files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
         return files
 
-    @property
-    def numId2numFmts(self) -> Dict[str, Dict[str, str]]:
-        if not self._numId2numFmts:
-            raise AttributeError()
-        return self._numId2numFmts
-
-    @numId2numFmts.setter
-    def numId2numFmts(self, value: Dict[str, Dict[str, str]]) -> None:
-        self._numId2numFmts = value
+    @cached_property
+    def numId2numFmts(self) -> Dict[str, List[str]]:
+        try:
+            return collect_numFmts(self.zipf.read("word/numbering.xml"))
+        except KeyError:
+            raise AttributeError("no numbering formats defined")
 
     @cached_property
     def numId2count(self):

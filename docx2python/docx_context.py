@@ -267,16 +267,12 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
 
 
 def pull_image_files(
-    zipf: zipfile.ZipFile,
-    context: Dict[str, Any],
-    image_directory: Optional[str] = None,
+    docx_context: "DocxContext", image_directory: Optional[str] = None
 ) -> Dict[str, bytes]:
     """
     Copy images from zip file.
 
-    :param zipf: created by ``zipfile.ZipFile(docx_filename)``
     :param image_directory: optional destination for copied images
-    :param context: dictionary of document attributes generated in ``get_context``
     :return: Image names mapped to images in binary format.
 
         To write these to disc::
@@ -287,9 +283,9 @@ def pull_image_files(
     :side effects: Given an optional image_directory, will write the images out to file.
     """
     images = {}
-    for image in filter_files_by_type(context["files"], "image"):
+    for image in docx_context.files_of_type("image"):
         with suppress(KeyError):
-            images[os.path.basename(image["Target"])] = zipf.read(get_path(image))
+            images[os.path.basename(image.Target)] = docx_context.zipf.read(image.path)
     if image_directory is not None:
         pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
         for file, image in images.items():

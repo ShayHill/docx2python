@@ -20,6 +20,8 @@ from docx2python.docx_context import (
     pull_image_files,
 )
 
+from docx2python.globs import DocxContext
+
 
 class TestCollectNumFmts:
     """Test strip_text.collect_numFmts """
@@ -101,18 +103,20 @@ class TestPullImageFiles:
 
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
-        zipf = zipfile.ZipFile("resources/example.docx")
-        context = get_context(zipf)
-        pull_image_files(zipf, context, "delete_this/path/to/images")
+        docx_context = DocxContext("resources/example.docx")
+        pull_image_files(docx_context, "delete_this/path/to/images")
         assert os.listdir("delete_this/path/to/images") == ["image1.png", "image2.jpg"]
+        # TODO: create a temp file for this function
         # clean up
         shutil.rmtree("delete_this")
 
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
+        # TODO: remove unneeded after refactoring pull_image_files signature
         zipf = zipfile.ZipFile("resources/basic.docx")
         context = get_context(zipf)
-        pull_image_files(zipf, context, "delete_this/path/to/images")
+        docx_context = DocxContext("resources/basic.docx")
+        pull_image_files(docx_context, "delete_this/path/to/images")
         assert os.listdir("delete_this/path/to/images") == []
         # clean up
         shutil.rmtree("delete_this")

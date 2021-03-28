@@ -337,15 +337,10 @@ def _get_elem_depth(tree: Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-def get_text(file: File, context: Dict[str, Any]) -> TablesList:
+def get_text(file: File) -> TablesList:
     """
     Xml as a string to a list of cell strings.
 
-    :param file:
-    :param context:
-    :return:
-
-    :param context: dictionary of document attributes generated in get_docx_text
     :returns: A 5-deep nested list of strings.
 
     Sorts the text into the DepthCollector instance, five-levels deep
@@ -361,7 +356,6 @@ def get_text(file: File, context: Dict[str, Any]) -> TablesList:
     """
 
     tables = DepthCollector(5)
-    do_html = context["do_html"]
 
     root = file.tree
     _merge_elems(file, root)
@@ -397,7 +391,7 @@ def get_text(file: File, context: Dict[str, Any]) -> TablesList:
         elif tree.tag == Tags.TEXT:
             # oddly enough, these don't all contain text
             text = tree.text if tree.text is not None else ""
-            if do_html is True:
+            if file.context.do_html:
                 text = text.replace("<", "&lt;")
                 text = text.replace(">", "&gt;")
             tables.insert_text(text)
