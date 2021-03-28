@@ -72,12 +72,12 @@ def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
 
 
 # noinspection PyPep8Naming
-def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) -> str:
+# TODO: factor out context
+def _get_bullet_string(file: File, paragraph: ElementTree.Element) -> str:
     """
     Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
     :param paragraph: <w:p> xml element
-    :param context: dictionary of document attributes generated in ``get_context``
     :return: specified 'bullet' string or '' if paragraph is not numbered
 
     <w:p>
@@ -101,7 +101,7 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         numId = numPr.find(qn("w:numId")).attrib[qn("w:val")]
         ilvl = numPr.find(qn("w:ilvl")).attrib[qn("w:val")]
         try:
-            numFmt = context["numId2numFmts"][numId][int(ilvl)]
+            numFmt = file.context.numId2numFmts[numId][int(ilvl)]
         except IndexError:
             # give up and put a bullet
             numFmt = "bullet"
@@ -109,7 +109,7 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         # not a numbered paragraph
         return ""
 
-    number = _increment_list_counter(context["numId2count"][numId], ilvl)
+    number = _increment_list_counter(file.context.numId2count[numId], ilvl)
     indent = "\t" * int(ilvl)
 
     def format_bullet(bullet: str) -> str:
@@ -139,7 +139,9 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         return format_bullet(nums.bullet())
 
 
-def _elem_key(file: File, elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
+def _elem_key(
+    file: File, elem: Element
+) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
     """
     Enough information to tell if two elements are more-or-less identical.
 
@@ -261,8 +263,10 @@ def _merge_elems(file: File, tree: Element) -> None:
     This function only merges runs, text, and hyperlinks, because merging (e.g.)
     paragraphs would ignore information docx2python DOES want to preserve.
     """
+
     def file_elem_key(elem: ElementTree.Element):
         return _elem_key(file, elem)
+
     merge_tags = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT}
     elems = [x for x in tree if has_content(x)]
     runs = [list(y) for x, y in groupby(elems, key=file_elem_key)]
@@ -373,13 +377,13 @@ def get_text(file: File, context: Dict[str, Any]) -> TablesList:
 
         # queue up tags before opening any paragraphs or runs
         if tree.tag == Tags.PARAGRAPH:
-            if context["do_paragraph_styles"]:
+            if file.context.do_pStyle:
                 tables.add_pStyle(get_pStyle(tree))
-            if context["do_html"]:
+            if file.context.do_html:
                 tables.add_pPs(format_Pr({get_pStyle(tree): None}))
 
         elif tree.tag == Tags.RUN:
-            if context["do_html"]:
+            if file.context.do_html:
                 tables.add_rPs(get_run_style(tree))
 
         # set appropriate depth for element (this will trigger methods in ``tables``)
@@ -388,13 +392,7 @@ def get_text(file: File, context: Dict[str, Any]) -> TablesList:
 
         # add text where found
         if tree.tag == Tags.PARAGRAPH:
-            # TODO: delete if block
-            if "numId2numFmts" in context:
-                aaa = DocxContext.numId2numFmts
-                bbb = context["numId2numFmts"]
-                if aaa != bbb:
-                    breakpoint()
-            tables.insert(_get_bullet_string(tree, context))
+            tables.insert(_get_bullet_string(file, tree))
 
         elif tree.tag == Tags.TEXT:
             # oddly enough, these don't all contain text

@@ -37,24 +37,20 @@ def docx2python(
     """
     zipf = zipfile.ZipFile(docx_filename)
     context = get_context(zipf)
-    docx_context = DocxContext(docx_filename)
+    docx_context = DocxContext(
+        docx_filename, image_folder, html, paragraph_styles, extract_image
+    )
+
     context["do_html"] = html
     context["do_paragraph_styles"] = paragraph_styles
     DocxContext.numId2numFmts = context.get("numId2numFmts", {})
+    docx_context.numId2numFmts = context.get("numId2numFmts", {})
+    # breakpoint()
 
     def file_text(filename_):
         """
         Pull the text from a word/something.xml file
         """
-        global DocxContext
-        # DocxContext.current_file_rels = filename_.rels
-        filename_.context.current_file_rels = filename_.rels
-
-        rels = filename_.rels
-        # breakpoint()
-        # TODO: factor our rId2Target (use global DocxContext)
-        context["rId2Target"] = filename_.rels
-        unzipped = zipf.read(filename_.path)
         return get_text(file=filename_, context=context)
 
     type2content = {}
@@ -78,6 +74,7 @@ def docx2python(
         images=images,
         files=context["files"],
         zipf=zipf,
+        context=docx_context,
     )
 
 

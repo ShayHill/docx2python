@@ -49,6 +49,8 @@ import zipfile
 from warnings import warn
 from copy import deepcopy
 
+from .globs import DocxContext
+
 
 class DocxContent:
     """Holds return values for docx content."""
@@ -63,7 +65,8 @@ class DocxContent:
         endnotes: TablesList,
         images: Dict[str, bytes],
         files: List[Dict[str, str]],
-        zipf: zipfile.ZipFile
+        zipf: zipfile.ZipFile,
+        context: DocxContext
     ) -> None:
         self.header_runs = header
         self.footer_runs = footer
@@ -73,6 +76,7 @@ class DocxContent:
         self.images = images
         self.files = files
         self.zipf = zipf
+        self.context = context
 
     def __getattr__(self, item) -> Any:
         """

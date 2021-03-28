@@ -92,3 +92,5 @@ allowed the program to complete) has been altered.
 --  No longer supports Python 3.4 or 3.5
 
     Now only supports Python 3.6+
+
+--  pytest-mock added as test requirement

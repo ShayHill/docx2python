@@ -19,6 +19,9 @@ from .docx_context import collect_rels
 
 import zipfile
 from .attribute_dicts import filter_files_by_type, ExpandedAttribDict, get_path
+from collections import defaultdict
+
+from functools import cached_property
 
 # TODO: match all imports re: ElementTree
 
@@ -136,17 +139,60 @@ class DocxContext:
     # each xml file has its own rels file.
     # rId numbers are NOT unique between rels files.
     # update this value before parsing text for each xml content file.
-    file_specifiers: File
+    # file_specifiers: File
     zipf: zipfile.ZipFile
 
     current_file_rels: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
-    def __init__(self, docx_filename: str):
-        self.zipf = zipfile.ZipFile(docx_filename)
-        path2rels = collect_rels(self.zipf)
-        self.files = []
-        for k, v in path2rels.items():
-            self.files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
+    def __init__(
+        self,
+        docx_filename: str,
+        image_folder: Optional[str] = None,
+        html: bool = False,
+        paragraph_styles: bool = False,
+        extract_image: bool = True,
+    ):
+        self.docx_filename = docx_filename
+        self.image_folder = image_folder
+        self.do_html = html
+        self.do_pStyle = paragraph_styles
+        self.extract_image = extract_image
+
+        self._numId2numFmts = None
+
+    @cached_property
+    def zipf(self) -> zipfile.ZipFile:
+        """
+        Entire docx unzipped into bytes.
+
+        :return:
+        """
+        return zipfile.ZipFile(self.docx_filename)
+
+    @cached_property
+    def files(self) -> List[File]:
+        """
+        Instantiate a File instance for every content file.
+        :return:
+        """
+        files = []
+        for k, v in collect_rels(self.zipf).items():
+            files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
+        return files
+
+    @property
+    def numId2numFmts(self) -> Dict[str, Dict[str, str]]:
+        if not self._numId2numFmts:
+            raise AttributeError()
+        return self._numId2numFmts
+
+    @numId2numFmts.setter
+    def numId2numFmts(self, value: Dict[str, Dict[str, str]]) -> None:
+        self._numId2numFmts = value
+
+    @cached_property
+    def numId2count(self):
+        return {x: defaultdict(lambda: 0) for x in self.numId2numFmts}
 
     def files_of_type(self, type_: str) -> List[ExpandedAttribDict]:
         """
@@ -160,9 +206,9 @@ class DocxContext:
             (x for x in self.files if x.Type == type_), key=attrgetter("path")
         )
 
-    @classmethod
-    def find_by_path(cls, path: str):
-        return (x for x in cls.file_specifiers if x.path == path)
+    # @classmethod
+    # def find_by_path(cls, path: str):
+    #     return (x for x in cls.file_specifiers if x.path == path)
 
     @classmethod
     def file_unzipped(cls, file_specifier: ExpandedAttribDict) -> bytes:
