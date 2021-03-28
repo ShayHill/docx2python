@@ -37,8 +37,7 @@ def docx2python(
     """
     zipf = zipfile.ZipFile(docx_filename)
     context = get_context(zipf)
-    DocxContext.zipf = zipfile.ZipFile(docx_filename)
-    DocxContext.file_specifiers = [File(x) for x in context["files"]]
+    docx_context = DocxContext(docx_filename)
     context["do_html"] = html
     context["do_paragraph_styles"] = paragraph_styles
     DocxContext.numId2numFmts = context.get("numId2numFmts", {})
@@ -48,18 +47,19 @@ def docx2python(
         Pull the text from a word/something.xml file
         """
         global DocxContext
-        DocxContext.current_file_rels = filename_.rels
+        # DocxContext.current_file_rels = filename_.rels
+        filename_.context.current_file_rels = filename_.rels
 
         rels = filename_.rels
         # breakpoint()
         # TODO: factor our rId2Target (use global DocxContext)
         context["rId2Target"] = filename_.rels
         unzipped = zipf.read(filename_.path)
-        return get_text(unzipped, context, filename_=filename_)
+        return get_text(file=filename_, context=context)
 
     type2content = {}
     for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):
-        type_files = DocxContext.files_of_type(type_)
+        type_files = docx_context.files_of_type(type_)
         type_content = sum([file_text(x) for x in type_files], start=[])
         type2content[type_] = type_content
 

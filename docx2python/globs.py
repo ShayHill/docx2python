@@ -8,12 +8,14 @@
 The rels and flags for docx processing.
 # TODO: improve docmod
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, Set, Union, List, Optional
 from operator import attrgetter
 import os
 from xml.etree import ElementTree
 from contextlib import suppress
+from .docx_context import collect_rels
 
 import zipfile
 from .attribute_dicts import filter_files_by_type, ExpandedAttribDict, get_path
@@ -48,19 +50,20 @@ class File:
     That's the starting point for these instances
     """
 
-    def __init__(self, attribute_dict: Dict[str, str]) -> None:
+    def __init__(self, context: DocxContext, attribute_dict: Dict[str, str]) -> None:
         """
         Pull attributes from above-described dicts
 
         :param attribute_dict:
         """
+        self.context = context
+
         self.Id = attribute_dict["Id"]
         self.Type = os.path.basename(attribute_dict["Type"])
         self.Target = attribute_dict["Target"]
         self.dir = attribute_dict["dir"]
 
         self._path: Optional[str] = None
-        # self._rels_path: Optional[str] = None
         self._unzipped: Optional[bytes] = None
         self._tree: Optional[ElementTree.Element] = None
         self._rels: List[Dict[str, str]] = []
@@ -107,7 +110,7 @@ class File:
     def rels(self) -> Dict[str, Dict[str, str]]:
         if not self._rels:
             try:
-                unzipped = DocxContext.zipf.read(self._rels_path)
+                unzipped = self.context.zipf.read(self._rels_path)
                 tree = ElementTree.fromstring(unzipped)
                 rels = [x.attrib for x in tree]
             except KeyError:
@@ -118,7 +121,7 @@ class File:
     @property
     def unzipped(self) -> bytes:
         if not self._unzipped:
-            self._unzipped = DocxContext.zipf.read(self.path)
+            self._unzipped = self.context.zipf.read(self.path)
         return self._unzipped
 
     @property
@@ -138,8 +141,14 @@ class DocxContext:
 
     current_file_rels: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
-    @classmethod
-    def files_of_type(cls, type_: str) -> List[ExpandedAttribDict]:
+    def __init__(self, docx_filename: str):
+        self.zipf = zipfile.ZipFile(docx_filename)
+        path2rels = collect_rels(self.zipf)
+        self.files = []
+        for k, v in path2rels.items():
+            self.files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
+
+    def files_of_type(self, type_: str) -> List[ExpandedAttribDict]:
         """
         File specifiers for all files with attrib Type='http://.../type_'
 
@@ -148,7 +157,7 @@ class DocxContext:
         :return: file specifiers of the requested type, sorted by path
         """
         return sorted(
-            (x for x in cls.file_specifiers if x.Type == type_), key=attrgetter("path")
+            (x for x in self.files if x.Type == type_), key=attrgetter("path")
         )
 
     @classmethod

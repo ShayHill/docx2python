@@ -22,7 +22,7 @@ from . import numbering_formats as nums
 from .attribute_register import KNOWN_ATTRIBUTES, Tags, has_content
 from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
-from .globs import DocxContext
+from .globs import DocxContext, File
 from .iterators import enum_at_depth
 from .iterators import get_text as gett_text
 from .namespace import qn
@@ -95,28 +95,13 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
 
     bullet preceded by four spaces for every indentation level.
     """
-    # TODO: delete if block
-    if "numId2numFmts" in context:
-        aaa = DocxContext.numId2numFmts
-        bbb = context["numId2numFmts"]
-        if aaa != bbb:
-            breakpoint()
     try:
         pPr = paragraph.find(qn("w:pPr"))
         numPr = pPr.find(qn("w:numPr"))
         numId = numPr.find(qn("w:numId")).attrib[qn("w:val")]
         ilvl = numPr.find(qn("w:ilvl")).attrib[qn("w:val")]
         try:
-            # TODO: clean up this mess.
-            # aaa = DocxContext.numId2numFmts
-            # bbb = context["numId2numFmts"]
-            # if aaa != bbb:
-            #     breakpoint()
-            # numFmtb = DocxContext.numId2numFmts[numId][int(ilvl)]
             numFmt = context["numId2numFmts"][numId][int(ilvl)]
-            # numFmtb = DocxContext.numId2numFmts[numId][int(ilvl)]
-            # if numFmtb != numFmt:
-            #     breakpoint()
         except IndexError:
             # give up and put a bullet
             numFmt = "bullet"
@@ -154,7 +139,7 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         return format_bullet(nums.bullet())
 
 
-def _elem_key(elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
+def _elem_key(file: File, elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
     """
     Enough information to tell if two elements are more-or-less identical.
 
@@ -175,7 +160,7 @@ def _elem_key(elem: Element) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]
     attrib = {k: v for k, v in elem.attrib.items() if k in KNOWN_ATTRIBUTES}
     for k, v in attrib.items():
         with suppress(KeyError):
-            attrib[k] = DocxContext.current_file_rels[v]
+            attrib[k] = file.rels[v]
     style = get_style(elem)
     return tag, attrib, style
 
@@ -200,7 +185,7 @@ def get_run_text(branch: Element) -> Union[str, None]:
     return "".join(yield_text(branch))
 
 
-def _merge_elems(tree: Element) -> None:
+def _merge_elems(file: File, tree: Element) -> None:
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
 
@@ -276,9 +261,11 @@ def _merge_elems(tree: Element) -> None:
     This function only merges runs, text, and hyperlinks, because merging (e.g.)
     paragraphs would ignore information docx2python DOES want to preserve.
     """
+    def file_elem_key(elem: ElementTree.Element):
+        return _elem_key(file, elem)
     merge_tags = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT}
     elems = [x for x in tree if has_content(x)]
-    runs = [list(y) for x, y in groupby(elems, key=_elem_key)]
+    runs = [list(y) for x, y in groupby(elems, key=file_elem_key)]
 
     for run in (x for x in runs if len(x) > 1 and x[0].tag in merge_tags):
         if run[0].tag == Tags.TEXT:
@@ -288,7 +275,7 @@ def _merge_elems(tree: Element) -> None:
             tree.remove(elem)
 
     for branch in tree:
-        _merge_elems(branch)
+        _merge_elems(file, branch)
 
 
 def _get_elem_depth(tree: Element) -> Optional[int]:
@@ -346,10 +333,14 @@ def _get_elem_depth(tree: Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-def get_text(xml: bytes, context: Dict[str, Any], filename_=None) -> TablesList:
-    """Xml as a string to a list of cell strings.
+def get_text(file: File, context: Dict[str, Any]) -> TablesList:
+    """
+    Xml as a string to a list of cell strings.
 
-    :param xml: an xml bytes object which might contain text
+    :param file:
+    :param context:
+    :return:
+
     :param context: dictionary of document attributes generated in get_docx_text
     :returns: A 5-deep nested list of strings.
 
@@ -368,8 +359,8 @@ def get_text(xml: bytes, context: Dict[str, Any], filename_=None) -> TablesList:
     tables = DepthCollector(5)
     do_html = context["do_html"]
 
-    root = filename_.tree
-    _merge_elems(root)
+    root = file.tree
+    _merge_elems(file, root)
 
     # noinspection PyPep8Naming
     def branches(tree: Element) -> None:
@@ -429,7 +420,7 @@ def get_text(xml: bytes, context: Dict[str, Any], filename_=None) -> TablesList:
             # look for an href, ignore internal references (anchors)
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:id")]
-                link = filename_.rels[rId]
+                link = file.rels[rId]
                 tables.queue_rPr(['a href="{}"'.format(link)])
 
         if tree.tag == Tags.FORM_CHECKBOX:
@@ -447,13 +438,13 @@ def get_text(xml: bytes, context: Dict[str, Any], filename_=None) -> TablesList:
         elif tree.tag == Tags.IMAGE:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:embed")]
-                image = filename_.rels[rId]
+                image = file.rels[rId]
                 tables.insert("----{}----".format(image))
 
         elif tree.tag == Tags.IMAGEDATA:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:id")]
-                image = filename_.rels[rId]
+                image = file.rels[rId]
                 tables.insert("----{}----".format(image))
 
         elif tree.tag == Tags.TAB:
