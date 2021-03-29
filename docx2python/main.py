@@ -10,11 +10,10 @@ Some private methods are here because I wanted to keep them with their tests.
 import zipfile
 from typing import Optional
 
-from .globs import DocxContext, File
-from .attribute_dicts import filter_files_by_type, get_path
-from .docx_context import get_context, pull_image_files
+from .docx_context import pull_image_files
 from .docx_output import DocxContent
 from .docx_text import get_text
+from .globs import DocxContext
 
 
 def docx2python(

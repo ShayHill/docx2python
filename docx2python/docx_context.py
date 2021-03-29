@@ -20,17 +20,10 @@ import os
 import pathlib
 import re
 import zipfile
-from collections import defaultdict
 from contextlib import suppress
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Dict, List, Optional
 from xml.etree import ElementTree
 
-from .attribute_dicts import (
-    ExpandedAttribDict,
-    filter_files_by_type,
-    get_path,
-    get_path_rels,
-)
 from .namespace import qn
 
 
@@ -212,58 +205,6 @@ def collect_docProps(xml: bytes) -> Dict[str, str]:
     for dc in root:
         docProp2text[re.match(capture_tag_name, dc.tag).group("tag_name")] = dc.text
     return docProp2text
-
-
-# noinspection PyPep8Naming
-def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
-    """
-    Collect context information from docProps, rels etc.
-
-    :param zipf: created by ``zipfile.ZipFile("docx_filename")``
-    :return: dictionaries
-
-        * rId2Target - rel Id mapped to image files
-        * docProp2text - document properties like 'modified' and 'created'
-        * numId2numFmts - paragraph IDs mapped to number and bullet formats
-        * numIdcount - a counter starting at 0 for each ilvl of each numbered list
-
-        The last two will only be present in documents with bulleted or numbered lists.
-
-    A typical file will look like:
-        {
-            "id": "rid1",
-            "type": "http://.../officedocument",
-            "target": "word/document.xml",
-            "rels": [
-                {"id": "rid8", "type": "http://.../header", "target": "header1.xml"},
-                {"id": "rid9", "type": "http://.../footer", "target": "footer1.xml"},
-                ...,
-            ],
-        }
-    """
-
-    path2rels = cast(ExpandedAttribDict, collect_rels(zipf))
-
-    files = []
-    for k, v in path2rels.items():
-        files += [{**x, "dir": os.path.dirname(k)} for x in v]
-    for file in files:
-        with suppress(KeyError):
-            rels = path2rels[get_path_rels(file)]
-            file["rels"] = rels
-
-    context = {"files": files}
-
-    try:
-        numId2numFmts = collect_numFmts(zipf.read("word/numbering.xml"))
-        context["numId2numFmts"] = numId2numFmts
-        context["numId2count"] = {
-            x: defaultdict(lambda: 0) for x in numId2numFmts.keys()
-        }
-    except KeyError:
-        # no bullets or numbered paragraphs in file
-        pass
-    return context
 
 
 def pull_image_files(

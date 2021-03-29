@@ -9,20 +9,19 @@ The rels and flags for docx processing.
 # TODO: improve docmod
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Dict, Set, Union, List, Optional
-from operator import attrgetter
+
 import os
-from .docx_context import collect_numFmts
-from xml.etree import ElementTree
-from contextlib import suppress
-from .docx_context import collect_rels
-
 import zipfile
-from .attribute_dicts import filter_files_by_type, ExpandedAttribDict, get_path
 from collections import defaultdict
-
+from dataclasses import dataclass
 from functools import cached_property
+from operator import attrgetter
+from typing import Dict, List, Optional, Union
+from xml.etree import ElementTree
+
+from .docx_context import collect_numFmts, collect_rels
+
+ExpandedAttribDict = Dict[str, Union[str, Dict[str, str], bytes]]
 
 # TODO: match all imports re: ElementTree
 
@@ -207,5 +206,5 @@ class DocxContext:
     @classmethod
     def file_unzipped(cls, file_specifier: ExpandedAttribDict) -> bytes:
         if "unzipped" not in file_specifier:
-            file_specifier["unzipped"] = cls.zipf.read(get_path(file_specifier))
+            file_specifier["unzipped"] = cls.zipf.read(file_specifier.path)
         return file_specifier["unzipped"]

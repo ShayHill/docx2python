@@ -9,17 +9,14 @@ import os
 import shutil
 import zipfile
 from collections import defaultdict
-from typing import Any, Dict
 
 import pytest
 
 from docx2python.docx_context import (
     collect_docProps,
     collect_numFmts,
-    get_context,
     pull_image_files,
 )
-
 from docx2python.globs import DocxContext
 
 
@@ -60,13 +57,6 @@ class TestCollectDocProps:
         assert props["lastModifiedBy"] == "Shay Hill"
 
 
-@pytest.fixture
-def docx_context() -> Dict[str, Any]:
-    """result of running strip_text.get_context"""
-    zipf = zipfile.ZipFile("resources/example.docx")
-    return get_context(zipf)
-
-
 # noinspection PyPep8Naming
 class TestGetContext:
     """Text strip_text.get_context """
@@ -78,24 +68,27 @@ class TestGetContext:
     #     props = collect_docProps(zipf.read("docProps/core.xml"))
     #     assert docx_context["docProp2text"] == props
 
-    def test_numId2numFmts(self, docx_context) -> None:
+    def test_numId2numFmts(self) -> None:
         """All targets mapped"""
-        zipf = zipfile.ZipFile("resources/example.docx")
-        numId2numFmts = collect_numFmts(zipf.read("word/numbering.xml"))
-        assert docx_context["numId2numFmts"] == numId2numFmts
+        docx_context = DocxContext("resources/example.docx")
+        assert docx_context.numId2numFmts == collect_numFmts(
+            docx_context.zipf.read("word/numbering.xml")
+        )
 
-    def test_numId2count(self, docx_context) -> None:
+    def test_numId2count(self) -> None:
         """All numIds mapped to a default dict defaulting to 0"""
-        for numId in docx_context["numId2numFmts"]:
-            assert isinstance(docx_context["numId2count"][numId], defaultdict)
-            assert docx_context["numId2count"][numId][0] == 0
+        docx_context = DocxContext("resources/example.docx")
+        for numId in docx_context.numId2numFmts:
+            assert isinstance(docx_context.numId2count[numId], defaultdict)
+            assert docx_context.numId2count[numId][0] == 0
 
     def test_lists(self) -> None:
         """Pass silently when no numbered or bulleted lists."""
-        zipf = zipfile.ZipFile("resources/basic.docx")
-        context = get_context(zipf)
-        assert "numId2numFmts" not in context
-        assert "numId2count" not in context
+        docx_context = DocxContext("resources/basic.docx")
+        with pytest.raises(AttributeError):
+            docx_context.numId2numFmts
+        with pytest.raises(AttributeError):
+            docx_context.numId2count
 
 
 class TestPullImageFiles:
@@ -113,8 +106,6 @@ class TestPullImageFiles:
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
         # TODO: remove unneeded after refactoring pull_image_files signature
-        zipf = zipfile.ZipFile("resources/basic.docx")
-        context = get_context(zipf)
         docx_context = DocxContext("resources/basic.docx")
         pull_image_files(docx_context, "delete_this/path/to/images")
         assert os.listdir("delete_this/path/to/images") == []

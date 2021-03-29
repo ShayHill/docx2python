@@ -38,18 +38,15 @@ Also returns a 4-deep nested list (paragraphs are strings)::
 This is the format for default (no trailing "_runs", e.g ``header``) properties.
 
 """
-from typing import Dict, List, Any
+import zipfile
+from copy import deepcopy
+from typing import Any, Dict, List
+from warnings import warn
 
-from .attribute_dicts import filter_files_by_type, get_path
 from .docx_context import collect_docProps
 from .docx_text import TablesList
-from .iterators import enum_at_depth
-from .iterators import get_html_map, iter_at_depth
-import zipfile
-from warnings import warn
-from copy import deepcopy
-
 from .globs import DocxContext
+from .iterators import enum_at_depth, get_html_map, iter_at_depth
 
 
 class DocxContent:
@@ -143,7 +140,7 @@ class DocxContent:
         # TODO: test for a successful call of core-properties
         try:
             docProps = next(iter(self.context.files_of_type("core-properties")))
-            return collect_docProps(self.zipf.read(get_path(docProps)))
+            return collect_docProps(self.zipf.read(docProps.path))
         except StopIteration:
             warn(
                 "Could not find core-properties file (should be in docProps/core.xml) "
