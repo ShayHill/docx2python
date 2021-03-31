@@ -9,12 +9,11 @@ Text runs are formatted inline in the ``trash/document.xml`` or header files. Re
 those elements to extract formatting information.
 """
 import re
+from collections import defaultdict
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 from xml.etree import ElementTree
-from .attribute_register import Tags
-from .attribute_register import has_content
-from collections import defaultdict
 
+from .attribute_register import Tags
 from .namespace import qn
 
 
@@ -129,18 +128,6 @@ def get_pStyle(paragraph_element: ElementTree.Element) -> str:
     if pStyle:
         return pStyle
     return ""
-
-
-def get_paragraph_style(paragraph_element: ElementTree.Element) -> List[str]:
-    """
-    Get html formatting for paragraph
-
-    :param paragraph_element:
-    :return:
-
-    Right now, this only works with heading styles.
-    """
-    return [get_pStyle(paragraph_element)]
 
 
 # noinspection PyPep8Naming
@@ -269,11 +256,8 @@ def style_open(style: Sequence[Tuple[str, str]]) -> str:
     >>> style_open(style)
     '<font color="red" size="32"><b><i><u>'
     """
-    # TODO: remove try/except in style_open and style_close
     # TODO: update docstrings for style_open and style_close
-    text = [" ".join(x for x in y if x) for y in style]
     return "".join((f"<{x}>" for x in style))
-    # return "".join("<{}>".format(x) for x in text)
 
 
 def style_close(style: List[Tuple[str, str]]) -> str:

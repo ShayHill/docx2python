@@ -8,7 +8,7 @@
 Some private methods are here because I wanted to keep them with their tests.
 """
 import zipfile
-from typing import Optional
+from typing import Optional, List, Union
 
 from .docx_context import pull_image_files
 from .docx_output import DocxContent
@@ -39,7 +39,7 @@ def docx2python(
         docx_filename, image_folder, html, paragraph_styles, extract_image
     )
 
-    def file_text(filename_):
+    def file_text(filename_) -> List[Union[List[str]]]:
         """
         Pull the text from a word/something.xml file
         """
@@ -59,26 +59,5 @@ def docx2python(
 
     zipf.close()
     return DocxContent(
-        header=type2content["header"],
-        body=type2content["officeDocument"],
-        footer=type2content["footer"],
-        footnotes=type2content["footnotes"],
-        endnotes=type2content["endnotes"],
-        images=images,
-        files=docx_context.files,
-        zipf=zipf,
-        context=docx_context,
+        images=images, files=docx_context.files, zipf=zipf, context=docx_context
     )
-
-
-# TODO: sort headers and footers
-# TODO: remove this block
-if __name__ == "__main__":
-    # TODO: run the CRB manual again and have a look at the hyperlinks
-    from time import time
-
-    TIME = time.time()
-    pars = docx2python("test/resources/CRB EHS Manual.docx", html=True)
-    total_time = time.time() - TIME
-    print(f"{total_time=}")
-    breakpoint()

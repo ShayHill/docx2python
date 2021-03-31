@@ -5,6 +5,9 @@
 :author: Shay Hill
 :created: 11/2/2020
 
+Docx files created in MS Work have a ``docProps.xml`` file with author, etc.
+Docx files created in google docs do not have a ``docProps.xml`` file.
+
 File `test-docx2python-conversion-google_docs.docx` sent by a user.
 
 Traceback (most recent call last):
@@ -37,12 +40,44 @@ KeyError: "There is no item named 'docProps/core.xml' in the archive"
 """
 
 from pathlib import Path
+import pytest
 
 from docx2python import docx2python
 
-TEST_FILE = Path(
+FILE_WITH_DOCPROPS = Path(__file__, "..", "resources", "example.docx")
+
+FILE_WITHOUT_DOCPROPS = Path(
     __file__, "..", "resources", "test-docx2python-conversion-google_docs.docx"
 )
+
+
+class TestDeprecatedPropertiesProperty:
+    def test_deprecated_properties_property(self) -> None:
+        """
+        Raise a future warning when user requests ``result.properties``
+        """
+        result = docx2python(FILE_WITH_DOCPROPS)
+        with pytest.warns(FutureWarning):
+            _ = result.properties
+
+
+class TestDocPropsFound:
+    def test_docprops_found(self) -> None:
+        """
+        Return docProps as a dictionary
+        """
+        result = docx2python(FILE_WITH_DOCPROPS)
+        assert result.properties == {
+            "created": "2019-07-05T21:51:00Z",
+            "creator": "Shay Hill",
+            "description": None,
+            "keywords": None,
+            "lastModifiedBy": "Shay Hill",
+            "modified": "2021-03-26T00:30:00Z",
+            "revision": "7",
+            "subject": None,
+            "title": None,
+        }
 
 
 class TestGoogleDocs:
@@ -51,7 +86,8 @@ class TestGoogleDocs:
         It seems Google Docs docx files to not contain a document properties file:
         `docProps/core.xml`. The contents of this file are returned as a dictionary.
         To correct the above error, result.properties will now return an empty
-        dictionary.
+        dictionary (with a warning).
         """
-        result = docx2python(TEST_FILE)
-        assert result.properties == {}
+        result = docx2python(FILE_WITHOUT_DOCPROPS)
+        with pytest.warns(UserWarning):
+            assert result.core_properties == {}

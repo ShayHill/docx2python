@@ -18,6 +18,7 @@ from functools import cached_property
 from operator import attrgetter
 from typing import Dict, List, Optional, Union
 from xml.etree import ElementTree
+from .docx_text import get_text
 
 from .docx_context import collect_numFmts, collect_rels
 
@@ -133,6 +134,10 @@ class File:
             self._tree = ElementTree.fromstring(self.unzipped)
         return self._tree
 
+    @property
+    def content(self) -> List[Union[List, str]]:
+        return get_text(self)
+
 
 @dataclass
 class DocxContext:
@@ -189,22 +194,12 @@ class DocxContext:
 
     def files_of_type(self, type_: str) -> List[ExpandedAttribDict]:
         """
-        File specifiers for all files with attrib Type='http://.../type_'
+        File instances with attrib Type='http://.../type_'
 
         :param type_: this package looks for any of
             ("header", "officeDocument", "footer", "footnotes", "endnotes")
-        :return: file specifiers of the requested type, sorted by path
+        :return: File instances of the requested type, sorted by path
         """
         return sorted(
             (x for x in self.files if x.Type == type_), key=attrgetter("path")
         )
-
-    # @classmethod
-    # def find_by_path(cls, path: str):
-    #     return (x for x in cls.file_specifiers if x.path == path)
-
-    @classmethod
-    def file_unzipped(cls, file_specifier: ExpandedAttribDict) -> bytes:
-        if "unzipped" not in file_specifier:
-            file_specifier["unzipped"] = cls.zipf.read(file_specifier.path)
-        return file_specifier["unzipped"]

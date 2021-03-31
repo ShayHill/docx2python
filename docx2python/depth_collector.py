@@ -60,15 +60,6 @@ class DepthCollector:
         self._par_queue = []  # for footnotes (add content before opening paragraph)
         self._rPr_queue = []  # for hyperlinks (add 'a href=""' as prop for next run)
 
-    def set_run_style(self, style: List[str]) -> None:
-        self._rPss = style
-
-    def del_pStyle(self) -> None:
-        self._pStyles = self._pPss[:-1]
-
-    def del_par_style(self) -> None:
-        self._pPss = self._pPss[:-1]
-
     def queue_rPr(self, style: List[str]) -> None:
         self._rPr_queue += style
 
@@ -129,7 +120,6 @@ class DepthCollector:
 
     def raise_caret(self) -> None:
         """Close branch at caret and move up to parent."""
-        # TODO: factor out self log
         if self.caret_depth == 1:
             raise CaretDepthError("will not raise caret above root")
         if self.caret_depth == self.item_depth:

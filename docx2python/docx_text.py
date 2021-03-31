@@ -22,7 +22,6 @@ from . import numbering_formats as nums
 from .attribute_register import KNOWN_ATTRIBUTES, Tags, has_content
 from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
-from .globs import DocxContext, File
 from .iterators import enum_at_depth
 from .iterators import get_text as gett_text
 from .namespace import qn
@@ -72,8 +71,7 @@ def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
 
 
 # noinspection PyPep8Naming
-# TODO: factor out context
-def _get_bullet_string(file: File, paragraph: ElementTree.Element) -> str:
+def _get_bullet_string(file: "File", paragraph: ElementTree.Element) -> str:
     """
     Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
@@ -140,7 +138,7 @@ def _get_bullet_string(file: File, paragraph: ElementTree.Element) -> str:
 
 
 def _elem_key(
-    file: File, elem: Element
+    file: "File", elem: Element
 ) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
     """
     Enough information to tell if two elements are more-or-less identical.
@@ -167,27 +165,7 @@ def _elem_key(
     return tag, attrib, style
 
 
-# TODO: factor out get_run_text (keep it around just a while for debugging)
-def get_run_text(branch: Element) -> Union[str, None]:
-    """
-    Find the text element in a run and return the text.
-
-    :param elem:
-    :return:
-    """
-
-    def yield_text(branch_):
-        for child in branch_:
-            tag = child.tag
-            if tag == Tags.TEXT:
-                yield child.text
-            yield from yield_text(child)
-        yield ""
-
-    return "".join(yield_text(branch))
-
-
-def _merge_elems(file: File, tree: Element) -> None:
+def _merge_elems(file: "File", tree: Element) -> None:
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
 
@@ -337,7 +315,7 @@ def _get_elem_depth(tree: Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-def get_text(file: File) -> TablesList:
+def get_text(file: "File") -> TablesList:
     """
     Xml as a string to a list of cell strings.
 
@@ -354,6 +332,9 @@ def get_text(file: File) -> TablesList:
     If you'd like to extend or edit this package, this function is probably where you
     want to do it. Nothing tricky here except keeping track of the text formatting.
     """
+    with suppress(AttributeError):
+        for v in file.context.numId2count.values():
+            v.clear()
 
     tables = DepthCollector(5)
 

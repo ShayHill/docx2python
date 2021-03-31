@@ -55,24 +55,14 @@ class DocxContent:
     def __init__(
         self,
         *,
-        header: TablesList,
-        footer: TablesList,
-        body: TablesList,
-        footnotes: TablesList,
-        endnotes: TablesList,
         images: Dict[str, bytes],
         files: List[Dict[str, str]],
         zipf: zipfile.ZipFile,
         context: DocxContext
     ) -> None:
-        self.header_runs = header
-        self.footer_runs = footer
-        self.body_runs = body
-        self.footnotes_runs = footnotes
-        self.endnotes_runs = endnotes
         self.images = images
-        self.files = files
-        self.zipf = zipf
+        # self.files = files
+        # self.zipf = zipf
         self.context = context
 
     def __getattr__(self, item) -> Any:
@@ -91,6 +81,37 @@ class DocxContent:
                 runs[i][j][k][l] = "".join(paragraph)
             return runs
         raise AttributeError()
+
+    def _get_runs(self, type_: str) -> TablesList:
+        content = []
+        for file in self.context.files_of_type(type_):
+            content += file.content
+        return content
+
+    @property
+    def header_runs(self) -> TablesList:
+        return self._get_runs("header")
+
+    @property
+    def footer_runs(self) -> TablesList:
+        return self._get_runs("footer")
+
+    @property
+    def officeDocument_runs(self) -> TablesList:
+        return self._get_runs("officeDocument")
+
+    @property
+    def body_runs(self) -> TablesList:
+        return self.officeDocument_runs
+
+    @property
+    def footnotes_runs(self) -> TablesList:
+        return self._get_runs("footnotes")
+
+    @property
+    def endnotes_runs(self) -> TablesList:
+        return self._get_runs("endnotes")
+    
 
     @property
     def document(self) -> TablesList:
@@ -137,10 +158,9 @@ class DocxContent:
 
         Docx files created with Google docs won't have core-properties. If the file
         `core-properties` is missing, return an empty dict."""
-        # TODO: test for a successful call of core-properties
         try:
             docProps = next(iter(self.context.files_of_type("core-properties")))
-            return collect_docProps(self.zipf.read(docProps.path))
+            return collect_docProps(docProps.unzipped)
         except StopIteration:
             warn(
                 "Could not find core-properties file (should be in docProps/core.xml) "
