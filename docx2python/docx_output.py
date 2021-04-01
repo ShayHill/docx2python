@@ -42,28 +42,19 @@ import zipfile
 from copy import deepcopy
 from typing import Any, Dict, List
 from warnings import warn
+from dataclasses import dataclass
 
-from .docx_context import collect_docProps
+from .docx_context import collect_docProps, pull_image_files
 from .docx_text import TablesList
 from .globs import DocxContext
 from .iterators import enum_at_depth, get_html_map, iter_at_depth
 
 
+@dataclass
 class DocxContent:
     """Holds return values for docx content."""
 
-    def __init__(
-        self,
-        *,
-        images: Dict[str, bytes],
-        files: List[Dict[str, str]],
-        zipf: zipfile.ZipFile,
-        context: DocxContext
-    ) -> None:
-        self.images = images
-        # self.files = files
-        # self.zipf = zipf
-        self.context = context
+    context: DocxContext
 
     def __getattr__(self, item) -> Any:
         """
@@ -111,7 +102,10 @@ class DocxContent:
     @property
     def endnotes_runs(self) -> TablesList:
         return self._get_runs("endnotes")
-    
+
+    @property
+    def images(self) -> Dict[str, bytes]:
+        return pull_image_files(self.context, self.context.image_folder)
 
     @property
     def document(self) -> TablesList:

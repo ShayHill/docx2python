@@ -11,10 +11,10 @@ numbering formats, images, and font styles from *other* files in a decompressed 
 Several functions here take a bytes-format document from a decompressed docx.file.
 Create such with::
 
-            import zipfile
+    import zipfile
 
-            zipf = zipfile.ZipFile("docx_filename.docx")
-            xml = zipf.read("trash/numbering.xml")
+    zipf = zipfile.ZipFile("docx_filename.docx")
+    xml = zipf.read("trash/numbering.xml")
 """
 import os
 import pathlib

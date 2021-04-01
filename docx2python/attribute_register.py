@@ -5,13 +5,14 @@
 :author: Shay Hill
 :created: 3/18/2021
 
-A lot of the information in a docx file isn't text or text attributes. Docx files 
-record spelling errors, revision history, etc. Docx2Python will ignore (by design) 
+A lot of the information in a docx file isn't text or text attributes. Docx files
+record spelling errors, revision history, etc. Docx2Python will ignore (by design)
 much of this.
 """
 from dataclasses import dataclass
-from typing import Optional, Iterator
+from typing import Iterator, Optional
 from xml.etree import ElementTree
+
 from docx2python.namespace import qn
 
 

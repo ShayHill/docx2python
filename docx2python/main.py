@@ -7,15 +7,13 @@
 
 Some private methods are here because I wanted to keep them with their tests.
 """
-import zipfile
-from typing import Optional, List, Union
+from typing import Optional
 
-from .docx_context import pull_image_files
 from .docx_output import DocxContent
-from .docx_text import get_text
 from .globs import DocxContext
 
 
+# TODO: raise FutureWarning for `extract_image` argument
 def docx2python(
     docx_filename: str,
     image_folder: Optional[str] = None,
@@ -34,30 +32,8 @@ def docx2python(
     :param extract_image: bool, extract images from document (default True)
     :return: DocxContent object
     """
-    zipf = zipfile.ZipFile(docx_filename)
-    docx_context = DocxContext(
-        docx_filename, image_folder, html, paragraph_styles, extract_image
-    )
-
-    def file_text(filename_) -> List[Union[List[str]]]:
-        """
-        Pull the text from a word/something.xml file
-        """
-        return get_text(file=filename_)
-
-    type2content = {}
-    for type_ in ("header", "officeDocument", "footer", "footnotes", "endnotes"):
-        type_files = docx_context.files_of_type(type_)
-        type_content = sum([file_text(x) for x in type_files], start=[])
-        type2content[type_] = type_content
-
-    # TODO: factor this out to return value
-    if extract_image:
-        images = pull_image_files(docx_context, image_folder)
-    else:
-        images = None
-
-    zipf.close()
-    return DocxContent(
-        images=images, files=docx_context.files, zipf=zipf, context=docx_context
-    )
+    docx_context = DocxContext(docx_filename, image_folder, html, paragraph_styles)
+    docx_content = DocxContent(docx_context)
+    if image_folder:
+        _ = docx_content.images
+    return docx_content

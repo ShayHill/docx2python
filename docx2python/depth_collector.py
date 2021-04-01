@@ -31,10 +31,9 @@ Shorthand for this package. Instances of this class should not escape the packag
 Pass out of package with depth_collector_instance.tree.
 """
 
-from typing import Any, List, Tuple
-from .text_runs import style_open, style_close
-from contextlib import suppress
-import re
+from typing import List
+
+from .text_runs import style_close, style_open
 
 
 class CaretDepthError(Exception):
@@ -66,11 +65,11 @@ class DepthCollector:
     def add_rPs(self, style: List[str]) -> None:
         self._rPss.append(style)
 
-    def add_pStyle(self, style: str) -> None:
-        self._pStyles.append(style)
-
     def add_pPs(self, style: List[str]) -> None:
         self._pPss.append(style)
+
+    def add_pStyle(self, style: str) -> None:
+        self._pStyles.append(style)
 
     def open_paragraph(self) -> None:
         if self._pStyles:
