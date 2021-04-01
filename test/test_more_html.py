@@ -52,6 +52,34 @@ gets flattened to
 
 In the output, this will look like three paragraphs. To keep things self-contained,
 open/close html tags at the beginning and end of each *output* paragraph.
+
+<w:p>
+	<w:pPr>
+		<w:pStyle w:val="Header"/>
+	</w:pPr>
+	<w:r w:rsidRPr="00210F67">
+		<w:rPr>
+			<w:sz w:val="17"/>
+			<w:szCs w:val="17"/>
+		</w:rPr>
+		<w:p>
+			<w:r>
+				<w:rPr>
+					<w:smallCaps/>
+					<w:sz w:val="72"/>
+					<w:szCs w:val="72"/>
+				</w:rPr>
+				<w:t>EHS Manual </w:t>
+			</w:r>
+		</w:p>
+	</w:r>
+	<w:r>
+		<w:rPr>
+			<w:noProof/>
+		</w:rPr>
+	</w:r>
+</w:p>
+
 """
 
 from docx2python.main import docx2python
@@ -76,18 +104,66 @@ class TestParsNestedInTables:
 
     def test_paragraphs_only(self) -> None:
         """Run without issue"""
-        pars = docx2python("resources/CRB EHS Manual.docx", html=True)
+        pars = docx2python(
+            "resources/nested_paragraphs_in_header3b.docx",
+            html=True,
+            paragraph_styles=True,
+        )
         breakpoint()
-        aaa = pars.document[0][0][0][0]
-        bbb = pars.document[0][0][0]
-        ccc = pars.document[0][0]
-        ddd = pars.document[0]
-        # TODO: fix this test
-        # assert pars.text == (
-        #     "\n\nThis is a document for testing docx2python module.\n\n\n\nThis "
-        #     "document contains paragraphs.\n\n\n\nThis document does not contain any "
-        #     "bulleted lists.\n\n"
-        # )
+        assert pars.document_runs == [
+            [[[["Header"]]]],
+            [
+                [
+                    [
+                        [
+                            "Heading1",
+                            "<h1>",
+                            "before nested paragraph",
+                            "----media/image19.jpeg----",
+                            "</h1>",
+                        ]
+                    ]
+                ]
+            ],
+            [
+                [
+                    [
+                        [
+                            "",
+                            '<font style="font-size:72pt;font-variant:small-caps">NESTED PARAGRAPH\n</font>',
+                        ]
+                    ]
+                ]
+            ],
+            [
+                [
+                    [
+                        [
+                            "",
+                            '<font style="font-size:72pt;font-variant:small-caps">Back to outside paragraph\n</font>',
+                        ]
+                    ]
+                ]
+            ],
+            [[[["----media/image20.png----"]]]],
+            [[[[""], ["", "2 ", " "], [""], ["NoSpacing"], [""], [""], [""]]]],
+            [
+                [
+                    [
+                        [
+                            "",
+                            "\t",
+                            "\t",
+                            '<font style="color:808080;font-size:18pt">Page 579 of 579</font>',
+                        ],
+                        ["", "\t"],
+                    ]
+                ]
+            ],
+            [[[["Footer", "\t", "\t", "\t", "\t"]]]],
+            [[[[""]], [[""]]]],
+            [[[[""]], [[""]]]],
+        ]
 
 
 class TestBulletedLists:

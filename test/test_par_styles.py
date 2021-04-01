@@ -15,7 +15,9 @@ OUTPUT = docx2python("resources/example.docx", paragraph_styles=True)
 class TestParStyles:
     def test_par_styles(self) -> None:
         """
-        If do_html, paragraphs style is the first element of every run
+        If do_html, paragraphs style is the first element of every paragraph
+
+        If no paragraph style, empty string is first element of evert paragraph
 
         :return:
         """
@@ -49,36 +51,36 @@ class TestParStyles:
                 ],
                 [
                     [
-                        ["Bold"],
-                        ["Italics"],
-                        ["Underlined"],
-                        ["Large Font"],
-                        ["Colored"],
-                        ["Large Colored"],
-                        ["Large Bold"],
-                        ["Large Bold Italics Underlined"],
+                        ["", "Bold"],
+                        ["", "Italics"],
+                        ["", "Underlined"],
+                        ["", "Large Font"],
+                        ["", "Colored"],
+                        ["", "Large Colored"],
+                        ["", "Large Bold"],
+                        ["", "Large Bold Italics Underlined"],
                     ]
                 ],
                 [],
             ],
-            [[[["Nested"]], [["Table"]]], [[["A"]], [["B"]]]],
+            [[[["", "Nested"]], [["", "Table"]]], [[["", "A"]], [["", "B"]]]],
             [
-                [[[]]],
-                [[["Tab", "\t", "delimited", "\t", "text"]]],
-                [[["10 < 20 and 20 > 10"]]],
+                [[[""]]],
+                [[["", "Tab", "\t", "delimited", "\t", "text"]]],
+                [[["", "10 < 20 and 20 > 10"]]],
             ],
             [
                 [
                     [
-                        ["Text outside table"],
-                        ["Reference footnote 1", "----footnote1----"],
-                        ["Reference footnote 2", "----footnote2----"],
-                        ["Reference endnote 1", "----endnote1----"],
-                        ["Reference endnote 2", "----endnote2----"],
+                        ["", "Text outside table"],
+                        ["", "Reference footnote 1", "----footnote1----"],
+                        ["", "Reference footnote 2", "----footnote2----"],
+                        ["", "Reference endnote 1", "----endnote1----"],
+                        ["", "Reference endnote 2", "----endnote2----"],
                         ["Heading1", "Heading 1"],
                         ["Heading2", "Heading 2"],
-                        [],
-                        ["----media/image2.jpg----"],
+                        [""],
+                        ["", "----media/image2.jpg----"],
                     ]
                 ]
             ],
@@ -87,8 +89,8 @@ class TestParStyles:
             [[[["Footer"]]]],
             [
                 [
-                    [[]],
-                    [[]],
+                    [[""]],
+                    [[""]],
                     [["FootnoteText", "footnote1)\t", " First footnote"]],
                     [
                         [
@@ -102,8 +104,8 @@ class TestParStyles:
             ],
             [
                 [
-                    [[]],
-                    [[]],
+                    [[""]],
+                    [[""]],
                     [["EndnoteText", "endnote1)\t", " First endnote"]],
                     [
                         [

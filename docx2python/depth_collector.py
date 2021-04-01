@@ -73,7 +73,7 @@ class DepthCollector:
 
     def open_paragraph(self) -> None:
         if self._pStyles:
-            self.insert(self._pStyles[-1])
+            self.insert(self._pStyles[-1], even_if_empty=True)
         while self._par_queue:
             self.insert(self._par_queue.pop(0))
         if self._pPss and self._pPss[-1]:
@@ -144,10 +144,10 @@ class DepthCollector:
         while self.caret_depth > depth:
             self.raise_caret()
 
-    def insert(self, item: str) -> None:
+    def insert(self, item: str, even_if_empty: bool = False) -> None:
         """Add item at item_depth. Add branches if necessary to reach depth."""
         self.set_caret(self.item_depth)
-        if item:
+        if item or even_if_empty:
             self.caret.append(f"{item}")
         self._rPss = self._rPss[-1:]
 
