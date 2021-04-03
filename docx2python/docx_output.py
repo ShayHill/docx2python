@@ -38,15 +38,14 @@ Also returns a 4-deep nested list (paragraphs are strings)::
 This is the format for default (no trailing "_runs", e.g ``header``) properties.
 
 """
-import zipfile
 from copy import deepcopy
-from typing import Any, Dict, List
-from warnings import warn
 from dataclasses import dataclass
+from typing import Any, Dict
+from warnings import warn
 
 from .docx_context import collect_docProps, pull_image_files
+from .docx_organization import DocxContext
 from .docx_text import TablesList
-from .globs import DocxContext
 from .iterators import enum_at_depth, get_html_map, iter_at_depth
 
 
@@ -71,7 +70,7 @@ class DocxContent:
             for (i, j, k, l), paragraph in enum_at_depth(runs, 4):
                 runs[i][j][k][l] = "".join(paragraph)
             return runs
-        raise AttributeError()
+        raise AttributeError(f"no attribute {item}")
 
     def _get_runs(self, type_: str) -> TablesList:
         content = []
@@ -146,6 +145,7 @@ class DocxContent:
         )
         return self.core_properties
 
+    # noinspection PyPep8Naming
     @property
     def core_properties(self) -> Dict[str, str]:
         """Document core-properties as a dictionary.
@@ -154,7 +154,7 @@ class DocxContent:
         `core-properties` is missing, return an empty dict."""
         try:
             docProps = next(iter(self.context.files_of_type("core-properties")))
-            return collect_docProps(docProps.unzipped)
+            return collect_docProps(docProps.root_element)
         except StopIteration:
             warn(
                 "Could not find core-properties file (should be in docProps/core.xml) "
@@ -163,3 +163,6 @@ class DocxContent:
                 "may be expected."
             )
             return {}
+
+    def save_images(self, image_folder: str) -> Dict[str, bytes]:
+        return pull_image_files(self.context, image_folder)

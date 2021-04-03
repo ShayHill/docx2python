@@ -1,21 +1,14 @@
 #!/usr/bin/env python3
 # _*_ coding: utf-8 _*_
-"""Content from files that aren't ``word/document.xml``
+""" Content from files that aren't ``word/document.xml``
 
 :author: Shay Hill
 :created: 6/26/2019
 
 Most of the "meat" in a docx file is in ``word/document.xml``. These functions retrieve
 numbering formats, images, and font styles from *other* files in a decompressed docx.
-
-Several functions here take a bytes-format document from a decompressed docx.file.
-Create such with::
-
-    import zipfile
-
-    zipf = zipfile.ZipFile("docx_filename.docx")
-    xml = zipf.read("trash/numbering.xml")
 """
+from __future__ import annotations
 import os
 import pathlib
 import re
@@ -28,12 +21,11 @@ from .namespace import qn
 
 
 # noinspection PyPep8Naming
-def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
+def collect_numFmts(numFmts_root: ElementTree.Element) -> Dict[str, List[str]]:
     """
     Collect abstractNum bullet formats into a dictionary
 
-    :param xml: ``trash/numbering.xml`` from a decompressed docx file
-
+    :param numFmts_root: Root element of ``word/numbering.xml``.
     :returns: numId mapped to numFmts (by ilvl)
 
     :background:
@@ -73,8 +65,7 @@ def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
     """
     abstractNumId2numFmts = {}
 
-    root = ElementTree.fromstring(xml)
-    for abstractNum in root.findall(qn("w:abstractNum")):
+    for abstractNum in numFmts_root.findall(qn("w:abstractNum")):
         id_ = abstractNum.attrib[qn("w:abstractNumId")]
         abstractNumId2numFmts[id_] = []
         for lvl in abstractNum.findall(qn("w:lvl")):
@@ -82,7 +73,7 @@ def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
             abstractNumId2numFmts[id_].append(numFmt.attrib[qn("w:val")])
 
     numId2numFmts = {}
-    for num in root.findall(qn("w:num")):
+    for num in numFmts_root.findall(qn("w:num")):
         numId = num.attrib[qn("w:numId")]
         abstractNumId = num.find(qn("w:abstractNumId")).attrib[qn("w:val")]
         numId2numFmts[numId] = abstractNumId2numFmts[abstractNumId]
@@ -162,12 +153,11 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
 
 
 # noinspection PyPep8Naming
-def collect_docProps(xml: bytes) -> Dict[str, str]:
+def collect_docProps(root: ElementTree.Element = None) -> Dict[str, str]:
     # noinspection SpellCheckingInspection
     """
     Get author, modified, etc. from core-properties (should be docProps/core.xml)
 
-    :param xml: ``DocProps/core.xml`` from a decompressed docx file
     :return: document property names mapped to values
 
     **E.g., Given**::
@@ -200,7 +190,6 @@ def collect_docProps(xml: bytes) -> Dict[str, str]:
         }
     """
     docProp2text = {}
-    root = ElementTree.fromstring(xml)
     capture_tag_name = re.compile(r"{.+}(?P<tag_name>\w+)")
     for dc in root:
         docProp2text[re.match(capture_tag_name, dc.tag).group("tag_name")] = dc.text
@@ -208,11 +197,12 @@ def collect_docProps(xml: bytes) -> Dict[str, str]:
 
 
 def pull_image_files(
-    docx_context: "DocxContext", image_directory: Optional[str] = None
+    docx_context: DocxContext, image_directory: Optional[str] = None
 ) -> Dict[str, bytes]:
     """
     Copy images from zip file.
 
+    :param docx_context: DocxContext instance to provide image File objects
     :param image_directory: optional destination for copied images
     :return: Image names mapped to images in binary format.
 

@@ -17,13 +17,13 @@ them by their escape sequences.
 
 from contextlib import suppress
 from typing import Union
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .namespace import qn
 
 
 # noinspection PyPep8Naming
-def get_checkBox_entry(checkBox: Element) -> str:
+def get_checkBox_entry(checkBox: ElementTree.Element) -> str:
     """
     Create text representation for a checkBox element.
 
@@ -33,8 +33,8 @@ def get_checkBox_entry(checkBox: Element) -> str:
         2. attempt to get default.w:val and return "\u2610" or "\u2612"
         3. return ``--checkbox failed--``
 
-    checkBox can only be checked when the form is locked. Does not print text.
-    checkbox can be checked any time. Prints text as "\u2610" or "\u2612".
+    ``checkBox`` can only be checked when the form is locked. Does not print text.
+    ``checkbox`` can be checked any time. Prints text as "\u2610" or "\u2612".
 
     <w:checkBox>
         <w:sizeAuto/>
@@ -56,7 +56,7 @@ def get_checkBox_entry(checkBox: Element) -> str:
 
 
 # noinspection PyPep8Naming
-def get_ddList_entry(ddList: Element) -> str:
+def get_ddList_entry(ddList: ElementTree.Element) -> str:
     """
     Get only the selected string of a dropdown list.
 

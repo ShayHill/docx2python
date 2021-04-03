@@ -20,7 +20,7 @@ To assist with reading the project documentation or extending `docx2python`.
     + docProps
         - app.xml  # ignored by docx2python
         - core.xml  # author, modification date, etc.
-        - custom.xml  # ignored by docx to python
+        - custom.xml  # ignored by docx2python
 
     + word  # content of docx
         + _rels  # images, numbering formats, etc. for content xml files
@@ -43,6 +43,6 @@ To assist with reading the project documentation or extending `docx2python`.
         - styles.xml # table styles, etc. Ignored by docx2python
         - webSettings.xml  # ignored by docx2python
 
-
+A ``*.docx`` file is just a zipped up file structure (the structure defined above). You can unzip a docx file, make changes, then zip it back up and everything will work (provided your changes are valid xml).
     
 

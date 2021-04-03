@@ -109,7 +109,6 @@ class TestParsNestedInTables:
             html=True,
             paragraph_styles=True,
         )
-        breakpoint()
         assert pars.document_runs == [
             [[[["Header"]]]],
             [

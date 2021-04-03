@@ -12,7 +12,7 @@ Does not test ``get_text``. ``get text`` is tested through source_old.
 from collections import defaultdict
 from typing import Any, Dict, List
 from dataclasses import dataclass
-from docx2python.globs import File, DocxContext
+from docx2python.docx_organization import File, DocxContext
 
 from functools import cached_property
 from pytest_mock import mocker

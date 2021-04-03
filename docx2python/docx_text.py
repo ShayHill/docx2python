@@ -10,40 +10,26 @@ Content in the extracted docx is found in the ``word`` folder:
     ``word/header1.html``
     ``word/footer1.html``
 """
-from copy import deepcopy
+from __future__ import annotations
 import warnings
 from contextlib import suppress
 from itertools import groupby
-from typing import Any, Dict, List, Tuple, Union, Sequence, Optional
+from typing import Dict, List, Optional, Sequence, Tuple
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
+import functools
 
 from . import numbering_formats as nums
 from .attribute_register import KNOWN_ATTRIBUTES, Tags, has_content
 from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
-from .iterators import enum_at_depth
-from .iterators import get_text as gett_text
 from .namespace import qn
-from .text_runs import (
-    get_pStyle,
-    _elem_tag_str,
-    get_run_style,
-    get_style,
-    style_close,
-    style_open,
-    get_run_style,
-    get_Pr_as_html_strings,
-    format_Pr,
-    gather_Pr,
-)
-
-# TODO: rename iterators.get_text
+from .text_runs import format_Pr, get_pStyle, get_run_style, get_style
 
 TablesList = List[List[List[List[str]]]]
 
 
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
+    # noinspection SpellCheckingInspection
     """
     Increase counter at ilvl, reset counter at deeper levels.
 
@@ -52,7 +38,7 @@ def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
     :return: updated count at ilvl.
         updates context['numId2count'] by reference
 
-    On a numbered list, the count for sublists should reset when a parent list
+    On a numbered list, the count for sub-lists should reset when a parent list
     increases, e.g.,
 
     1. top-level list
@@ -71,7 +57,7 @@ def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
 
 
 # noinspection PyPep8Naming
-def _get_bullet_string(file: "File", paragraph: ElementTree.Element) -> str:
+def _get_bullet_string(file: File, paragraph: ElementTree.Element) -> str:
     """
     Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
@@ -138,8 +124,10 @@ def _get_bullet_string(file: "File", paragraph: ElementTree.Element) -> str:
 
 
 def _elem_key(
-    file: "File", elem: Element
+    file: File, elem: ElementTree.Element
 ) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
+    # noinspection SpellCheckingInspection
+    # TODO: update docstring
     """
     Enough information to tell if two elements are more-or-less identical.
 
@@ -165,7 +153,8 @@ def _elem_key(
     return tag, attrib, style
 
 
-def _merge_elems(file: "File", tree: Element) -> None:
+def _merge_elems(file: File, tree: ElementTree.Element) -> None:
+    # noinspection SpellCheckingInspection
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
 
@@ -242,8 +231,7 @@ def _merge_elems(file: "File", tree: Element) -> None:
     paragraphs would ignore information docx2python DOES want to preserve.
     """
 
-    def file_elem_key(elem: ElementTree.Element):
-        return _elem_key(file, elem)
+    file_elem_key = functools.partial(_elem_key, file)
 
     merge_tags = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT}
     elems = [x for x in tree if has_content(x)]
@@ -260,13 +248,16 @@ def _merge_elems(file: "File", tree: Element) -> None:
         _merge_elems(file, branch)
 
 
-def _get_elem_depth(tree: Element) -> Optional[int]:
+def _get_elem_depth(tree: ElementTree.Element) -> Optional[int]:
     """
     What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
     :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
-    :param depth: internal use (tracks recursion depth)
-    :return: 4 - recursion depth
+
+    :return: 4 - recursion depth;
+        None if no paragraphs are found or if descending into nest would cause a
+        false start (e.g., Tags.DOCUMENT or Tags.BODY which often have A paragraph (but
+        not the next paragraph) at one or two levels down.
 
     Typically, the docx is a table of tables::
 
@@ -304,18 +295,21 @@ def _get_elem_depth(tree: Element) -> Optional[int]:
     if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
         return
 
-    def search_at_depth(elems: Sequence[ElementTree.Element], _depth=0):
+    def search_at_depth(tree_: Sequence[ElementTree.Element], _depth=0):
         """ Width-first recursive search for Tags.PARAGRAPH """
-        if not elems:
+        if not tree_:
             return
-        if any(x.tag == Tags.PARAGRAPH for x in elems):
+        if any(x.tag == Tags.PARAGRAPH for x in tree_):
             return max(4 - _depth, 1)
-        return search_at_depth(sum([list(x) for x in elems], start=[]), _depth + 1)
+        return search_at_depth(sum([list(x) for x in tree_], start=[]), _depth + 1)
 
     return search_at_depth([tree])
 
 
-def get_text(file: "File") -> TablesList:
+# TODO: argument for passing a single elem to get_text
+
+
+def get_text(file: File) -> TablesList:
     """
     Xml as a string to a list of cell strings.
 
@@ -338,11 +332,11 @@ def get_text(file: "File") -> TablesList:
 
     tables = DepthCollector(5)
 
-    root = file.tree
+    root = file.root_element
     _merge_elems(file, root)
 
     # noinspection PyPep8Naming
-    def branches(tree: Element) -> None:
+    def branches(tree: ElementTree.Element) -> None:
         """
         Recursively iterate over tree. Add text when found.
 
