@@ -14,7 +14,7 @@ from __future__ import annotations
 import warnings
 from contextlib import suppress
 from itertools import groupby
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple, Any
 from xml.etree import ElementTree
 import functools
 
@@ -24,8 +24,23 @@ from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
 from .namespace import qn
 from .text_runs import format_Pr, get_pStyle, get_run_style, get_style
+from collections import defaultdict
 
 TablesList = List[List[List[List[str]]]]
+
+
+def _new_list_counter() -> defaultdict[Any, defaultdict[Any, 0]]:
+    """
+    A counter, starting at zero, for each numId
+
+    :return: {
+        a_numId: 0,
+        b_numId: 0
+    }
+
+    This is what you need to keep track of where every nested list is at.
+    """
+    return defaultdict(lambda: defaultdict(lambda: 0))
 
 
 def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
@@ -57,7 +72,11 @@ def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
 
 
 # noinspection PyPep8Naming
-def _get_bullet_string(file: File, paragraph: ElementTree.Element) -> str:
+def _get_bullet_string(
+    numId2numFmts: Dict[str, List[str]],
+    numId2count: defaultdict[Any, defaultdict[Any, 0]],
+    paragraph: ElementTree.Element,
+) -> str:
     """
     Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
@@ -85,7 +104,7 @@ def _get_bullet_string(file: File, paragraph: ElementTree.Element) -> str:
         numId = numPr.find(qn("w:numId")).attrib[qn("w:val")]
         ilvl = numPr.find(qn("w:ilvl")).attrib[qn("w:val")]
         try:
-            numFmt = file.context.numId2numFmts[numId][int(ilvl)]
+            numFmt = numId2numFmts[numId][int(ilvl)]
         except IndexError:
             # give up and put a bullet
             numFmt = "bullet"
@@ -93,7 +112,7 @@ def _get_bullet_string(file: File, paragraph: ElementTree.Element) -> str:
         # not a numbered paragraph
         return ""
 
-    number = _increment_list_counter(file.context.numId2count[numId], ilvl)
+    number = _increment_list_counter(numId2count[numId], ilvl)
     indent = "\t" * int(ilvl)
 
     def format_bullet(bullet: str) -> str:
@@ -307,6 +326,7 @@ def _get_elem_depth(tree: ElementTree.Element) -> Optional[int]:
 
 
 # TODO: argument for passing a single elem to get_text
+# TODO: output run-merged docx
 
 
 def get_text(file: File) -> TablesList:
@@ -326,9 +346,11 @@ def get_text(file: File) -> TablesList:
     If you'd like to extend or edit this package, this function is probably where you
     want to do it. Nothing tricky here except keeping track of the text formatting.
     """
-    with suppress(AttributeError):
-        for v in file.context.numId2count.values():
-            v.clear()
+    # with suppress(AttributeError):
+    #     for v in file.context.numId2count.values():
+    #         v.clear()
+
+    numId2count = _new_list_counter()
 
     tables = DepthCollector(5)
 
@@ -361,7 +383,9 @@ def get_text(file: File) -> TablesList:
 
         # add text where found
         if tree.tag == Tags.PARAGRAPH:
-            tables.insert(_get_bullet_string(file, tree))
+            tables.insert(
+                _get_bullet_string(file.context.numId2numFmts, numId2count, tree)
+            )
 
         elif tree.tag == Tags.TEXT:
             # oddly enough, these don't all contain text

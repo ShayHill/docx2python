@@ -81,20 +81,10 @@ class TestGetContext:
             ElementTree.fromstring(docx_context.zipf.read("word/numbering.xml"))
         )
 
-    def test_numId2count(self) -> None:
-        """All numIds mapped to a default dict defaulting to 0"""
-        docx_context = DocxContext("resources/example.docx")
-        for numId in docx_context.numId2numFmts:
-            assert isinstance(docx_context.numId2count[numId], defaultdict)
-            assert docx_context.numId2count[numId][0] == 0
-
     def test_lists(self) -> None:
         """Pass silently when no numbered or bulleted lists."""
         docx_context = DocxContext("resources/basic.docx")
-        with pytest.raises(AttributeError):
-            docx_context.numId2numFmts
-        with pytest.raises(AttributeError):
-            docx_context.numId2count
+        assert docx_context.numId2numFmts == {}
 
 
 class TestPullImageFiles:

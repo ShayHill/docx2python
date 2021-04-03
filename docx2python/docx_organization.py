@@ -215,16 +215,17 @@ class DocxContext:
         numId referenced in xml to list of numFmt per indentation level
 
         See docstring for collect_numFmts
+
+        Returns an empty dictionary is word/numbering.xml cannot be found.
+        Ultimately, this will result in any lists (there should NOT be any lists if
+        there is no word/numbering.xml) being "numbered" with "--".
         """
         try:
+            # noinspection PyPep8Naming
             numFmts_root = ElementTree.fromstring(self.zipf.read("word/numbering.xml"))
             return collect_numFmts(numFmts_root)
         except KeyError:
-            raise AttributeError("no numbering formats defined")
-
-    @cached_property
-    def numId2count(self):
-        return {x: defaultdict(lambda: 0) for x in self.numId2numFmts}
+            return {}
 
     def files_of_type(self, type_: str) -> List[File]:
         """

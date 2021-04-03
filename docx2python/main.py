@@ -19,7 +19,8 @@ def docx2python(
     paragraph_styles: bool = False,
     extract_image: bool = None,
 ) -> DocxContent:
-    """Unzip a docx file and extract contents.
+    """
+    Unzip a docx file and extract contents.
 
     :param docx_filename: path to a docx file
     :param image_folder: optionally specify an image folder
