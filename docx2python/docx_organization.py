@@ -25,11 +25,15 @@ from dataclasses import dataclass
 from functools import cached_property
 from operator import attrgetter
 from typing import Dict, List, Optional, Union
-from xml.etree import ElementTree
+
+from xml.etree import ElementTree as ET
+from lxml import etree as ElementTree
 from warnings import warn
 
 from .docx_context import collect_numFmts, collect_rels
 from .docx_text import get_text, merge_elems
+
+CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 
 
 @dataclass
@@ -170,28 +174,29 @@ class File:
         Try to merge consecutive, duplicate (except text) elements. Warn if fails.
         """
         root = ElementTree.fromstring(self.context.zipf.read(self.path))
-        try:
-            merge_elems(self, root)
-        except Exception as ex:
-            warn(
-                f"Attempt to merge consecutive elements in {self.path} resulted in "
-                f"{repr(ex)}. Moving on."
-            )
+        if self.Type in CONTENT_FILE_TYPES:
+            try:
+                merge_elems(self, root)
+            except Exception as ex:
+                warn(
+                    f"Attempt to merge consecutive elements in "
+                    f"{self.context.docx_filename} {self.path} resulted in "
+                    f"{repr(ex)}. Moving on."
+                )
         return root
 
-    @cached_property
+    @property
     def content(self) -> List[Union[List, str]]:
         """
         Text extracted into a 5-layer-deep nested list of strings.
         """
         return get_text(self)
 
-    # TODO: test get_content
     def get_content(
         self, root: Optional[ElementTree.Element] = None
     ) -> List[Union[List, str]]:
         """
-        The same content as cached_property 'content' with optional given root.
+        The same content as property 'content' with optional given root.
 
         :param root: Extract content of file from root down.
             If root is not given, return full content of file.
@@ -286,3 +291,28 @@ class DocxContext:
         return sorted(
             (x for x in self.files if x.Type == type_), key=attrgetter("path")
         )
+
+    # TODO: improve docstring
+    def save(self, filename: str) -> None:
+        """
+        Save the (presumably altered) xml.
+
+        :param filename:
+        :return:
+        """
+        content_files = [x for x in self.files if x.Type in CONTENT_FILE_TYPES]
+        with zipfile.ZipFile(f"{filename}", mode="w") as zout:
+            copy_but(self.zipf, zout, {x.path for x in content_files})
+            for file in content_files:
+                zout.writestr(file.path, ElementTree.tostring(file.root_element))
+
+
+# TODO: document and find a place for this helper function
+def copy_but(inzip, outzip, exclusions=()):
+    for item in inzip.infolist():
+        if item.filename not in exclusions:
+            buffer = inzip.read(item.filename)
+            outzip.writestr(item, buffer)
+
+
+# TODO: refactor entire project to lxml

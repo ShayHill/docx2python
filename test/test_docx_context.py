@@ -11,6 +11,8 @@ import zipfile
 from collections import defaultdict
 from xml.etree import ElementTree
 from docx2python.docx_organization import DocxContext
+from docx2python.attribute_register import Tags
+from docx2python.iterators import iter_at_depth
 
 import pytest
 
@@ -51,7 +53,33 @@ class TestDocxContextObject:
         """
         context = DocxContext("resources/example.docx")
         with pytest.raises(KeyError):
-            first_header = context.file_of_type("invalid_type")
+            _ = context.file_of_type("invalid_type")
+
+
+class TestSaveDocx:
+    def test_save_unchanged(self) -> None:
+        """Creates a valid docx"""
+        input_context = DocxContext("resources/example.docx")
+        input_xml = input_context.file_of_type("officeDocument").root_element
+        input_context.save("resources/example_copy.docx")
+        output_context = DocxContext("resources/example_copy.docx")
+        output_xml = output_context.file_of_type("officeDocument").root_element
+        assert ElementTree.tostring(input_xml) == ElementTree.tostring(output_xml)
+
+    def test_save_changed(self) -> None:
+        """Creates a valid docx and updates text"""
+        input_context = DocxContext("resources/example.docx")
+        input_xml = input_context.file_of_type("officeDocument").root_element
+        for elem in (x for x in input_xml.iter() if x.tag == Tags.TEXT):
+            if not elem.text:
+                continue
+            elem.text = elem.text.replace("bullet", "BULLET")
+        input_context.save("resources/example_edit.docx")
+        output_content = DocxContext("resources/example_edit.docx")
+        output_runs = output_content.file_of_type("officeDocument").content
+        output_text = "".join(iter_at_depth(output_runs, 5))
+        assert "bullet" not in output_text
+        assert "BULLET" in output_text
 
 
 class TestCollectNumFmts:
