@@ -172,7 +172,7 @@ def _elem_key(
     return tag, attrib, style
 
 
-def _merge_elems(file: File, tree: ElementTree.Element) -> None:
+def merge_elems(file: File, tree: ElementTree.Element) -> None:
     # noinspection SpellCheckingInspection
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
@@ -264,7 +264,7 @@ def _merge_elems(file: File, tree: ElementTree.Element) -> None:
             tree.remove(elem)
 
     for branch in tree:
-        _merge_elems(file, branch)
+        merge_elems(file, branch)
 
 
 def _get_elem_depth(tree: ElementTree.Element) -> Optional[int]:
@@ -325,14 +325,18 @@ def _get_elem_depth(tree: ElementTree.Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-# TODO: argument for passing a single elem to get_text
 # TODO: output run-merged docx
+# TODO: remove File and DocxContext types from docx_context.py
 
 
-def get_text(file: File) -> TablesList:
+# noinspection PyPep8Naming
+def get_text(file: File, root: Optional[ElementTree.Element] = None) -> TablesList:
     """
     Xml as a string to a list of cell strings.
 
+    :param file: File instance from which text will be extracted.
+    :param root: Optionally extract content from a single element.
+        If None, root_element of file will be used.
     :returns: A 5-deep nested list of strings.
 
     Sorts the text into the DepthCollector instance, five-levels deep
@@ -346,16 +350,9 @@ def get_text(file: File) -> TablesList:
     If you'd like to extend or edit this package, this function is probably where you
     want to do it. Nothing tricky here except keeping track of the text formatting.
     """
-    # with suppress(AttributeError):
-    #     for v in file.context.numId2count.values():
-    #         v.clear()
-
+    root = root if root is not None else file.root_element
     numId2count = _new_list_counter()
-
     tables = DepthCollector(5)
-
-    root = file.root_element
-    _merge_elems(file, root)
 
     # noinspection PyPep8Naming
     def branches(tree: ElementTree.Element) -> None:

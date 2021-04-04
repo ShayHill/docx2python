@@ -10,6 +10,7 @@ import shutil
 import zipfile
 from collections import defaultdict
 from xml.etree import ElementTree
+from docx2python.docx_organization import DocxContext
 
 import pytest
 
@@ -19,6 +20,38 @@ from docx2python.docx_context import (
     pull_image_files,
 )
 from docx2python.docx_organization import DocxContext
+
+
+class TestDocxContextObject:
+    """
+    Test methods of DocxContext object which are not tested elsewhere.
+    """
+
+    def test_file_of_type_exactly_one(self) -> None:
+        """
+        Return single file instance of type_ argument.
+        """
+        context = DocxContext("resources/example.docx")
+        assert len(context.files_of_type("officeDocument")) == 1
+        assert context.file_of_type("officeDocument").path == "word/document.xml"
+
+    def test_file_of_type_more_than_one(self) -> None:
+        """
+        Warn when multiple file instances of type_ argument.
+        """
+        context = DocxContext("resources/example.docx")
+        assert len(context.files_of_type("header")) == 3
+        with pytest.warns(UserWarning):
+            first_header = context.file_of_type("header")
+        assert first_header.path == "word/header1.xml"
+
+    def test_file_of_type_zero(self) -> None:
+        """
+        Raise KeyError when no file instances of type_ are found.
+        """
+        context = DocxContext("resources/example.docx")
+        with pytest.raises(KeyError):
+            first_header = context.file_of_type("invalid_type")
 
 
 class TestCollectNumFmts:

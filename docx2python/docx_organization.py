@@ -6,8 +6,8 @@
 :created: 3/18/2021
 
 See the docx file structure in ``README_DOCX_FILE_STRUCTURE.md``. Each file in that
-structure can be stored as a ``File`` instance, though not all will be through the
-typical docx2python progression. The ``File`` class is designed to hold and decode
+structure can be stored as a ``File`` instance, though not all will be stored through
+the typical docx2python progression. The ``File`` class is designed to hold and decode
 xml files with content (text). Several, even most, of the xml files in a docx do not
 contain content. These contain numbering formats, font information, rId-lookup
 tables, and other. ``File`` instances will hold these as well, though they will not
@@ -21,16 +21,15 @@ from __future__ import annotations
 
 import os
 import zipfile
-from collections import defaultdict
 from dataclasses import dataclass
 from functools import cached_property
 from operator import attrgetter
 from typing import Dict, List, Optional, Union
 from xml.etree import ElementTree
-from .docx_text import get_text
+from warnings import warn
 
 from .docx_context import collect_numFmts, collect_rels
-from .namespace import qn
+from .docx_text import get_text, merge_elems
 
 
 @dataclass
@@ -68,6 +67,12 @@ class File:
         self.Type = os.path.basename(attribute_dict["Type"])
         self.Target = attribute_dict["Target"]
         self.dir = attribute_dict["dir"]
+
+    def __repr__(self) -> str:
+        """
+        File with self.path
+        """
+        return f"File({self.path})"
 
     @cached_property
     def path(self) -> str:
@@ -161,15 +166,37 @@ class File:
     def root_element(self) -> ElementTree.Element:
         """
         Root element of the file.
-        """
-        return ElementTree.fromstring(self.context.zipf.read(self.path))
 
-    @property
+        Try to merge consecutive, duplicate (except text) elements. Warn if fails.
+        """
+        root = ElementTree.fromstring(self.context.zipf.read(self.path))
+        try:
+            merge_elems(self, root)
+        except Exception as ex:
+            warn(
+                f"Attempt to merge consecutive elements in {self.path} resulted in "
+                f"{repr(ex)}. Moving on."
+            )
+        return root
+
+    @cached_property
     def content(self) -> List[Union[List, str]]:
         """
         Text extracted into a 5-layer-deep nested list of strings.
         """
         return get_text(self)
+
+    # TODO: test get_content
+    def get_content(
+        self, root: Optional[ElementTree.Element] = None
+    ) -> List[Union[List, str]]:
+        """
+        The same content as cached_property 'content' with optional given root.
+
+        :param root: Extract content of file from root down.
+            If root is not given, return full content of file.
+        """
+        return get_text(self, root)
 
 
 @dataclass
@@ -209,6 +236,7 @@ class DocxContext:
             files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
         return files
 
+    # noinspection PyPep8Naming
     @cached_property
     def numId2numFmts(self) -> Dict[str, List[str]]:
         """
@@ -221,11 +249,30 @@ class DocxContext:
         there is no word/numbering.xml) being "numbered" with "--".
         """
         try:
-            # noinspection PyPep8Naming
             numFmts_root = ElementTree.fromstring(self.zipf.read("word/numbering.xml"))
             return collect_numFmts(numFmts_root)
         except KeyError:
             return {}
+
+    def file_of_type(self, type_: str) -> File:
+        """
+        Return file instance attrib Type='http://.../type_'. Warn if more than one.
+
+        :param type_: this package looks for any of
+            ("header", "officeDocument", "footer", "footnotes", "endnotes")
+            You can try others.
+        :return: File instance of the requested type
+        """
+        files_of_type = self.files_of_type(type_)
+        if len(files_of_type) > 1:
+            warn("Multiple files of type '{type_}' found. Returning first.")
+        try:
+            return files_of_type[0]
+        except IndexError:
+            raise KeyError(
+                f"There is no item of type '{type_}' "
+                "in the {self.docx_filename} archive"
+            )
 
     def files_of_type(self, type_: str) -> List[File]:
         """
@@ -233,6 +280,7 @@ class DocxContext:
 
         :param type_: this package looks for any of
             ("header", "officeDocument", "footer", "footnotes", "endnotes")
+            You can try others.
         :return: File instances of the requested type, sorted by path
         """
         return sorted(
