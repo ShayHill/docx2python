@@ -9,7 +9,7 @@ Does not test ``get_text``. ``get text`` is tested through source_old.
 """
 
 from typing import Dict
-from xml.etree import ElementTree
+from lxml import etree
 
 import pytest
 
@@ -82,7 +82,7 @@ class TestGetBulletString:
     def test_bullet(self, numbered_paragraphs, numbering_context) -> None:
         """Returns '-- ' for 'bullet'"""
 
-        paragraph = ElementTree.fromstring(numbered_paragraphs[0])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[0])[0]
         assert (
             _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -97,7 +97,7 @@ class TestGetBulletString:
         Returns '1) ' for 'decimal'
         indented one tab
         """
-        paragraph = ElementTree.fromstring(numbered_paragraphs[1])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[1])[0]
         assert (
             _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -112,7 +112,7 @@ class TestGetBulletString:
         Returns 'a) ' for 'lowerLetter'
         indented two tabs
         """
-        paragraph = ElementTree.fromstring(numbered_paragraphs[2])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[2])[0]
         assert (
             _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -127,7 +127,7 @@ class TestGetBulletString:
         Returns 'A) ' for 'upperLetter'
         indented three tabs
         """
-        paragraph = ElementTree.fromstring(numbered_paragraphs[3])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[3])[0]
         assert (
             _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -142,7 +142,7 @@ class TestGetBulletString:
         Returns 'i) ' for 'lowerRoman'
         indented 4 tabs
         """
-        paragraph = ElementTree.fromstring(numbered_paragraphs[4])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[4])[0]
         assert (
             _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -157,7 +157,7 @@ class TestGetBulletString:
         Returns 'I) ' for 'upperRoman'
         indented 5 tabs
         """
-        paragraph = ElementTree.fromstring(numbered_paragraphs[5])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[5])[0]
         assert (
             _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -175,7 +175,7 @@ class TestGetBulletString:
         Format "undefined" won't be defined in the function, so function will fall back
         to bullet string (with a warning).
         """
-        paragraph = ElementTree.fromstring(numbered_paragraphs[6])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[6])[0]
         with pytest.warns(UserWarning):
             _ = _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -188,7 +188,7 @@ class TestGetBulletString:
         Returns '' when paragraph is not numbered.
         """
         one_par_file = valid_xml("<w:p></w:p>")
-        paragraph = ElementTree.fromstring(one_par_file)[0]
+        paragraph = etree.fromstring(one_par_file)[0]
         assert (
             _get_bullet_string(
                 numbering_context["numId2numFmts"],
@@ -213,7 +213,7 @@ class TestGetBulletString:
         pars = [numbered_paragraphs[x] for x in (1, 2, 2, 3, 2, 3, 1, 2)]
         bullets = []
         for par in pars:
-            paragraph = ElementTree.fromstring(par)[0]
+            paragraph = etree.fromstring(par)[0]
             bullets.append(
                 _get_bullet_string(
                     numbering_context["numId2numFmts"],

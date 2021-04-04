@@ -9,7 +9,7 @@ import os
 import re
 import shutil
 
-from docx2python.iterators import iter_at_depth, get_text
+from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
 OUTPUT = docx2python("resources/example.docx")

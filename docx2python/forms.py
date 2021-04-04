@@ -17,13 +17,14 @@ them by their escape sequences.
 
 from contextlib import suppress
 from typing import Union
-from xml.etree import ElementTree
+
+from lxml import etree
 
 from .namespace import qn
 
 
 # noinspection PyPep8Naming
-def get_checkBox_entry(checkBox: ElementTree.Element) -> str:
+def get_checkBox_entry(checkBox: etree.Element) -> str:
     """
     Create text representation for a checkBox element.
 
@@ -56,7 +57,7 @@ def get_checkBox_entry(checkBox: ElementTree.Element) -> str:
 
 
 # noinspection PyPep8Naming
-def get_ddList_entry(ddList: ElementTree.Element) -> str:
+def get_ddList_entry(ddList: etree.Element) -> str:
     """
     Get only the selected string of a dropdown list.
 

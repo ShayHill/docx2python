@@ -25,10 +25,9 @@ from dataclasses import dataclass
 from functools import cached_property
 from operator import attrgetter
 from typing import Dict, List, Optional, Union
-
-from xml.etree import ElementTree as ET
-from lxml import etree as ElementTree
 from warnings import warn
+
+from lxml import etree
 
 from .docx_context import collect_numFmts, collect_rels
 from .docx_text import get_text, merge_elems
@@ -161,19 +160,19 @@ class File:
         """
         try:
             unzipped = self.context.zipf.read(self._rels_path)
-            tree = ElementTree.fromstring(unzipped)
+            tree = etree.fromstring(unzipped)
             return {x.attrib["Id"]: x.attrib["Target"] for x in tree}
         except KeyError:
             return {}
 
     @cached_property
-    def root_element(self) -> ElementTree.Element:
+    def root_element(self) -> etree.Element:
         """
         Root element of the file.
 
         Try to merge consecutive, duplicate (except text) elements. Warn if fails.
         """
-        root = ElementTree.fromstring(self.context.zipf.read(self.path))
+        root = etree.fromstring(self.context.zipf.read(self.path))
         if self.Type in CONTENT_FILE_TYPES:
             try:
                 merge_elems(self, root)
@@ -193,7 +192,7 @@ class File:
         return get_text(self)
 
     def get_content(
-        self, root: Optional[ElementTree.Element] = None
+        self, root: Optional[etree.Element] = None
     ) -> List[Union[List, str]]:
         """
         The same content as property 'content' with optional given root.
@@ -254,7 +253,7 @@ class DocxContext:
         there is no word/numbering.xml) being "numbered" with "--".
         """
         try:
-            numFmts_root = ElementTree.fromstring(self.zipf.read("word/numbering.xml"))
+            numFmts_root = etree.fromstring(self.zipf.read("word/numbering.xml"))
             return collect_numFmts(numFmts_root)
         except KeyError:
             return {}
@@ -304,7 +303,7 @@ class DocxContext:
         with zipfile.ZipFile(f"{filename}", mode="w") as zout:
             copy_but(self.zipf, zout, {x.path for x in content_files})
             for file in content_files:
-                zout.writestr(file.path, ElementTree.tostring(file.root_element))
+                zout.writestr(file.path, etree.tostring(file.root_element))
 
 
 # TODO: document and find a place for this helper function

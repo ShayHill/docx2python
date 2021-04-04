@@ -8,20 +8,17 @@ created: 6/26/2019
 import os
 import shutil
 import zipfile
-from collections import defaultdict
-from xml.etree import ElementTree
-from docx2python.docx_organization import DocxContext
-from docx2python.attribute_register import Tags
-from docx2python.iterators import iter_at_depth
 
 import pytest
+from lxml import etree
 
+from docx2python.attribute_register import Tags
 from docx2python.docx_context import (
-    collect_docProps,
     collect_numFmts,
     pull_image_files,
 )
 from docx2python.docx_organization import DocxContext
+from docx2python.iterators import iter_at_depth
 
 
 class TestDocxContextObject:
@@ -64,7 +61,7 @@ class TestSaveDocx:
         input_context.save("resources/example_copy.docx")
         output_context = DocxContext("resources/example_copy.docx")
         output_xml = output_context.file_of_type("officeDocument").root_element
-        assert ElementTree.tostring(input_xml) == ElementTree.tostring(output_xml)
+        assert etree.tostring(input_xml) == etree.tostring(output_xml)
 
     def test_save_changed(self) -> None:
         """Creates a valid docx and updates text"""
@@ -97,7 +94,7 @@ class TestCollectNumFmts:
         """
         zipf = zipfile.ZipFile("resources/example.docx")
         numId2numFmts = collect_numFmts(
-            ElementTree.fromstring(zipf.read("word/numbering.xml"))
+            etree.fromstring(zipf.read("word/numbering.xml"))
         )
         formats = {x for y in numId2numFmts.values() for x in y}
         assert formats == {
@@ -139,7 +136,7 @@ class TestGetContext:
         """All targets mapped"""
         docx_context = DocxContext("resources/example.docx")
         assert docx_context.numId2numFmts == collect_numFmts(
-            ElementTree.fromstring(docx_context.zipf.read("word/numbering.xml"))
+            etree.fromstring(docx_context.zipf.read("word/numbering.xml"))
         )
 
     def test_lists(self) -> None:

@@ -41,6 +41,8 @@ supposed to ever happen). *If* this happens::
     4) update NSMAP['w'] = some string
 """
 
+#TODO: simplify this with lxml
+
 NSMAP = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
     "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",

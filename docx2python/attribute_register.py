@@ -11,7 +11,8 @@ much of this.
 """
 from dataclasses import dataclass
 from typing import Iterator, Optional
-from xml.etree import ElementTree
+
+from lxml import etree
 
 from docx2python.namespace import qn
 
@@ -47,7 +48,7 @@ class Tags:
 KNOWN_TAGS = {x.default for x in Tags.__dataclass_fields__.values()}
 
 
-def has_content(tree: ElementTree.Element) -> Optional[str]:
+def has_content(tree: etree.Element) -> Optional[str]:
     """
     Does the element have any descendent content elements?
 
@@ -66,7 +67,7 @@ def has_content(tree: ElementTree.Element) -> Optional[str]:
     if tree.tag in content_tags:
         return tree.tag
 
-    def iter_known_tags(tree_: ElementTree.Element) -> Iterator[str]:
+    def iter_known_tags(tree_: etree.Element) -> Iterator[str]:
         """ Yield all known tags in tree """
         if tree_.tag in content_tags:
             yield tree_.tag

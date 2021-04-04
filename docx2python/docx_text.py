@@ -11,12 +11,15 @@ Content in the extracted docx is found in the ``word`` folder:
     ``word/footer1.html``
 """
 from __future__ import annotations
+
+import functools
 import warnings
+from collections import defaultdict
 from contextlib import suppress
 from itertools import groupby
-from typing import Dict, List, Optional, Sequence, Tuple, Any
-from xml.etree import ElementTree
-import functools
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
+from lxml import etree
 
 from . import numbering_formats as nums
 from .attribute_register import KNOWN_ATTRIBUTES, Tags, has_content
@@ -24,7 +27,6 @@ from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
 from .namespace import qn
 from .text_runs import format_Pr, get_pStyle, get_run_style, get_style
-from collections import defaultdict
 
 TablesList = List[List[List[List[str]]]]
 
@@ -75,7 +77,7 @@ def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
 def _get_bullet_string(
     numId2numFmts: Dict[str, List[str]],
     numId2count: defaultdict[Any, defaultdict[Any, 0]],
-    paragraph: ElementTree.Element,
+    paragraph: etree.Element,
 ) -> str:
     """
     Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
@@ -143,7 +145,7 @@ def _get_bullet_string(
 
 
 def _elem_key(
-    file: File, elem: ElementTree.Element
+    file: File, elem: etree.Element
 ) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
     # noinspection SpellCheckingInspection
     # TODO: update docstring
@@ -172,7 +174,7 @@ def _elem_key(
     return tag, attrib, style
 
 
-def merge_elems(file: File, tree: ElementTree.Element) -> None:
+def merge_elems(file: File, tree: etree.Element) -> None:
     # noinspection SpellCheckingInspection
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
@@ -267,7 +269,7 @@ def merge_elems(file: File, tree: ElementTree.Element) -> None:
         merge_elems(file, branch)
 
 
-def _get_elem_depth(tree: ElementTree.Element) -> Optional[int]:
+def _get_elem_depth(tree: etree.Element) -> Optional[int]:
     """
     What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
@@ -314,7 +316,7 @@ def _get_elem_depth(tree: ElementTree.Element) -> Optional[int]:
     if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
         return
 
-    def search_at_depth(tree_: Sequence[ElementTree.Element], _depth=0):
+    def search_at_depth(tree_: Sequence[etree.Element], _depth=0):
         """ Width-first recursive search for Tags.PARAGRAPH """
         if not tree_:
             return
@@ -325,12 +327,11 @@ def _get_elem_depth(tree: ElementTree.Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-# TODO: output run-merged docx
 # TODO: remove File and DocxContext types from docx_context.py
 
 
 # noinspection PyPep8Naming
-def get_text(file: File, root: Optional[ElementTree.Element] = None) -> TablesList:
+def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
     """
     Xml as a string to a list of cell strings.
 
@@ -355,11 +356,11 @@ def get_text(file: File, root: Optional[ElementTree.Element] = None) -> TablesLi
     tables = DepthCollector(5)
 
     # noinspection PyPep8Naming
-    def branches(tree: ElementTree.Element) -> None:
+    def branches(tree: etree.Element) -> None:
         """
         Recursively iterate over tree. Add text when found.
 
-        :param tree: An Element from an xml file (ElementTree)
+        :param tree: An Element from an xml file (etree)
         :return: None. Adds text cells to outer variable `tables`.
         """
 

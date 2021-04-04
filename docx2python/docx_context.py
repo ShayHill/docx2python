@@ -9,19 +9,21 @@ Most of the "meat" in a docx file is in ``word/document.xml``. These functions r
 numbering formats, images, and font styles from *other* files in a decompressed docx.
 """
 from __future__ import annotations
+
 import os
 import pathlib
 import re
 import zipfile
 from contextlib import suppress
 from typing import Dict, List, Optional
-from xml.etree import ElementTree
+
+from lxml import etree
 
 from .namespace import qn
 
 
 # noinspection PyPep8Naming
-def collect_numFmts(numFmts_root: ElementTree.Element) -> Dict[str, List[str]]:
+def collect_numFmts(numFmts_root: etree.Element) -> Dict[str, List[str]]:
     """
     Collect abstractNum bullet formats into a dictionary
 
@@ -148,12 +150,12 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
     """
     path2rels = {}
     for rels in (x for x in zipf.namelist() if x[-5:] == ".rels"):
-        path2rels[rels] = [x.attrib for x in ElementTree.fromstring(zipf.read(rels))]
+        path2rels[rels] = [x.attrib for x in etree.fromstring(zipf.read(rels))]
     return path2rels
 
 
 # noinspection PyPep8Naming
-def collect_docProps(root: ElementTree.Element = None) -> Dict[str, str]:
+def collect_docProps(root: etree.Element = None) -> Dict[str, str]:
     # noinspection SpellCheckingInspection
     """
     Get author, modified, etc. from core-properties (should be docProps/core.xml)

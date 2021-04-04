@@ -11,13 +11,14 @@ those elements to extract formatting information.
 import re
 from collections import defaultdict
 from typing import Dict, List, Optional, Sequence, Tuple, Union
-from xml.etree import ElementTree
+
+from lxml import etree
 
 from .attribute_register import Tags
 from .namespace import qn
 
 
-def _elem_tag_str(elem: ElementTree.Element) -> str:
+def _elem_tag_str(elem: etree.Element) -> str:
     """
     The text part of an elem.tag (the portion right of the colon)
 
@@ -25,12 +26,12 @@ def _elem_tag_str(elem: ElementTree.Element) -> str:
 
     create with::
 
-        document = ElementTree.fromstring('bytes string')
+        document = etree.fromstring('bytes string')
         # recursively search document elements.
 
     **E.g., given**:
 
-        document = ElementTree.fromstring('bytes string')
+        document = etree.fromstring('bytes string')
         # document.tag = '{http://schemas.openxml.../2006/main}:document'
         elem_tag_str(document)
 
@@ -43,7 +44,7 @@ def _elem_tag_str(elem: ElementTree.Element) -> str:
 
 # noinspection PyPep8Naming
 def _gather_sub_vals(
-    element: ElementTree.Element, qname: str = None
+    element: etree.Element, qname: str = None
 ) -> Dict[str, Optional[str]]:
     """
     Gather formatting elements for a paragraph or text run.
@@ -53,7 +54,7 @@ def _gather_sub_vals(
 
     create with::
 
-        document = ElementTree.fromstring('bytes string')
+        document = etree.fromstring('bytes string')
         # recursively search document for <w:r> elements.
 
     :return: Style names ('b/', 'sz', etc.) mapped to values.
@@ -98,7 +99,7 @@ def _gather_sub_vals(
         return {}
 
 
-def gather_Pr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
+def gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
     """
     Gather style values for a <w:r> or <w:p> element (maybe others)
 
@@ -115,7 +116,7 @@ def gather_Pr(element: ElementTree.Element) -> Dict[str, Optional[str]]:
 
 
 # noinspection PyPep8Naming
-def get_pStyle(paragraph_element: ElementTree.Element) -> str:
+def get_pStyle(paragraph_element: etree.Element) -> str:
     """Collect and format paragraph -> pPr -> pStyle value.
 
     :param paragraph_element: a ``<w:p>`` xml element
@@ -131,7 +132,7 @@ def get_pStyle(paragraph_element: ElementTree.Element) -> str:
 
 
 # noinspection PyPep8Naming
-def get_run_style(run_element: ElementTree.Element) -> List[str]:
+def get_run_style(run_element: etree.Element) -> List[str]:
     """Select only rPr2 tags you'd like to implement.
     # TODO: redo this docstring
 
@@ -139,7 +140,7 @@ def get_run_style(run_element: ElementTree.Element) -> List[str]:
 
     create with::
 
-        document = ElementTree.fromstring('bytes string')
+        document = etree.fromstring('bytes string')
         # recursively search document for <w:r> elements.
 
     :return: ``[(rPr, val), (rPr, val) ...]``
@@ -176,9 +177,7 @@ RUN_STYLES = {
 }
 
 # noinspection PyPep8Naming
-def get_Pr_as_html_strings(
-    properties_elem: Union[ElementTree.Element, None]
-) -> List[str]:
+def get_Pr_as_html_strings(properties_elem: Union[etree.Element, None]) -> List[str]:
     """
     Encode a properties element into a list of html strings.
 
@@ -186,7 +185,7 @@ def get_Pr_as_html_strings(
 
     create with::
 
-        document = ElementTree.fromstring('bytes string')
+        document = etree.fromstring('bytes string')
         # recursively search document for <w:rPr> or <w:pPr> elements.
 
     :return: ``['font style="font-size:36"', 'b', 'i' ...]``
@@ -227,7 +226,7 @@ def format_Pr(Pr2val: Dict[str, Union[str, None]]) -> List[str]:
     return style
 
 
-def get_style(elem: ElementTree.Element) -> List[Tuple[str, str]]:
+def get_style(elem: etree.Element) -> List[Tuple[str, str]]:
     """
     Get style for an element (if available)
 
