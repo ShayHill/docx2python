@@ -24,15 +24,36 @@ import zipfile
 from dataclasses import dataclass
 from functools import cached_property
 from operator import attrgetter
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Tuple
 from warnings import warn
 
 from lxml import etree
 
 from .docx_context import collect_numFmts, collect_rels
 from .docx_text import get_text, merge_elems
+from typing import Callable
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
+
+DEFAULT_XML2HTML_FORMAT = {
+    "b": (lambda tag, val: tag,),
+    "i": (lambda tag, val: tag,),
+    "u": (lambda tag, val: tag,),
+    "strike": (lambda tag, val: "s",),
+    # 'dstrike': (lambda tag, val: "del",),
+    "vertAlign": (lambda tag, val: val[:3],),  # subscript and superscript
+    "smallCaps": (lambda tag, val: "font-variant:small-caps", "font", "style"),
+    "caps": (lambda tag, val: "text-transform:uppercase", "font", "style"),
+    "highlight": (lambda tag, val: f"background-color:{val}", "span", "style"),
+    "sz": (lambda tag, val: f"font-size:{val}pt", "font", "style"),
+    "color": (lambda tag, val: f"color:{val}", "font", "style"),
+    "Heading1": (lambda tag, val: "h1",),
+    "Heading2": (lambda tag, val: "h2",),
+    "Heading3": (lambda tag, val: "h3",),
+    "Heading4": (lambda tag, val: "h4",),
+    "Heading5": (lambda tag, val: "h5",),
+    "Heading6": (lambda tag, val: "h6",),
+}
 
 
 @dataclass
@@ -219,9 +240,13 @@ class DocxContext:
     ):
         self.docx_filename = docx_filename
         self.image_folder = image_folder
-        self.do_html = html
         self.do_pStyle = paragraph_styles
         self.extract_image = extract_image
+
+        if html:
+            self.xml2html_format = DEFAULT_XML2HTML_FORMAT
+        else:
+            self.xml2html_format = {}
 
     @cached_property
     def zipf(self) -> zipfile.ZipFile:

@@ -132,7 +132,7 @@ def get_pStyle(paragraph_element: etree.Element) -> str:
 
 
 # noinspection PyPep8Naming
-def get_run_style(run_element: etree.Element) -> List[str]:
+def get_run_style(run_element: etree.Element, xml2html) -> List[str]:
     """Select only rPr2 tags you'd like to implement.
     # TODO: redo this docstring
 
@@ -152,7 +152,7 @@ def get_run_style(run_element: etree.Element) -> List[str]:
     Also see docstring for ``gather_rPr``
     """
     properties_tag = qn(f'w:{_elem_tag_str(run_element) + "Pr"}')
-    return get_Pr_as_html_strings(run_element.find(properties_tag))
+    return get_Pr_as_html_strings(run_element.find(properties_tag), xml2html)
 
 
 # TODO: put run styles into a dictionary with paragraphs styles (mapped to tags)
@@ -177,7 +177,9 @@ RUN_STYLES = {
 }
 
 # noinspection PyPep8Naming
-def get_Pr_as_html_strings(properties_elem: Union[etree.Element, None]) -> List[str]:
+def get_Pr_as_html_strings(
+    properties_elem: Union[etree.Element, None], xml2html
+) -> List[str]:
     """
     Encode a properties element into a list of html strings.
 
@@ -197,36 +199,42 @@ def get_Pr_as_html_strings(properties_elem: Union[etree.Element, None]) -> List[
 
     Pr2val = {_elem_tag_str(x): x.attrib.get(qn("w:val")) for x in properties_elem}
 
-    style = format_Pr(Pr2val)
+    style = format_Pr(Pr2val, xml2html)
     return style
 
 
-def format_Pr(Pr2val: Dict[str, Union[str, None]]) -> List[str]:
+def format_Pr(Pr2val: Dict[str, Union[str, None]], xml2html=None) -> List[str]:
     """
     Format tags and values into html strings.
 
     :param Pr2val: tags mapped to values (extracted from xml)
     :return:the interior part of html opening tags, e.g., ['b', 'i', 'font style=""']
     """
+    if xml2html is None:
+        xml2html = RUN_STYLES
     style = []
     groups = defaultdict(list)
+
     # from formatter, 'font', 'style' ->
     #     ('font', 'style') : [formatter(v[0]), formatter(v[1]), ...]
-    for tag, val in ((k, v) for k, v in Pr2val.items() if k in RUN_STYLES):
-        groups[RUN_STYLES[tag][1:]].append(RUN_STYLES[tag][0](tag, val))
+    for tag, val in ((k, v) for k, v in Pr2val.items() if k in xml2html):
+        groups[xml2html[tag][1:]].append(xml2html[tag][0](tag, val))
+
     # from ('font', 'style') : [x, y, z, ...] ->
     #     ('font',) : style={"x; y; z; ..."}
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 2):
         groups[(k[0],)].append(f'{k[1]}="{";".join(sorted(v))}"')
+
     # from ('font',) : string ->
     #     'font string'
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 1):
         style.append(f"{k[0]} {' '.join(v)}")
+
     style += sorted(groups[()])
     return style
 
 
-def get_style(elem: etree.Element) -> List[Tuple[str, str]]:
+def get_style(elem: etree.Element, xml2html) -> List[Tuple[str, str]]:
     """
     Get style for an element (if available)
 
@@ -236,7 +244,7 @@ def get_style(elem: etree.Element) -> List[Tuple[str, str]]:
     :return: ``[(rPr, val), (rPr, val) ...]``
     """
     if elem.tag == Tags.RUN:
-        return get_run_style(elem)
+        return get_run_style(elem, xml2html)
     if elem.tag == Tags.PARAGRAPH:
         return get_pStyle(elem)
     return []

@@ -10,7 +10,7 @@ A ``<w:document>`` element at the top of each xml file defines a namespace::
     <w:document
         xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
         xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-    >
+    />
 
 These entries can be accessed in the file by their abbreviations::
 
@@ -18,7 +18,7 @@ These entries can be accessed in the file by their abbreviations::
         contents of paragraph
     </w:p>
 
-``xml.etree`` in the Python standard docx2python reads ``"<w:p>"`` as
+``lxml.etree`` reads ``"<w:p>"`` as
 
 ``"{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p"``
 
@@ -39,9 +39,15 @@ supposed to ever happen). *If* this happens::
     2) open ``word/document.xml`` in a text editor.
     3) Search for xmlns:w=[some string]
     4) update NSMAP['w'] = some string
+
+Lxml allows (deceptively) easy access to a file's namespaces; however, this is
+problematic because ``root_element.nsmap`` may not retrieve all nsmap entries. Other
+entries may be buried inside sub-environments further down in the tree. It is safer
+to explicate namespace mapping.
+
+If you extend docx2text with other tags, additional NSMAP entries may be necessary.
 """
 
-#TODO: simplify this with lxml
 
 NSMAP = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
@@ -55,7 +61,8 @@ NSMAP = {
 
 
 def qn(tag: str) -> str:
-    """Turn a namespace-prefixed tag into a Clark-notation qualified tag.
+    """
+    Turn a namespace-prefixed tag into a Clark-notation qualified tag.
 
     Stands for 'qualified name', a utility function to turn a namespace prefixed tag
     name into a Clark-notation qualified tag name for lxml.
@@ -67,4 +74,4 @@ def qn(tag: str) -> str:
     """
     prefix, tagroot = tag.split(":")
     uri = NSMAP[prefix]
-    return "{{{}}}{}".format(uri, tagroot)
+    return f"{{{uri}}}{tagroot}"

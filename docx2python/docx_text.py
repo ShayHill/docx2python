@@ -170,7 +170,7 @@ def _elem_key(
     for k, v in attrib.items():
         with suppress(KeyError):
             attrib[k] = file.rels[v]
-    style = get_style(elem)
+    style = get_style(elem, file.context.xml2html_format)
     return tag, attrib, style
 
 
@@ -355,6 +355,8 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
     numId2count = _new_list_counter()
     tables = DepthCollector(5)
 
+    xml2html = file.context.xml2html_format
+
     # noinspection PyPep8Naming
     def branches(tree: etree.Element) -> None:
         """
@@ -368,12 +370,12 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
         if tree.tag == Tags.PARAGRAPH:
             if file.context.do_pStyle:
                 tables.add_pStyle(get_pStyle(tree))
-            if file.context.do_html:
-                tables.add_pPs(format_Pr({get_pStyle(tree): None}))
+            if xml2html:
+                tables.add_pPs(format_Pr({get_pStyle(tree): None}, xml2html))
 
         elif tree.tag == Tags.RUN:
-            if file.context.do_html:
-                tables.add_rPs(get_run_style(tree))
+            if xml2html:
+                tables.add_rPs(get_run_style(tree, xml2html))
 
         # set appropriate depth for element (this will trigger methods in ``tables``)
         tree_depth = _get_elem_depth(tree)
@@ -388,7 +390,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
         elif tree.tag == Tags.TEXT:
             # oddly enough, these don't all contain text
             text = tree.text if tree.text is not None else ""
-            if file.context.do_html:
+            if xml2html:
                 text = text.replace("<", "&lt;")
                 text = text.replace(">", "&gt;")
             tables.insert_text(text)
