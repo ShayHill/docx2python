@@ -99,7 +99,7 @@ def _gather_sub_vals(
         return {}
 
 
-def gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
+def _gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
     """
     Gather style values for a <w:r> or <w:p> element (maybe others)
 
@@ -125,14 +125,11 @@ def get_pStyle(paragraph_element: etree.Element) -> str:
 
     Also see docstring for ``gather_pPr``
     """
-    pStyle = gather_Pr(paragraph_element).get("pStyle")
-    if pStyle:
-        return pStyle
-    return ""
+    return _gather_Pr(paragraph_element).get("pStyle", "")
 
 
 # noinspection PyPep8Naming
-def get_run_style(run_element: etree.Element, xml2html) -> List[str]:
+def get_run_formatting(run_element: etree.Element, xml2html) -> List[str]:
     """Select only rPr2 tags you'd like to implement.
     # TODO: redo this docstring
 
@@ -151,67 +148,39 @@ def get_run_style(run_element: etree.Element, xml2html) -> List[str]:
 
     Also see docstring for ``gather_rPr``
     """
-    properties_tag = qn(f'w:{_elem_tag_str(run_element) + "Pr"}')
-    return get_Pr_as_html_strings(run_element.find(properties_tag), xml2html)
+    return _format_Pr(_gather_Pr(run_element), xml2html)
 
-
-# TODO: put run styles into a dictionary with paragraphs styles (mapped to tags)
-RUN_STYLES = {
-    "b": (lambda tag, val: tag,),
-    "i": (lambda tag, val: tag,),
-    "u": (lambda tag, val: tag,),
-    "strike": (lambda tag, val: "s",),
-    # 'dstrike': (lambda tag, val: "del",),
-    "vertAlign": (lambda tag, val: val[:3],),  # subscript and superscript
-    "smallCaps": (lambda tag, val: "font-variant:small-caps", "font", "style"),
-    "caps": (lambda tag, val: "text-transform:uppercase", "font", "style"),
-    "highlight": (lambda tag, val: f"background-color:{val}", "span", "style"),
-    "sz": (lambda tag, val: f"font-size:{val}pt", "font", "style"),
-    "color": (lambda tag, val: f"color:{val}", "font", "style"),
-    "Heading1": (lambda tag, val: "h1",),
-    "Heading2": (lambda tag, val: "h2",),
-    "Heading3": (lambda tag, val: "h3",),
-    "Heading4": (lambda tag, val: "h4",),
-    "Heading5": (lambda tag, val: "h5",),
-    "Heading6": (lambda tag, val: "h6",),
-}
 
 # noinspection PyPep8Naming
-def get_Pr_as_html_strings(
-    properties_elem: Union[etree.Element, None], xml2html
-) -> List[str]:
-    """
-    Encode a properties element into a list of html strings.
+def get_paragraph_formatting(paragraph_element: etree.Element, xml2html) -> List[str]:
+    """Select only rPr2 tags you'd like to implement.
+    # TODO: redo this docstring
 
-    :param properties_elem: a ``<w:rPr>`` or ``<w:pPr>`` element. Maybe others.
+    :param run_element: a ``<w:r>`` xml element
 
     create with::
 
         document = etree.fromstring('bytes string')
-        # recursively search document for <w:rPr> or <w:pPr> elements.
+        # recursively search document for <w:r> elements.
 
-    :return: ``['font style="font-size:36"', 'b', 'i' ...]``
+    :return: ``[(rPr, val), (rPr, val) ...]``
+
+    Tuples are always returned in order:
 
     ``"font"`` first then any other styles in alphabetical order.
+
+    Also see docstring for ``gather_rPr``
     """
-    if properties_elem is None:
-        return []
-
-    Pr2val = {_elem_tag_str(x): x.attrib.get(qn("w:val")) for x in properties_elem}
-
-    style = format_Pr(Pr2val, xml2html)
-    return style
+    return _format_Pr({get_pStyle(paragraph_element): None}, xml2html)
 
 
-def format_Pr(Pr2val: Dict[str, Union[str, None]], xml2html=None) -> List[str]:
+def _format_Pr(Pr2val: Dict[str, Union[str, None]], xml2html) -> List[str]:
     """
     Format tags and values into html strings.
 
     :param Pr2val: tags mapped to values (extracted from xml)
     :return:the interior part of html opening tags, e.g., ['b', 'i', 'font style=""']
     """
-    if xml2html is None:
-        xml2html = RUN_STYLES
     style = []
     groups = defaultdict(list)
 
@@ -234,7 +203,7 @@ def format_Pr(Pr2val: Dict[str, Union[str, None]], xml2html=None) -> List[str]:
     return style
 
 
-def get_style(elem: etree.Element, xml2html) -> List[Tuple[str, str]]:
+def get_html_formatting(elem: etree.Element, xml2html) -> List[str]:
     """
     Get style for an element (if available)
 
@@ -244,13 +213,13 @@ def get_style(elem: etree.Element, xml2html) -> List[Tuple[str, str]]:
     :return: ``[(rPr, val), (rPr, val) ...]``
     """
     if elem.tag == Tags.RUN:
-        return get_run_style(elem, xml2html)
+        return get_run_formatting(elem, xml2html)
     if elem.tag == Tags.PARAGRAPH:
-        return get_pStyle(elem)
+        return get_paragraph_formatting(elem, xml2html)
     return []
 
 
-def style_open(style: Sequence[Tuple[str, str]]) -> str:
+def html_open(style: Sequence[Tuple[str, str]]) -> str:
     """
     HTML tags to open a style.
 
@@ -260,14 +229,14 @@ def style_open(style: Sequence[Tuple[str, str]]) -> str:
     ...     ("i", ""),
     ...     ("u", ""),
     ... ]
-    >>> style_open(style)
+    >>> html_open(style)
     '<font color="red" size="32"><b><i><u>'
     """
     # TODO: update docstrings for style_open and style_close
     return "".join((f"<{x}>" for x in style))
 
 
-def style_close(style: List[Tuple[str, str]]) -> str:
+def html_close(style: List[Tuple[str, str]]) -> str:
     """
     HTML tags to close a style.
 
@@ -277,7 +246,7 @@ def style_close(style: List[Tuple[str, str]]) -> str:
     ...     ("i", ""),
     ...     ("u", ""),
     ... ]
-    >>> style_close(style)
+    >>> html_close(style)
     '</u></i></b></font>'
 
     Tags will always be in reverse (of open) order, so open - close will look like::

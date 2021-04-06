@@ -26,7 +26,17 @@ from .attribute_register import KNOWN_ATTRIBUTES, Tags, has_content
 from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
 from .namespace import qn
-from .text_runs import format_Pr, get_pStyle, get_run_style, get_style
+from .text_runs import (
+    _format_Pr,
+    get_pStyle,
+    get_run_formatting,
+    get_html_formatting,
+    get_paragraph_formatting,
+    _gather_Pr,
+    _elem_tag_str,
+    html_open,
+    html_close,
+)
 
 TablesList = List[List[List[List[str]]]]
 
@@ -170,7 +180,7 @@ def _elem_key(
     for k, v in attrib.items():
         with suppress(KeyError):
             attrib[k] = file.rels[v]
-    style = get_style(elem, file.context.xml2html_format)
+    style = get_html_formatting(elem, file.context.xml2html_format)
     return tag, attrib, style
 
 
@@ -370,12 +380,10 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
         if tree.tag == Tags.PARAGRAPH:
             if file.context.do_pStyle:
                 tables.add_pStyle(get_pStyle(tree))
-            if xml2html:
-                tables.add_pPs(format_Pr({get_pStyle(tree): None}, xml2html))
+            tables.add_pPs(get_paragraph_formatting(tree, xml2html))
 
         elif tree.tag == Tags.RUN:
-            if xml2html:
-                tables.add_rPs(get_run_style(tree, xml2html))
+            tables.add_rPs(get_run_formatting(tree, xml2html))
 
         # set appropriate depth for element (this will trigger methods in ``tables``)
         tree_depth = _get_elem_depth(tree)

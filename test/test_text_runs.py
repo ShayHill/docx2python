@@ -8,17 +8,17 @@
 
 from xml.etree import ElementTree
 
-# noinspection PyUnresolvedReferences
-from helpers.utils import valid_xml
-
+from docx2python.docx_organization import DEFAULT_XML2HTML_FORMAT
 # noinspection PyProtectedMember
 from docx2python.text_runs import (
     _elem_tag_str,
-    gather_Pr,
-    get_run_style,
-    style_close,
-    style_open,
+    _gather_Pr,
+    get_run_formatting,
+    html_close,
+    html_open,
 )
+# noinspection PyUnresolvedReferences
+from helpers.utils import valid_xml
 
 ONE_TEXT_RUN = valid_xml(
     '<w:r w:rsidRPr="000E1B98">'
@@ -58,7 +58,7 @@ class TestGatherRpr:
     def test_get_styles(self):
         """Map styles to values."""
         document = ElementTree.fromstring(ONE_TEXT_RUN)
-        assert gather_Pr(document[0]) == {
+        assert _gather_Pr(document[0]) == {
             "rFonts": None,
             "b": None,
             "u": "single",
@@ -71,7 +71,7 @@ class TestGatherRpr:
     def test_no_styles(self):
         """Return empty dict when no rPr for text run."""
         document = ElementTree.fromstring(NO_STYLE_RUN)
-        assert gather_Pr(document[0]) == {}
+        assert _gather_Pr(document[0]) == {}
 
 
 class TestGetRunStyle:
@@ -80,7 +80,7 @@ class TestGetRunStyle:
     def test_font_and_others(self) -> None:
         """Return font first, then other styles."""
         document = ElementTree.fromstring(ONE_TEXT_RUN)
-        assert get_run_style(document[0]) == [
+        assert get_run_formatting(document[0], DEFAULT_XML2HTML_FORMAT) == [
             'font style="color:red;font-size:32pt"',
             "b",
             "i",
@@ -94,9 +94,9 @@ class TestStyleStrings:
     def test_style_open(self) -> None:
         """Produce valid html for all defined styles."""
         style = ['font style="color:red"', "b", "i", "u"]
-        assert style_open(style) == '<font style="color:red"><b><i><u>'
+        assert html_open(style) == '<font style="color:red"><b><i><u>'
 
     def test_style_close(self) -> None:
         """Produce valid html for all defined styles."""
         style = ['font style="color:red"', "b", "i", "u"]
-        assert style_close(style) == "</u></i></b></font>"
+        assert html_close(style) == "</u></i></b></font>"

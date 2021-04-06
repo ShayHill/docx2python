@@ -33,7 +33,7 @@ Pass out of package with depth_collector_instance.tree.
 
 from typing import List
 
-from .text_runs import style_close, style_open
+from .text_runs import html_close, html_open
 
 
 class CaretDepthError(Exception):
@@ -77,11 +77,11 @@ class DepthCollector:
         while self._par_queue:
             self.insert(self._par_queue.pop(0))
         if self._pPss and self._pPss[-1]:
-            self.insert(style_open(self._pPss[-1]))
+            self.insert(html_open(self._pPss[-1]))
 
     def close_paragraph(self) -> None:
         if self._pPss and self._pPss[-1]:
-            self.insert(style_close(self._pPss[-1]))
+            self.insert(html_close(self._pPss[-1]))
         self._pStyles = self._pStyles[:-1]
         self._pPss = self._pPss[:-1]
 
@@ -168,6 +168,6 @@ class DepthCollector:
             rPs = []
         rPs[:0] = self._rPr_queue
         if item and rPs:
-            item = style_open(rPs) + item + style_close(rPs)
+            item = html_open(rPs) + item + html_close(rPs)
         self.insert(item)
         del self._rPr_queue[:]

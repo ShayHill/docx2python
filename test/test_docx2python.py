@@ -177,8 +177,10 @@ class TestImageDir:
 
 def test_header_runs() -> None:
     """Runs returned as separate strings. Paragraphs not joined"""
-    assert docx2python("resources/multiple_runs_per_paragraph.docx").document_runs == [
-        [[[["Multiple ", "Runs in the", " Header"]]]],
+    assert docx2python(
+        "resources/multiple_runs_per_paragraph.docx", html=True
+    ).document_runs == [
+        [[[["Multiple ", "<b>Runs in the</b>", " Header"]]]],
         [
             [
                 [
@@ -188,15 +190,15 @@ def test_header_runs() -> None:
                         "result.document_runs return different things."
                     ],
                     [],
-                    ["Multiple ", "Runs in the", " Body"],
-                    ["Multiple ", "Runs in the", " Body"],
-                    ["Multiple ", "Runs in the", " Body"],
-                    ["Multiple ", "Runs in the", " Body"],
+                    ["Multiple ", "<b>Runs in the</b>", " Body"],
+                    ["Multiple ", "<b>Runs in the</b>", " Body"],
+                    ["Multiple ", "<b>Runs in the</b>", " Body"],
+                    ["Multiple ", "<b>Runs in the</b>", " Body"],
                     [],
                 ]
             ]
         ],
-        [[[["Multiple ", "Runs in the", " Footer"]]]],
+        [[[["Multiple ", "<b>Runs in the</b>", " Footer"]]]],
         [[[[]], [[]]]],
         [[[[]], [[]]]],
     ]
