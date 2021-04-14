@@ -8,10 +8,11 @@ created: 5/20/2019
 Does not test ``get_text``. ``get text`` is tested through source_old.
 """
 
+from collections import defaultdict
 from typing import Dict
-from lxml import etree
 
 import pytest
+from lxml import etree
 
 # noinspection PyProtectedMember,PyProtectedMember
 from docx2python.docx_text import _get_bullet_string, _increment_list_counter
@@ -43,12 +44,6 @@ def numbered_paragraphs():
             "</w:numPr></w:pPr></w:p>"
         )
     return [valid_xml(x) for x in paragraphs]
-
-
-from collections import defaultdict
-
-# TODO: delete file_with_numbering after refactoring _Get_num_fmy
-file_with_numbering = None
 
 
 @pytest.fixture()

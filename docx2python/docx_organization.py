@@ -24,7 +24,7 @@ import zipfile
 from dataclasses import dataclass
 from functools import cached_property
 from operator import attrgetter
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Optional, Union, Tuple, Set
 from warnings import warn
 
 from lxml import etree
@@ -316,27 +316,35 @@ class DocxContext:
             (x for x in self.files if x.Type == type_), key=attrgetter("path")
         )
 
-    # TODO: improve docstring
     def save(self, filename: str) -> None:
         """
         Save the (presumably altered) xml.
 
-        :param filename:
-        :return:
+        :param filename: path to output file (presumably *.docx)
+
+        xml (root_element) attributes are cached, so these can be altered and saved.
+        This allows saving a copy of the input docx after the ``merge_elems`` operation.
+        Also allows some light editing like search and replace.
         """
         content_files = [x for x in self.files if x.Type in CONTENT_FILE_TYPES]
         with zipfile.ZipFile(f"{filename}", mode="w") as zout:
-            copy_but(self.zipf, zout, {x.path for x in content_files})
+            _copy_but(self.zipf, zout, {x.path for x in content_files})
             for file in content_files:
                 zout.writestr(file.path, etree.tostring(file.root_element))
 
 
-# TODO: document and find a place for this helper function
-def copy_but(inzip, outzip, exclusions=()):
-    for item in inzip.infolist():
+def _copy_but(
+    in_zip: zipfile.ZipFile, out_zip: zipfile.ZipFile, exclusions: Optional[Set] = None
+) -> None:
+    """
+    Copy every file in a docx except those listed in exclusions.
+
+    :param in_zip: zipfile of origin xml file
+    :param out_zip: zipfile of destination xml file
+    :param exclusions: filenames you don't want to copy (e.g., 'document.xml')
+    """
+    exclusions = exclusions or set()
+    for item in in_zip.infolist():
         if item.filename not in exclusions:
-            buffer = inzip.read(item.filename)
-            outzip.writestr(item, buffer)
-
-
-# TODO: refactor entire project to lxml
+            buffer = in_zip.read(item.filename)
+            out_zip.writestr(item, buffer)

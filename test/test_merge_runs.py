@@ -79,12 +79,33 @@ def test_merge_runs():
     """
     Merge duplicate, consecutive hyperlinks
 
-    TODO: test text and run merging (see below)
     The output text would look the same whether run and text elements were merged.
     This test only verifies that hyperlink elements have been merged, else the output
     text would contain something closer to ``<a>hy</a><a>per</a><a>link</a>``
     """
-    assert (
-        '<a href="https://www.shayallenhill.com">hyperlink</a>'
-        in docx2python(os.path.join("resources", "merged_links.docx")).text
-    )
+    extraction = docx2python(os.path.join("resources", "merged_links.docx"))
+    assert extraction.body_runs == [
+        [
+            [
+                [
+                    [
+                        "This page created by putting three links to the same address "
+                        "in three different paragraphs (as below) …"
+                    ],
+                    ['<a href="https://www.shayallenhill.com">hy</a>'],
+                    ['<a href="https://www.shayallenhill.com">per</a>'],
+                    ['<a href="https://www.shayallenhill.com">link</a>'],
+                    ["Then removing the endlines to create a single link."],
+                    ['<a href="https://www.shayallenhill.com">hyperlink</a>'],
+                    [
+                        "Internally, the XML records the joined paragraphs as "
+                        "three consecutive links, each with a different r:id, "
+                        "all r:ids referencing the same address. Docx2python v2+ "
+                        "should re-join these consecutive links."
+                    ],
+                    [],
+                    [],
+                ]
+            ]
+        ]
+    ]

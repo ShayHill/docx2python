@@ -5,8 +5,6 @@
 :author: Shay Hill
 :created: 3/18/2021
 
-TODO: Implement all and test against resources/run_styles.docx
-
 <w:r><w:rPr><w:sz w:val="32"/><w:szCs w:val="32"/></w:rPr><w:t>16 point</w:t></w:r>
 <w:r><w:rPr><w:color w:val="FF0000"/></w:rPr><w:t>Red</w:t></w:r>
 <w:r><w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>

@@ -11,6 +11,7 @@ import zipfile
 
 import pytest
 from lxml import etree
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 from docx2python.attribute_register import Tags
 from docx2python.docx_context import (
@@ -19,6 +20,7 @@ from docx2python.docx_context import (
 )
 from docx2python.docx_organization import DocxContext
 from docx2python.iterators import iter_at_depth
+from docx2python.main import docx2python
 
 
 class TestDocxContextObject:
@@ -110,27 +112,24 @@ class TestCollectNumFmts:
 class TestCollectDocProps:
     """Test strip_text.collect_docProps """
 
-    pass
-
-    # TODO: restore test
-    # def test_gets_properties(self) -> None:
-    #     """Retrieves properties from docProps"""
-    #     zipf = zipfile.ZipFile("resources/example.docx")
-    #     props = collect_docProps(zipf.read("docProps/core.xml"))
-    #     assert props["creator"] == "Shay Hill"
-    #     assert props["lastModifiedBy"] == "Shay Hill"
+    def test_gets_properties(self) -> None:
+        """Retrieves properties from docProps"""
+        core_properties = docx2python("resources/example.docx").core_properties
+        expected = {
+            "title": None,
+            "subject": None,
+            "creator": "Shay Hill",
+            "keywords": None,
+            "description": None,
+            "lastModifiedBy": "Shay Hill",
+        }
+        for prop, value in expected.items():
+            assert core_properties[prop] == value
 
 
 # noinspection PyPep8Naming
 class TestGetContext:
     """Text strip_text.get_context """
-
-    # TODO: refactor this test to assert result.core_properties
-    # def test_docProp2text(self, docx_context) -> None:
-    #     """All targets mapped"""
-    #     zipf = zipfile.ZipFile("resources/example.docx")
-    #     props = collect_docProps(zipf.read("docProps/core.xml"))
-    #     assert docx_context["docProp2text"] == props
 
     def test_numId2numFmts(self) -> None:
         """All targets mapped"""
@@ -151,17 +150,14 @@ class TestPullImageFiles:
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
         docx_context = DocxContext("resources/example.docx")
-        pull_image_files(docx_context, "delete_this/path/to/images")
-        assert os.listdir("delete_this/path/to/images") == ["image1.png", "image2.jpg"]
-        # TODO: create a temp file for this function
-        # clean up
-        shutil.rmtree("delete_this")
+        with TemporaryDirectory() as image_folder:
+            pull_image_files(docx_context, image_folder)
+            assert os.listdir(image_folder) == ["image1.png", "image2.jpg"]
 
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
-        # TODO: remove unneeded after refactoring pull_image_files signature
+
         docx_context = DocxContext("resources/basic.docx")
-        pull_image_files(docx_context, "delete_this/path/to/images")
-        assert os.listdir("delete_this/path/to/images") == []
-        # clean up
-        shutil.rmtree("delete_this")
+        with TemporaryDirectory() as image_folder:
+            pull_image_files(docx_context, image_folder)
+            assert os.listdir(image_folder) == []

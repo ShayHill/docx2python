@@ -8,7 +8,6 @@
 Paragraphs and runs can end up nested with text boxes. Docx2python
 un-nests these paragraphs.
 
-# TODO: clean up this docstring
 	<w:p>
 		<w:pPr>
 			<w:pStyle w:val="Header"/>
@@ -85,18 +84,23 @@ open/close html tags at the beginning and end of each *output* paragraph.
 from docx2python.main import docx2python
 
 
-# def test_paragraphs_only(self) -> None:
-#     """Run without issue"""
-#     aaa = pars.document[0][0][0][0]
-#     bbb = pars.document[0][0][0]
-#     ccc = pars.document[0][0]
-#     ddd = pars.document[0]
-#     # TODO: fix this test
-#     # assert pars.text == (
-#     #     "\n\nThis is a document for testing docx2python module.\n\n\n\nThis "
-#     #     "document contains paragraphs.\n\n\n\nThis document does not contain any "
-#     #     "bulleted lists.\n\n"
-#     # )
+def test_paragraphs_only() -> None:
+    """Html tags inserted into text"""
+    pars = docx2python(
+        "resources/nested_paragraphs_in_header3b.docx",
+        html=True,
+        paragraph_styles=True,
+    )
+    assert pars.text == (
+        "Header\n\nHeading1<h1>before nested "
+        "paragraph----media/image19.jpeg----</h1>\n\n<font "
+        'style="font-size:72pt;font-variant:small-caps">NESTED PARAGRAPH\n</font>'
+        '\n\n<font style="font-size:72pt;font-variant:small-caps">Back to outside '
+        "paragraph\n</font>\n\n----media/image20.png----\n\n\n\n2  "
+        "\n\n\n\nNoSpacing\n\n\n\n\n\n\n\n\t\t<font "
+        'style="color:808080;font-size:18pt">Page 579 of '
+        "579</font>\n\n\t\n\nFooter\t\t\t\t\n\n\n\n\n\n\n\n"
+    )
 
 
 class TestParsNestedInTables:

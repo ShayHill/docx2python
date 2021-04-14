@@ -27,7 +27,7 @@ from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
 from .namespace import qn
 from .text_runs import (
-    _format_Pr,
+    _format_Pr_into_html,
     get_pStyle,
     get_run_formatting,
     get_html_formatting,
@@ -154,22 +154,20 @@ def _get_bullet_string(
         return format_bullet(nums.bullet())
 
 
-def _elem_key(
-    file: File, elem: etree.Element
-) -> Tuple[str, Dict[str, str], List[Tuple[str, str]]]:
+def _elem_key(file: File, elem: etree.Element) -> Tuple[str, Dict[str, str], List[str]]:
     # noinspection SpellCheckingInspection
-    # TODO: update docstring
     """
     Enough information to tell if two elements are more-or-less identical.
 
-    :param elem:
-    :return:
+    :param elem: any element in an xml file.
+    :return: A summary of attributes (if two adjacent elements return the same key,
+    they are considered joinable).
 
     Docx2Text joins consecutive runs and links of the same style. Comparing two
     elem_key return values will tell you if
         * elements are the same type
         * element attributes are same excluding revision 'rsid'
-        * element styles are the (as far as docx2python understands them)
+        * element styles are the same (as far as docx2python understands them)
 
     Elem rId attributes are replaces with rId['Target'] because different rIds can
     point to identical targets. This is important for hyperlinks, which can look
@@ -189,7 +187,8 @@ def merge_elems(file: File, tree: etree.Element) -> None:
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
 
-    :param tree: element from an xml file
+    :param File: File instancce
+    :param tree: root_element from an xml in File instance
     :return: None
     :effects: Merges consecutive elements if tag, attrib, and style are the same
 
@@ -335,9 +334,6 @@ def _get_elem_depth(tree: etree.Element) -> Optional[int]:
         return search_at_depth(sum([list(x) for x in tree_], start=[]), _depth + 1)
 
     return search_at_depth([tree])
-
-
-# TODO: remove File and DocxContext types from docx_context.py
 
 
 # noinspection PyPep8Naming
