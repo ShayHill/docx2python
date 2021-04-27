@@ -93,6 +93,19 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
         </w:r>
     </w:p>
 
+    OR
+
+    <w:p>
+        <w:pPr>
+            <w:pStyle w:val="paragraph_style_with_numId"/>
+        </wpPr>
+        <w:r>
+            <w:t>this text in numbered or bulleted list
+            </w:t>
+        </w:r>
+    </w:p>
+
+
     bullet preceded by four spaces for every indentation level.
     """
     try:
@@ -106,8 +119,19 @@ def _get_bullet_string(paragraph: ElementTree.Element, context: Dict[str, Any]) 
             # give up and put a bullet
             numFmt = "bullet"
     except (AttributeError, KeyError):
-        # not a numbered paragraph
-        return ""
+        try:
+            pPr = paragraph.find(qn("w:pPr"))
+            pStyle = pPr.find(qn("w:pStyle")).attrib[qn("w:val")]
+            numId = context["otherNumberingStles2numFmts"][pStyle]["numId"]
+            ilvl = context["otherNumberingStles2numFmts"][pStyle]["ilvl"]
+            try:
+                numFmt = context["numId2numFmts"][numId][int(ilvl)]
+            except IndexError:
+                # give up and put a bullet
+                numFmt = "bullet"
+        except (AttributeError, KeyError, IndexError):
+            # not a numbered paragraph
+            return ""
 
     number = _increment_list_counter(context["numId2count"][numId], ilvl)
     indent = "\t" * int(ilvl)
