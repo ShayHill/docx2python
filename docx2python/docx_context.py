@@ -29,11 +29,13 @@ from docx2python.namespace import qn
 
 
 # noinspection PyPep8Naming
-def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
+def collect_numFmts(xml: bytes, styles_xml: bytes) -> Dict[str, List[str]]:
     """
     Collect abstractNum bullet formats into a dictionary
 
     :param xml: ``trash/numbering.xml`` from a decompressed docx file
+
+    :param styles_xml: ``trash/styles.xml`` from a decompressed docx file
 
     :returns: numId mapped to numFmts (by ilvl)
 
@@ -47,6 +49,14 @@ def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
         <w:abstractNum w:abstractNumId="0">
             <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
             <w:lvl w:ilvl="1"><w:numFmt w:val="lowerLetter"/></w:lvl>
+            ...
+        </w:abstractNum>
+
+    In some cases the definition can point to a numbering style defined in the
+    styles xml::
+        <w:abstractNum w:abstractNumId="0">
+            ...
+            <w:numStyleLink w:val="style_in_styles_xml"/>
             ...
         </w:abstractNum>
 
@@ -72,6 +82,7 @@ def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
         }
     """
     abstractNumId2numFmts = {}
+    abstractNumId2Styles = {}
 
     root = ElementTree.fromstring(xml)
     for abstractNum in root.findall(qn("w:abstractNum")):
@@ -80,12 +91,58 @@ def collect_numFmts(xml: bytes) -> Dict[str, List[str]]:
         for lvl in abstractNum.findall(qn("w:lvl")):
             numFmt = lvl.find(qn("w:numFmt"))
             abstractNumId2numFmts[id_].append(numFmt.attrib[qn("w:val")])
+        if len(abstractNumId2numFmts[id_]) == 0:
+            numStyleLink = abstractNum.find(qn("w:numStyleLink"))
+            if not numStyleLink is None:
+                abstractNumId2Styles[id_] = numStyleLink.attrib[qn("w:val")]
+                del abstractNumId2numFmts[id_]
+
+    print("abstractNumId2numFmts", abstractNumId2numFmts)
+    print("abstractNumId2Styles", abstractNumId2Styles)
+
+    # Read styles.xml only if needed
+    styles = {}
+    if len(abstractNumId2Styles) > 0:
+        styles_root = ElementTree.fromstring(styles_xml)
+        for style in styles_root.findall(qn("w:style")):
+            if style.attrib[qn("w:type")] == "numbering":
+                id_ = style.attrib[qn("w:styleId")]
+                styles[id_] = []
+                for lvl in style.findall(qn("w:lvl")):
+                    numFmt = lvl.find(qn("w:numFmt"))
+                    styles[id_].append(numFmt.attrib[qn("w:val")])
+                if len(styles[id_]) == 0:
+                    try:
+                        # Search for a reference back to numbering xml (a NumId, not an abstractNumId)
+                        numId = style.find(qn("w:pPr")).find(qn("w:numPr")).find(qn("w:numId")).attrib[qn("w:val")]
+                        styles[id_] = numId
+                    except Exception as e:
+                        print("in except", e)
+                        del styles[id_]
+
+    print("styles", styles)
 
     numId2numFmts = {}
+    toSolveWithStyles = []
     for num in root.findall(qn("w:num")):
         numId = num.attrib[qn("w:numId")]
         abstractNumId = num.find(qn("w:abstractNumId")).attrib[qn("w:val")]
-        numId2numFmts[numId] = abstractNumId2numFmts[abstractNumId]
+        if abstractNumId in abstractNumId2numFmts:
+            numId2numFmts[numId] = abstractNumId2numFmts[abstractNumId]
+        else:
+            # Needs to be done later as it can reference a NumId
+            toSolveWithStyles.append([numId,abstractNumId])
+    
+    while len(toSolveWithStyles) > 0:
+        numId, abstractNumId = toSolveWithStyles.pop(0)
+        if isinstance(styles[abstractNumId2Styles[abstractNumId]], list):
+            numId2numFmts[numId] = styles[abstractNumId2Styles[abstractNumId]]
+        else:
+            refNumId = styles[abstractNumId2Styles[abstractNumId]]
+            if refNumId in numId2numFmts:
+                numId2numFmts[numId] = numId2numFmts[refNumId]
+            else:
+                toSolveWithStyles.append([numId, abstractNumId])
 
     return numId2numFmts
 
@@ -276,7 +333,7 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
         # no document properties. This file may have come from Google Docs
         context["docProp2text"] = {}
     try:
-        numId2numFmts = collect_numFmts(zipf.read("word/numbering.xml"))
+        numId2numFmts = collect_numFmts(zipf.read("word/numbering.xml"), zipf.read("word/styles.xml"))
         context["numId2numFmts"] = numId2numFmts
         context["numId2count"] = {
             x: defaultdict(lambda: 0) for x in numId2numFmts.keys()
