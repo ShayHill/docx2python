@@ -63,3 +63,15 @@ Now only supports Python 3.6+
 --  XML and other information from an unzipped docx file now available as a DocxContext instance.
 
 Docx2Python v1 extracted xml from a zip file and passed it straight to formatting functions. Docx2Python v2 takes an intermediate step: hold the xml and inferred attributes of the input docx in DocxContext and File instances. These allow a view into the xml for users who are comfortable working that way. A user can now execute search&replace and other simple operations before extracting the text. 
+
+-- Soft line breaks are now exported as `'\n'`
+
+Docx2Python v1 ignored soft line breaks. These are represented in the xml as `<w:br/>`
+
+-- Now recognizes math text.
+
+Equations in Word are made up internally of ``<w:m>`` elements. Previous versions of Docx2Python ignored these elements. These are now recognized.
+
+Equations in Word's Professional format will return garbage (a smattering of text elements inside an equation).
+
+Equations in Word's Inline format will return a nice string (e.g., ``'\\int_{0}^{1}x'``).

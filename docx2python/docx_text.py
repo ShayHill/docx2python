@@ -263,12 +263,12 @@ def merge_elems(file: File, tree: etree.Element) -> None:
 
     file_elem_key = functools.partial(_elem_key, file)
 
-    merge_tags = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT}
+    merge_tags = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
     elems = [x for x in tree if has_content(x)]
     runs = [list(y) for x, y in groupby(elems, key=file_elem_key)]
 
     for run in (x for x in runs if len(x) > 1 and x[0].tag in merge_tags):
-        if run[0].tag == Tags.TEXT:
+        if run[0].tag in {Tags.TEXT, Tags.TEXT_MATH}:
             run[0].text = "".join(x.text for x in run)
         for elem in run[1:]:
             run[0].extend(elem)
@@ -391,7 +391,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
                 _get_bullet_string(file.context.numId2numFmts, numId2count, tree)
             )
 
-        elif tree.tag == Tags.TEXT:
+        elif tree.tag in {Tags.TEXT, Tags.TEXT_MATH}:
             # oddly enough, these don't all contain text
             text = tree.text if tree.text is not None else ""
             if xml2html:
@@ -400,7 +400,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
             tables.insert_text(text)
 
         elif tree.tag == Tags.BR:
-            tables.insert_text('\n')
+            tables.insert_text("\n")
 
         if tree.tag == Tags.FOOTNOTE:
             if "separator" not in tree.attrib.get(qn("w:type"), "").lower():

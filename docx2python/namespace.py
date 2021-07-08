@@ -51,12 +51,13 @@ If you extend docx2text with other tags, additional NSMAP entries may be necessa
 
 NSMAP = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
-    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-    "v": "urn:schemas-microsoft-com:vml",
-    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
     "cp": "http://schemas.openxmlformats.org/package/2006/metadata/core-properties",
     "dc": "http://purl.org/dc/elements/1.1/",
     "dcterms": "http://purl.org/dc/terms/",
+    "m": "http://schemas.openxmlformats.org/officeDocument/2006/math",
+    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    "v": "urn:schemas-microsoft-com:vml",
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
 }
 
 

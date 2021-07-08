@@ -44,6 +44,7 @@ class Tags:
     TABLE_CELL: str = qn("w:tc")
     TABLE_ROW: str = qn("w:tr")
     TEXT: str = qn("w:t")
+    TEXT_MATH: str = qn("m:t")
 
 
 KNOWN_TAGS = {x.default for x in Tags.__dataclass_fields__.values()}
