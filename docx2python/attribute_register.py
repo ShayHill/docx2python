@@ -23,26 +23,27 @@ class Tags:
     These are the tags that provoke some action in docx2python.
     """
 
-    DOCUMENT: str = qn("w:document")
     BODY: str = qn("w:body")
-    TABLE: str = qn("w:tbl")
-    TABLE_ROW: str = qn("w:tr")
-    TABLE_CELL: str = qn("w:tc")
-    PARAGRAPH: str = qn("w:p")
-    RUN: str = qn("w:r")
-    TEXT: str = qn("w:t")
-    IMAGE: str = qn("a:blip")
-    IMAGEDATA: str = qn("v:imagedata")
-    TAB: str = qn("w:tab")
-    FOOTNOTE_REFERENCE: str = qn("w:footnoteReference")
+    BR: str = qn("w:br")
+    DOCUMENT: str = qn("w:document")
+    ENDNOTE: str = qn("w:endnote")
     ENDNOTE_REFERENCE: str = qn("w:endnoteReference")
     FOOTNOTE: str = qn("w:footnote")
-    ENDNOTE: str = qn("w:endnote")
-    HYPERLINK: str = qn("w:hyperlink")
+    FOOTNOTE_REFERENCE: str = qn("w:footnoteReference")
     FORM_CHECKBOX: str = qn("w:checkBox")
     FORM_DDLIST: str = qn("w:ddList")  # drop-down form
-    RUN_PROPERTIES: str = qn("w:rPr")
+    HYPERLINK: str = qn("w:hyperlink")
+    IMAGE: str = qn("a:blip")
+    IMAGEDATA: str = qn("v:imagedata")
+    PARAGRAPH: str = qn("w:p")
     PAR_PROPERTIES: str = qn("w:pPr")
+    RUN: str = qn("w:r")
+    RUN_PROPERTIES: str = qn("w:rPr")
+    TAB: str = qn("w:tab")
+    TABLE: str = qn("w:tbl")
+    TABLE_CELL: str = qn("w:tc")
+    TABLE_ROW: str = qn("w:tr")
+    TEXT: str = qn("w:t")
 
 
 KNOWN_TAGS = {x.default for x in Tags.__dataclass_fields__.values()}

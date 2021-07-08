@@ -399,6 +399,9 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
                 text = text.replace(">", "&gt;")
             tables.insert_text(text)
 
+        elif tree.tag == Tags.BR:
+            tables.insert_text('\n')
+
         if tree.tag == Tags.FOOTNOTE:
             if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
                 tables.queue_paragraph_text(

@@ -53,9 +53,9 @@ class DepthCollector:
         """
         self.item_depth = item_depth
         self.rightmost_branches = [[]]
-        self._rPss = []
-        self._pPss = []
-        self._pStyles = []
+        self._rPss = []  # current open run styles
+        self._pPss = []  # current open run-style-type paragraph styles
+        self._pStyles = []  # current open paragraph-only styles (e.g.: <h1>)
         self._par_queue = []  # for footnotes (add content before opening paragraph)
         self._rPr_queue = []  # for hyperlinks (add 'a href=""' as prop for next run)
 
