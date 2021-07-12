@@ -138,11 +138,11 @@ class TestHtmlFormatting:
             "<b>Bold</b>",
             "<i>Italics</i>",
             "<u>Underlined</u>",
-            '<font style="font-size:40pt">Large Font</font>',
-            '<font style="color:FF0000">Colored</font>',
-            '<font style="color:FF0000;font-size:40pt">Large Colored</font>',
-            '<font style="font-size:40pt"><b>Large Bold</b></font>',
-            '<font style="font-size:40pt"><b><i><u>Large Bold Italics Underlined</u></i></b></font>',
+            '<span style="font-size:40pt">Large Font</span>',
+            '<span style="color:FF0000">Colored</span>',
+            '<span style="color:FF0000;font-size:40pt">Large Colored</span>',
+            '<span style="font-size:40pt"><b>Large Bold</b></span>',
+            '<span style="font-size:40pt"><b><i><u>Large Bold Italics Underlined</u></i></b></span>',
         ]
 
     def test_paragraph_formatting(self) -> None:

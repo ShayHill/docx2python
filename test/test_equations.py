@@ -6,7 +6,8 @@
 :created: 7/7/2021
 
 User sreeroopnaidu requested equation export. Equations are made up internally of
-<w:m> elements. Previous versions of Docx2Python ignored these elements. These are now recognized.
+<w:m> elements. Previous versions of Docx2Python ignored these elements. These are
+now recognized.
 
 Equations in Word's Professional format will return garbage.
 Equations in Word's Inline format will return a nice string.

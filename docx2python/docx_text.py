@@ -402,7 +402,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
         elif tree.tag == Tags.BR:
             tables.insert_text("\n")
 
-        if tree.tag == Tags.FOOTNOTE:
+        elif tree.tag == Tags.FOOTNOTE:
             if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
                 tables.queue_paragraph_text(
                     "footnote{})\t".format(tree.attrib[qn("w:id")])

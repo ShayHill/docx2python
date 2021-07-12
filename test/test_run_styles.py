@@ -50,8 +50,8 @@ class TestParStyles:
                 [
                     [
                         ["Normal"],
-                        ['<font style="font-size:32pt">16 point</font>'],
-                        ['<font style="color:FF0000">Red</font>'],
+                        ['<span style="font-size:32pt">16 point</span>'],
+                        ['<span style="color:FF0000">Red</span>'],
                         ["Courier new"],
                         ["<i>Italic</i>"],
                         ["<b>Bold</b>"],
@@ -60,23 +60,29 @@ class TestParStyles:
                         ["Double Strikethough"],
                         ["<sup>Superscript</sup>"],
                         ["<sub>Subscript</sub>"],
-                        ['<font style="font-variant:small-caps">Small Caps</font>'],
-                        ['<font style="text-transform:uppercase">All Caps</font>'],
+                        ['<span style="font-variant:small-caps">Small Caps</span>'],
+                        ['<span style="text-transform:uppercase">All Caps</span>'],
                         [
-                            '<span style="background-color:yellow">Highlighted yellow</span>'
+                            '<span style="background-color:yellow">'
+                            "Highlighted yellow</span>"
                         ],
                         [
-                            '<span style="background-color:green">Highlighted green</span>'
+                            '<span style="background-color:green">'
+                            "Highlighted green</span>"
                         ],
                         ["<b>Consecutive</b>"],
                         ["<b>Bold</b>"],
                         ["<b>Paragraphs</b>"],
                         [
-                            '<font style="font-size:24pt"><sub>Subscript </sub></font>',
-                            '<font style="font-size:24pt;font-variant:small-caps">Small Caps </font>',
-                            '<font style="font-size:24pt;text-transform:uppercase">All Caps </font>',
-                            '<font style="font-size:24pt"><span style="background-color:yellow">Highlighted yellow </span></font>',
-                            '<font style="font-size:24pt"><span style="background-color:green">Highlighted green</span></font>',
+                            '<span style="font-size:24pt"><sub>Subscript </sub></span>',
+                            '<span style="font-size:24pt;font-variant:small-caps">'
+                            "Small Caps </span>",
+                            '<span style="font-size:24pt;text-transform:uppercase">'
+                            "All Caps </span>",
+                            '<span style="background-color:yellow;font-size:24pt">'
+                            "Highlighted yellow </span>",
+                            '<span style="background-color:green;font-size:24pt">'
+                            "Highlighted green</span>",
                         ],
                         [],
                         [],

@@ -16,8 +16,27 @@ from lxml import etree
 
 from docx2python.namespace import qn
 
+DEFAULT_XML2HTML_FORMAT = {
+    "b": (lambda tag, val: tag,),
+    "i": (lambda tag, val: tag,),
+    "u": (lambda tag, val: tag,),
+    "strike": (lambda tag, val: "s",),
+    # 'dstrike': (lambda tag, val: "del",),
+    "vertAlign": (lambda tag, val: val[:3],),  # subscript and superscript
+    "smallCaps": (lambda tag, val: "font-variant:small-caps", "span", "style"),
+    "caps": (lambda tag, val: "text-transform:uppercase", "span", "style"),
+    "highlight": (lambda tag, val: f"background-color:{val}", "span", "style"),
+    "sz": (lambda tag, val: f"font-size:{val}pt", "span", "style"),
+    "color": (lambda tag, val: f"color:{val}", "span", "style"),
+    "Heading1": (lambda tag, val: "h1",),
+    "Heading2": (lambda tag, val: "h2",),
+    "Heading3": (lambda tag, val: "h3",),
+    "Heading4": (lambda tag, val: "h4",),
+    "Heading5": (lambda tag, val: "h5",),
+    "Heading6": (lambda tag, val: "h6",),
+}
 
-@dataclass
+@dataclass(frozen=True)
 class Tags:
     """
     These are the tags that provoke some action in docx2python.

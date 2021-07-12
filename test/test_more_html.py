@@ -93,13 +93,13 @@ def test_paragraphs_only() -> None:
     )
     assert pars.text == (
         "Header\n\nHeading1<h1>before nested "
-        "paragraph----media/image19.jpeg----</h1>\n\n<font "
-        'style="font-size:72pt;font-variant:small-caps">NESTED PARAGRAPH\n</font>'
-        '\n\n<font style="font-size:72pt;font-variant:small-caps">Back to outside '
-        "paragraph\n</font>\n\n----media/image20.png----\n\n\n\n2  "
-        "\n\n\n\nNoSpacing\n\n\n\n\n\n\n\n\t\t<font "
+        "paragraph----media/image19.jpeg----</h1>\n\n<span "
+        'style="font-size:72pt;font-variant:small-caps">NESTED PARAGRAPH\n</span>'
+        '\n\n<span style="font-size:72pt;font-variant:small-caps">Back to outside '
+        "paragraph\n</span>\n\n----media/image20.png----\n\n\n\n2  "
+        "\n\n\n\nNoSpacing\n\n\n\n\n\n\n\n\t\t<span "
         'style="color:808080;font-size:18pt">Page 579 of '
-        "579</font>\n\n\t\n\nFooter\t\t\t\t\n\n\n\n\n\n\n\n"
+        "579</span>\n\n\t\n\nFooter\t\t\t\t\n\n\n\n\n\n\n\n"
     )
 
 
@@ -133,7 +133,7 @@ class TestParsNestedInTables:
                     [
                         [
                             "",
-                            '<font style="font-size:72pt;font-variant:small-caps">NESTED PARAGRAPH\n</font>',
+                            '<span style="font-size:72pt;font-variant:small-caps">NESTED PARAGRAPH\n</span>',
                         ]
                     ]
                 ]
@@ -143,7 +143,7 @@ class TestParsNestedInTables:
                     [
                         [
                             "",
-                            '<font style="font-size:72pt;font-variant:small-caps">Back to outside paragraph\n</font>',
+                            '<span style="font-size:72pt;font-variant:small-caps">Back to outside paragraph\n</span>',
                         ]
                     ]
                 ]
@@ -157,7 +157,7 @@ class TestParsNestedInTables:
                             "",
                             "\t",
                             "\t",
-                            '<font style="color:808080;font-size:18pt">Page 579 of 579</font>',
+                            '<span style="color:808080;font-size:18pt">Page 579 of 579</span>',
                         ],
                         ["", "\t"],
                     ]

@@ -195,30 +195,43 @@ def get_paragraph_formatting(
 
 
 # noinspection PyPep8Naming
-def _format_Pr_into_html(Pr2val: Dict[str, Union[str, None]], xml2html) -> List[str]:
+def _format_Pr_into_html(
+    Pr2val: Dict[str, Union[str, None]], xml2html: Dict[str, StyleConverter]
+) -> List[str]:
     """
     Format tags and values into html strings.
 
     :param Pr2val: tags mapped to values (extracted from xml)
         e.g., {'b': None, 'bCs': None}
-    :return:the interior part of html opening tags, e.g., ['b', 'i', 'font style=""']
-        e.g., ['b']
+    :param xml2html: mapping to convert xml styles to html styles
+        e.g., {
+            'b': (<function <lambda> at 0x0000026BC7875A60>,),
+            'smallCaps': (<function <lambda> at 0x0000026BC7896DC0>, 'span', 'style')
+        }
+    :return: the interior part of html opening tags, eg, ['span style="..."', 'b', 'i']
     """
     style = []
     groups = defaultdict(list)
 
-    # from formatter, 'font', 'style' ->
-    #     ('font', 'style') : [formatter(v[0]), formatter(v[1]), ...]
+    # run the formatter function to get an element tag.
+    # from (formatter, 'elem', 'style') ->
+    #     ('elem', 'style') : [formatter(v[0]), formatter(v[1]), ...]
     for tag, val in ((k, v) for k, v in Pr2val.items() if k in xml2html):
         groups[xml2html[tag][1:]].append(xml2html[tag][0](tag, val))
 
-    # from ('font', 'style') : [x, y, z, ...] ->
-    #     ('font',) : style={"x; y; z; ..."}
+    # When key is a tuple (span, style) and value is a list of style attributes,
+    # collect style elements into group 'span'
+    # E.g., key = ('span', 'style')
+    #       value = ['background-color': green', 'font-size: 40pt']
+    #       -> groups[('span',)] = 'style="background-color: green; font-size: 40"}'
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 2):
         groups[(k[0],)].append(f'{k[1]}="{";".join(sorted(v))}"')
 
-    # from ('font',) : string ->
-    #     'font string'
+    # When key is an element (span, block, b, etc.) and value is a list of attributes,
+    # append '[element] [attributes]' to style.
+    # E.g., key = ('span',)
+    #       value = ['style="background-color: green; font-size: 40"']
+    #       -> 'span style=style="background-color: green; font-size: 40"'
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 1):
         style.append(f"{k[0]} {' '.join(v)}")
 
@@ -226,13 +239,18 @@ def _format_Pr_into_html(Pr2val: Dict[str, Union[str, None]], xml2html) -> List[
     return style
 
 
-def get_html_formatting(elem: etree.Element, xml2html) -> List[str]:
+def get_html_formatting(
+    elem: etree.Element, xml2html: Dict[str, StyleConverter]
+) -> List[str]:
     """
     Get style for an element (if available)
 
-    :param elem: any element, but it's likely only runs and paragraphs will have a
-        useable style.
-
+    :param elem: a run or paragraph element.
+    :param xml2html: mapping to convert xml styles to html styles
+        e.g., {
+            'b': (<function <lambda> at 0x0000026BC7875A60>,),
+            'smallCaps': (<function <lambda> at 0x0000026BC7896DC0>, 'font', 'style')
+        }
     :return: ``[(rPr, val), (rPr, val) ...]``
     """
     if elem.tag == Tags.RUN:
