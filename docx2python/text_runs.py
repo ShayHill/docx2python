@@ -224,7 +224,7 @@ def _format_Pr_into_html(
     # E.g., key = ('span', 'style')
     #       value = ['background-color': green', 'font-size: 40pt']
     #       -> groups[('span',)] = 'style="background-color: green; font-size: 40"}'
-    for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 2):
+    for k, v in sorted((k, v) for k, v in groups.items() if k[1] is not None):
         groups[(k[0],)].append(f'{k[1]}="{";".join(sorted(v))}"')
 
     # When key is an element (span, block, b, etc.) and value is a list of attributes,
@@ -235,7 +235,7 @@ def _format_Pr_into_html(
     for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 1):
         style.append(f"{k[0]} {' '.join(v)}")
 
-    style += sorted(groups[()])
+    style += sorted(groups[(None, None)])
     return style
 
 

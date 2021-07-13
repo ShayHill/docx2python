@@ -8,7 +8,8 @@
 
 from xml.etree import ElementTree
 
-from docx2python.attribute_register import DEFAULT_XML2HTML_FORMAT
+from docx2python.attribute_register import xml2html_formatter
+
 # noinspection PyProtectedMember
 from docx2python.text_runs import (
     _elem_tag_str,
@@ -17,6 +18,7 @@ from docx2python.text_runs import (
     html_close,
     html_open,
 )
+
 # noinspection PyUnresolvedReferences
 from helpers.utils import valid_xml
 
@@ -80,7 +82,7 @@ class TestGetRunStyle:
     def test_font_and_others(self) -> None:
         """Return font first, then other styles."""
         document = ElementTree.fromstring(ONE_TEXT_RUN)
-        assert get_run_formatting(document[0], DEFAULT_XML2HTML_FORMAT) == [
+        assert get_run_formatting(document[0], xml2html_formatter) == [
             'span style="color:red;font-size:32pt"',
             "b",
             "i",

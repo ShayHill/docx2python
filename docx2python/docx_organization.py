@@ -29,7 +29,7 @@ from warnings import warn
 
 from lxml import etree
 
-from .attribute_register import DEFAULT_XML2HTML_FORMAT
+from .attribute_register import xml2html_formatter
 from .docx_context import collect_numFmts, collect_rels
 from .docx_text import get_text, merge_elems
 
@@ -224,7 +224,7 @@ class DocxContext:
         self.extract_image = extract_image
 
         if html:
-            self.xml2html_format = DEFAULT_XML2HTML_FORMAT
+            self.xml2html_format = xml2html_formatter
         else:
             self.xml2html_format = {}
 

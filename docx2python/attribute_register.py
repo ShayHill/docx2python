@@ -10,31 +10,43 @@ record spelling errors, revision history, etc. Docx2Python will ignore (by desig
 much of this.
 """
 from dataclasses import dataclass
-from typing import Iterator, Optional
+from typing import Callable, Iterator, NamedTuple, Optional
 
 from lxml import etree
 
 from docx2python.namespace import qn
 
-DEFAULT_XML2HTML_FORMAT = {
-    "b": (lambda tag, val: tag,),
-    "i": (lambda tag, val: tag,),
-    "u": (lambda tag, val: tag,),
-    "strike": (lambda tag, val: "s",),
-    # 'dstrike': (lambda tag, val: "del",),
-    "vertAlign": (lambda tag, val: val[:3],),  # subscript and superscript
-    "smallCaps": (lambda tag, val: "font-variant:small-caps", "span", "style"),
-    "caps": (lambda tag, val: "text-transform:uppercase", "span", "style"),
-    "highlight": (lambda tag, val: f"background-color:{val}", "span", "style"),
-    "sz": (lambda tag, val: f"font-size:{val}pt", "span", "style"),
-    "color": (lambda tag, val: f"color:{val}", "span", "style"),
-    "Heading1": (lambda tag, val: "h1",),
-    "Heading2": (lambda tag, val: "h2",),
-    "Heading3": (lambda tag, val: "h3",),
-    "Heading4": (lambda tag, val: "h4",),
-    "Heading5": (lambda tag, val: "h5",),
-    "Heading6": (lambda tag, val: "h6",),
+
+# TODO: document extension of HtmlFormatter
+class HtmlFormatter(NamedTuple):
+    formatter: Callable[[str, str], str] = lambda tag, val: tag
+    container: Optional[str] = None  # e.g., 'span'
+    property: Optional[str] = None  # e.g., 'font-size'
+
+
+xml2html_formatter = {
+    "b": HtmlFormatter(),
+    "i": HtmlFormatter(),
+    "u": HtmlFormatter(),
+    "strike": HtmlFormatter(lambda tag, val: "s"),
+    "vertAlign": HtmlFormatter(lambda tag, val: val[:3]),  # subscript and superscript
+    "smallCaps": HtmlFormatter(
+        lambda tag, val: "font-variant:small-caps", "span", "style"
+    ),
+    "caps": HtmlFormatter(lambda tag, val: "text-transform:uppercase", "span", "style"),
+    "highlight": HtmlFormatter(
+        lambda tag, val: f"background-color:{val}", "span", "style"
+    ),
+    "sz": HtmlFormatter(lambda tag, val: f"font-size:{val}pt", "span", "style"),
+    "color": HtmlFormatter(lambda tag, val: f"color:{val}", "span", "style"),
+    "Heading1": HtmlFormatter(lambda tag, val: "h1"),
+    "Heading2": HtmlFormatter(lambda tag, val: "h2"),
+    "Heading3": HtmlFormatter(lambda tag, val: "h3"),
+    "Heading4": HtmlFormatter(lambda tag, val: "h4"),
+    "Heading5": HtmlFormatter(lambda tag, val: "h5"),
+    "Heading6": HtmlFormatter(lambda tag, val: "h6"),
 }
+
 
 @dataclass(frozen=True)
 class Tags:
@@ -98,4 +110,7 @@ def has_content(tree: etree.Element) -> Optional[str]:
     return next(iter_known_tags(tree), None)
 
 
+# known attributes are compared to determine if runs are distinct (if runs are not
+# distinguishable by docx2text--e.g., runs that only differ by revision--they will be
+# joined). For this purpose, rSid (revision id) is considered an "unknown attribute".
 KNOWN_ATTRIBUTES = {qn("r:id")}
