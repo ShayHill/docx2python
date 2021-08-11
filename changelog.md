@@ -30,7 +30,7 @@ This will only happen where the program would previously have failed with a KeyE
 
 --  Join runs internally when docx2python cannot differentiate style.
 
-MSWord will split continuous text into smaller runs if the runs differ in spell-check accuracy, revision time, and other characteristics docx2python does not extract. This makes it hard to, for instance, search and replace text in the xml. Docx2Python v2 reads through the xml and joins such runs as a pre-processing step. This greatly simplifies searching output for formatted text. This will allow search and replace and other light xml operations in the future. Runs with different formatting are not joined, even if html=False is set.
+If you've ever unzipped a docx file and searched for a word in your document, you probably didn't find it. This is because MSWord splits continuous text into smaller runs if the runs differ in spell-check accuracy, revision time, and other characteristics docx2python does not extract. This makes it hard to, for instance, search and replace text in the xml. Docx2Python v2 reads through the xml and joins such runs as a pre-processing step. This greatly simplifies searching output for formatted text. This will allow search and replace and other light xml operations in the future. Runs with different formatting are not joined, even if html=False is set.
 
 --  Return text split into paragraphs (as previous version) or runs (new to Docx2Python v2).
 
@@ -46,9 +46,9 @@ Docx2Python v2 will not nest html tags: ``<b>bold text </b><b><i>bold-italic</i>
 
 --  More html run styles.
 
-Now supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript, ``<font style="font-variant: small-caps">``small caps, ``<font style="text-transform:uppercase">``all caps, ``<span style="background-color: yellow">``highlighted, ``<font style="font-size:32">``font size, ``<font style="color:#ff0000">``colored text.
+Now supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript, ``<span style="font-variant: small-caps">``small caps, ``<span style="text-transform:uppercase">``all caps, ``<span style="background-color: yellow">``highlighted, ``<span style="font-size:32">``font size, ``<span style="color:#ff0000">``colored text.
 
-This is extensible. Styles can be added and removed. Note that the style change for font size has been updated from ``<font size="32">`` to ``<font style="font_size:32">``
+This is extensible. Styles can be added and removed. Note that the style change for font size has been updated from ``<font size="32">`` to ``<span style="font_size:32">`` to eliminate deprecated ``font`` elements. (Thank you, user raiyankamal, for pointing this out.)
 
 --  Slightly more structure is preserved (more empty sublists and strings).
 
@@ -74,4 +74,8 @@ Equations in Word are made up internally of ``<w:m>`` elements. Previous version
 
 Equations in Word's Professional format will return garbage (a smattering of text elements inside an equation).
 
-Equations in Word's Inline format will return a nice string (e.g., ``'\\int_{0}^{1}x'``).
+Equations in Word's Inline format will return valid LaTeX (e.g., ``'\\int_{0}^{1}x'``).
+
+-- Now works with LibreOffice conversions
+
+User shadowmimosa reported that docx files converted by LibreOffice from docx raised a CaretDepthError. This files now extract without error.
