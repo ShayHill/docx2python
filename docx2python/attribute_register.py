@@ -17,6 +17,9 @@ from lxml import etree
 from docx2python.namespace import qn
 
 
+# TODO: test file for special characters
+# &lt < &amp & &gt > &quot " &apos '
+
 # TODO: document extension of HtmlFormatter
 class HtmlFormatter(NamedTuple):
     formatter: Callable[[str, str], str] = lambda tag, val: tag
