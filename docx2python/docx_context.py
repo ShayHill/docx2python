@@ -276,6 +276,12 @@ def get_context(zipf: zipfile.ZipFile) -> Dict[str, Any]:
         # no document properties. This file may have come from Google Docs
         context["docProp2text"] = {}
     try:
+        for key, val in collect_docProps(zipf.read("docProps/app.xml")).items():
+            context["docProp2text"][key] = val
+    except KeyError:
+        # no document properties. This file may have come from Google Docs
+        pass
+    try:
         numId2numFmts = collect_numFmts(zipf.read("word/numbering.xml"))
         context["numId2numFmts"] = numId2numFmts
         context["numId2count"] = {
