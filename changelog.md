@@ -28,7 +28,7 @@ This will only happen where the program would previously have failed with a KeyE
 
 ---- version 2.0.0 - big changes
 
---  Join runs internally when docx2python cannot differentiate style.
+--  Join run elements internally when docx2python cannot differentiate style.
 
 If you've ever unzipped a docx file and searched for a word in your document, you probably didn't find it. This is because MSWord splits continuous text into smaller runs if the runs differ in spell-check accuracy, revision time, and other characteristics docx2python does not extract. This makes it hard to, for instance, search and replace text in the xml. Docx2Python v2 reads through the xml and joins such runs as a pre-processing step. This greatly simplifies searching output for formatted text. This will allow search and replace and other light xml operations in the future. Runs with different formatting are not joined, even if html=False is set.
 
@@ -54,7 +54,7 @@ This is extensible. Styles can be added and removed. Note that the style change 
 
 Docx2Python v1 assumed a document was a series of tables and formatted output that way: ``[body[table[table_row[table_cell[paragraph``
 
-Simple docx files *are* structured this way, but there are a elements (e.g., ``<w:footnotes>``, ``<w:footnote>``) that act like tables without being exactly tables. Docx2Python v2 treats any element 1-level above a paragraph as a table cell, any element 2-levels above a paragraph as a table row, etc. The upshot of this is that there will be more whitespace in your exports. This whitespace is potentially useful information, but you can easily filter it out if you don't need it.
+Simple docx files *are* structured this way, but there are elements (e.g., ``<w:footnotes>``, ``<w:footnote>``) that act like tables without being exactly tables. Docx2Python v2 treats any element 1-level above a paragraph as a table cell, any element 2-levels above a paragraph as a table row, etc. The upshot of this is that there will be more whitespace in your exports. This whitespace is potentially useful information, but you can easily filter it out if you don't need it.
 
 --  No longer supports Python 3.4 or 3.5
 
@@ -62,11 +62,24 @@ Now only supports Python 3.6+
 
 --  XML and other information from an unzipped docx file now available as a DocxContext instance.
 
-Docx2Python v1 extracted xml from a zip file and passed it straight to formatting functions. Docx2Python v2 takes an intermediate step: hold the xml and inferred attributes of the input docx in DocxContext and File instances. These allow a view into the xml for users who are comfortable working that way. A user can now execute search&replace and other simple operations before extracting the text. 
+Docx2Python v1 extracted xml from a zip file and passed it straight to formatting functions. Docx2Python v2 takes an intermediate step: hold the xml and inferred attributes of the input docx in DocxContext and File instances. These allow a view into the xml for users who are comfortable working that way. A user can now execute search&replace and other simple operations before extracting the text.
+
+TODO: add some example code here
+
+--  Save altered xml
+
+A user can extract the xml, alter it, and save the resulting docx. This will be simpler than accomplishing the same with just lxml, because
+
+1. consecutive runs with identical styles will be merged (no more attempting search and replace with "wo" "rds" " brok" "en" " in" "to" "multiple runs".)
+2. some of the file structure will be available.
+3. Docx2Python will find all content files and return them as a list as DocxContext.content_files.
+
+TODO: code an example for this functionality
+
 
 -- Soft line breaks are now exported as `'\n'`
 
-Docx2Python v1 ignored soft line breaks. These are represented in the xml as `<w:br/>`
+Docx2Python v1 ignored soft line breaks. These are represented in the xml as `<w:br/>`. Docx2Python v2 exports these as `'\n'`.
 
 -- Now recognizes math text.
 

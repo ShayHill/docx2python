@@ -2,6 +2,22 @@
 
 To assist with reading the project documentation or extending `docx2python`.
 
+There are four basic types of files:
+
+    1. _rels/.rels - A list of docx content files (e.g., ``document.xml``)
+
+    2. content files - files that contain the text displayed in the docx. (e.g., ``document.xml``, ``header1.xml``).
+       These files reference non-content files (images and formatting specifications) through relId numbers, which are
+       defined in content-file rels.
+
+    3. content-file rels - (e.g., ``document.xml.rels``) this is where relId numbers are defined. The relId numbers
+       used in ``document.xml`` will be defined in ``document.xml.rels``.
+
+    4. display files - (e.g., ``numbering.xml``) that tell the content files how to display text. These are linked from
+       the content files through content-file rels.
+
+### Docx file structure
+
     + _rels  # named references to data (links, values, etc. for entire document)
         - .rels  # map to locations of major files (e.g., document.xml)
 

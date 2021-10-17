@@ -18,7 +18,7 @@ from docx2python.docx_context import (
     collect_numFmts,
     pull_image_files,
 )
-from docx2python.docx_organization import DocxContext
+from docx2python.decode_docx import DocxContext
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 

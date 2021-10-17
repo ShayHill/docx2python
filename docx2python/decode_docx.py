@@ -7,11 +7,16 @@
 
 See the docx file structure in ``README_DOCX_FILE_STRUCTURE.md``. Each file in that
 structure can be stored as a ``File`` instance, though not all will be stored through
-the typical docx2python progression. The ``File`` class is designed to hold and decode
-xml files with content (text). Several, even most, of the xml files in a docx do not
-contain content. These contain numbering formats, font information, rId-lookup
-tables, and other. ``File`` instances will hold these as well, though they will not
-have ``rels`` or ``content`` attributes.
+the typical docx2python progression.
+
+The ``File`` class holds content files (e.g., ``document.xml``) and files without
+content (e.g., ``.rels`` files and ``numbering.xml``. Content files will have ``rels``
+and ``content`` attributes. Files without content will not.
+
+The ``File`` class is designed to hold and decode xml files with content (text).
+Several, even most, of the xml files in a docx do not contain content. These contain
+numbering formats, font information, rId-lookup tables, and other. ``File`` instances
+will hold these as well, though they will not have ``rels`` or ``content`` attributes.
 
 Some of these non-content files are shared. The substance of these files is accessible
 through the ``DocxContent`` class. This class holds file instances and decodes shared
@@ -20,12 +25,14 @@ non-content in a docx file structure.
 from __future__ import annotations
 
 import os
+from typing import Optional
 import zipfile
 from dataclasses import dataclass
 from functools import cached_property
 from operator import attrgetter
 from typing import Dict, List, Optional, Union, Set
 from warnings import warn
+import copy
 
 from lxml import etree
 
@@ -55,7 +62,8 @@ class File:
 
         'dir': 'word/_rels'
 
-    That's the starting point for these instances
+    That's the starting point for these instances. Other attributes are inferred or
+    created at runtime.
     """
 
     def __init__(self, context: DocxContext, attribute_dict: Dict[str, str]) -> None:
@@ -109,7 +117,7 @@ class File:
     @cached_property
     def _rels_path(self) -> str:
         """
-        Infer path/to/rels from instance attributes
+        Infer path/to/rels from instance attributes.
 
         :returns: path to rels (which may not exist)
 
@@ -171,10 +179,13 @@ class File:
         """
         Root element of the file.
 
-        Try to merge consecutive, duplicate (except text) elements. Warn if fails.
+        Try to merge consecutive, duplicate (except text) elements in content files.
+        See documentation for ``merge_elems``. Warn if ``merge_elems`` fails.
+        (I don't think it will fail).
         """
         root = etree.fromstring(self.context.zipf.read(self.path))
         if self.Type in CONTENT_FILE_TYPES:
+            root_ = copy.copy(root)
             try:
                 merge_elems(self, root)
             except Exception as ex:
@@ -183,6 +194,7 @@ class File:
                     f"{self.context.docx_filename} {self.path} resulted in "
                     f"{repr(ex)}. Moving on."
                 )
+                return root_
         return root
 
     @property
@@ -208,6 +220,8 @@ class File:
 class DocxContext:
     """
     Hold File instances and decode information shared between them (e.g., numFmts)
+
+    TODO: document how this unfortunately holds all docx2python optional arguments like do_pStyle and html.
     """
 
     def __init__(
@@ -283,18 +297,33 @@ class DocxContext:
                 "in the {self.docx_filename} archive"
             )
 
-    def files_of_type(self, type_: str) -> List[File]:
+    def files_of_type(self, type_: Optional[str]=None) -> List[File]:
         """
         File instances with attrib Type='http://.../type_'
 
         :param type_: this package looks for any of
             ("header", "officeDocument", "footer", "footnotes", "endnotes")
-            You can try others.
+            You can try others. If arument is None (default), returns all content file
+            types.
         :return: File instances of the requested type, sorted by path
         """
+        if type_ is None:
+            types = CONTENT_FILE_TYPES
+        else:
+            types = {type_}
+
         return sorted(
-            (x for x in self.files if x.Type == type_), key=attrgetter("path")
+            (x for x in self.files if x.Type in types), key=attrgetter("path")
         )
+
+    def content_files(self) -> List[File]:
+        """
+        Content files (contain displayed text) inside the docx.
+
+        :return: File instances of context files, sorted by path
+        TODO: test this one
+        """
+        return self.files_of_type()
 
     def save(self, filename: str) -> None:
         """

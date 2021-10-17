@@ -8,7 +8,7 @@
 from typing import Optional
 
 from .docx_output import DocxContent
-from .docx_organization import DocxContext
+from .decode_docx import DocxContext
 from warnings import warn
 
 

@@ -44,7 +44,7 @@ from typing import Any, Dict
 from warnings import warn
 
 from .docx_context import collect_docProps, pull_image_files
-from .docx_organization import DocxContext
+from .decode_docx import DocxContext
 from .docx_text import TablesList
 from .iterators import enum_at_depth, get_html_map, iter_at_depth
 
