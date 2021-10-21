@@ -45,6 +45,8 @@ def get_checkBox_entry(checkBox: Element) -> str:
 
     def get_wval() -> Union[str, None]:
         with suppress(AttributeError, KeyError):
+            if (len(checkBox.find(qn("w:checked")).attrib.keys()) == 0):
+                return "1"
             return checkBox.find(qn("w:checked")).attrib[qn("w:val")]
         with suppress(AttributeError, KeyError):
             return checkBox.find(qn("w:default")).attrib[qn("w:val")]
