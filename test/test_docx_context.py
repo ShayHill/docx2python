@@ -18,63 +18,64 @@ from docx2python.docx_context import (
     collect_numFmts,
     pull_image_files,
 )
-from docx2python.decode_docx import DocxContext
+from docx2python.decode_docx import DocxReader
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
 
-class TestDocxContextObject:
-    """
-    Test methods of DocxContext object which are not tested elsewhere.
-    """
-
-    def test_file_of_type_exactly_one(self) -> None:
-        """
-        Return single file instance of type_ argument.
-        """
-        context = DocxContext("resources/example.docx")
-        assert len(context.files_of_type("officeDocument")) == 1
-        assert context.file_of_type("officeDocument").path == "word/document.xml"
-
-    def test_file_of_type_more_than_one(self) -> None:
-        """
-        Warn when multiple file instances of type_ argument.
-        """
-        context = DocxContext("resources/example.docx")
-        assert len(context.files_of_type("header")) == 3
-        with pytest.warns(UserWarning):
-            first_header = context.file_of_type("header")
-        assert first_header.path == "word/header1.xml"
-
-    def test_file_of_type_zero(self) -> None:
-        """
-        Raise KeyError when no file instances of type_ are found.
-        """
-        context = DocxContext("resources/example.docx")
-        with pytest.raises(KeyError):
-            _ = context.file_of_type("invalid_type")
+# TODO: remove these tests. Method factored out.
+# class TestDocxContextObject:
+#     """
+#     Test methods of DocxContext object which are not tested elsewhere.
+#     """
+#
+# def test_file_of_type_exactly_one(self) -> None:
+#     """
+#     Return single file instance of type_ argument.
+#     """
+#     context = DocxReader("resources/example.docx")
+#     assert len(context.files_of_type("officeDocument")) == 1
+#     assert context.file_of_type("officeDocument").path == "word/document.xml"
+#
+# def test_file_of_type_more_than_one(self) -> None:
+#     """
+#     Warn when multiple file instances of type_ argument.
+#     """
+#     context = DocxReader("resources/example.docx")
+#     assert len(context.files_of_type("header")) == 3
+#     with pytest.warns(UserWarning):
+#         first_header = context.file_of_type("header")
+#     assert first_header.path == "word/header1.xml"
+#
+# def test_file_of_type_zero(self) -> None:
+#     """
+#     Raise KeyError when no file instances of type_ are found.
+#     """
+#     context = DocxReader("resources/example.docx")
+#     with pytest.raises(KeyError):
+#         _ = context.file_of_type("invalid_type")
 
 
 class TestSaveDocx:
     def test_save_unchanged(self) -> None:
         """Creates a valid docx"""
-        input_context = DocxContext("resources/example.docx")
+        input_context = DocxReader("resources/example.docx")
         input_xml = input_context.file_of_type("officeDocument").root_element
         input_context.save("resources/example_copy.docx")
-        output_context = DocxContext("resources/example_copy.docx")
+        output_context = DocxReader("resources/example_copy.docx")
         output_xml = output_context.file_of_type("officeDocument").root_element
         assert etree.tostring(input_xml) == etree.tostring(output_xml)
 
     def test_save_changed(self) -> None:
         """Creates a valid docx and updates text"""
-        input_context = DocxContext("resources/example.docx")
+        input_context = DocxReader("resources/example.docx")
         input_xml = input_context.file_of_type("officeDocument").root_element
         for elem in (x for x in input_xml.iter() if x.tag == Tags.TEXT):
             if not elem.text:
                 continue
             elem.text = elem.text.replace("bullet", "BULLET")
         input_context.save("resources/example_edit.docx")
-        output_content = DocxContext("resources/example_edit.docx")
+        output_content = DocxReader("resources/example_edit.docx")
         output_runs = output_content.file_of_type("officeDocument").content
         output_text = "".join(iter_at_depth(output_runs, 5))
         assert "bullet" not in output_text
@@ -133,14 +134,14 @@ class TestGetContext:
 
     def test_numId2numFmts(self) -> None:
         """All targets mapped"""
-        docx_context = DocxContext("resources/example.docx")
+        docx_context = DocxReader("resources/example.docx")
         assert docx_context.numId2numFmts == collect_numFmts(
             etree.fromstring(docx_context.zipf.read("word/numbering.xml"))
         )
 
     def test_lists(self) -> None:
         """Pass silently when no numbered or bulleted lists."""
-        docx_context = DocxContext("resources/basic.docx")
+        docx_context = DocxReader("resources/basic.docx")
         assert docx_context.numId2numFmts == {}
 
 
@@ -149,7 +150,7 @@ class TestPullImageFiles:
 
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
-        docx_context = DocxContext("resources/example.docx")
+        docx_context = DocxReader("resources/example.docx")
         with TemporaryDirectory() as image_folder:
             pull_image_files(docx_context, image_folder)
             assert os.listdir(image_folder) == ["image1.png", "image2.jpg"]
@@ -157,7 +158,7 @@ class TestPullImageFiles:
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
 
-        docx_context = DocxContext("resources/basic.docx")
+        docx_context = DocxReader("resources/basic.docx")
         with TemporaryDirectory() as image_folder:
             pull_image_files(docx_context, image_folder)
             assert os.listdir(image_folder) == []

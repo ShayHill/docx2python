@@ -9,7 +9,7 @@ A lot of the information in a docx file isn't text or text attributes. Docx file
 record spelling errors, revision history, etc. Docx2Python will ignore (by design)
 much of this.
 """
-from dataclasses import dataclass
+from enum import Enum
 from typing import Callable, Iterator, NamedTuple, Optional
 
 from lxml import etree
@@ -20,14 +20,44 @@ from docx2python.namespace import qn
 # TODO: test file for special characters
 # &lt < &amp & &gt > &quot " &apos '
 
-# TODO: document extension of HtmlFormatter
+
 class HtmlFormatter(NamedTuple):
+    """
+    The information needed to group and format html tags.
+
+    If a text run has multiple span attributes, Docx2Python does not open multiple
+    span elements.
+
+    ``<span style="font-size:12"><span style="font-weight:bold"> ...``
+
+    Instead, these elements are first grouped by self.container, then by
+    self.property, then printed all together.
+
+    ``<span style="font-size:12;font-weight:bold">``
+
+    This makes a more-readable text extraction, but it does involve passing these
+    HtmlFormatter instances around A LOT.
+
+    Formatting in the xml file will appear as child elements of an rPr or pPr element:
+
+    ``<w:sz w:val="32"/>``
+
+    self.formatter will be a function that takes the element tag name (here ``sz``)
+    and element ``w:val`` attribute (here ``"32"``).
+    """
+
     formatter: Callable[[str, str], str] = lambda tag, val: tag
     container: Optional[str] = None  # e.g., 'span'
-    property: Optional[str] = None  # e.g., 'font-size'
+    property: Optional[str] = None  # e.g., 'style'
 
 
-xml2html_formatter = {
+# An HtmlFormatter instance for every xml format Docx2Python recognizes.
+# This mapping can be extended from outside by
+#
+#     import docx2python
+#     docx2python.attribute_register.xml2html_formatter[xml_format] =
+#         docx2python.attribute_register.HtmlFormatter(args)
+XML2HTML_FORMATTER = {
     "b": HtmlFormatter(),
     "i": HtmlFormatter(),
     "u": HtmlFormatter(),
@@ -51,37 +81,40 @@ xml2html_formatter = {
 }
 
 
-@dataclass(frozen=True)
-class Tags:
+class Tags(str, Enum):
     """
     These are the tags that provoke some action in docx2python.
     """
 
-    BODY: str = qn("w:body")
-    BR: str = qn("w:br")
-    DOCUMENT: str = qn("w:document")
-    ENDNOTE: str = qn("w:endnote")
-    ENDNOTE_REFERENCE: str = qn("w:endnoteReference")
-    FOOTNOTE: str = qn("w:footnote")
-    FOOTNOTE_REFERENCE: str = qn("w:footnoteReference")
-    FORM_CHECKBOX: str = qn("w:checkBox")
-    FORM_DDLIST: str = qn("w:ddList")  # drop-down form
-    HYPERLINK: str = qn("w:hyperlink")
-    IMAGE: str = qn("a:blip")
-    IMAGEDATA: str = qn("v:imagedata")
-    PARAGRAPH: str = qn("w:p")
-    PAR_PROPERTIES: str = qn("w:pPr")
-    RUN: str = qn("w:r")
-    RUN_PROPERTIES: str = qn("w:rPr")
-    TAB: str = qn("w:tab")
-    TABLE: str = qn("w:tbl")
-    TABLE_CELL: str = qn("w:tc")
-    TABLE_ROW: str = qn("w:tr")
-    TEXT: str = qn("w:t")
-    TEXT_MATH: str = qn("m:t")
+    BODY = qn("w:body")
+    BR = qn("w:br")
+    DOCUMENT = qn("w:document")
+    ENDNOTE = qn("w:endnote")
+    ENDNOTE_REFERENCE = qn("w:endnoteReference")
+    FOOTNOTE = qn("w:footnote")
+    FOOTNOTE_REFERENCE = qn("w:footnoteReference")
+    FORM_CHECKBOX = qn("w:checkBox")
+    FORM_DDLIST = qn("w:ddList")  # drop-down form
+    HYPERLINK = qn("w:hyperlink")
+    IMAGE = qn("a:blip")
+    IMAGEDATA = qn("v:imagedata")
+    PARAGRAPH = qn("w:p")
+    PAR_PROPERTIES = qn("w:pPr")
+    RUN = qn("w:r")
+    RUN_PROPERTIES = qn("w:rPr")
+    TAB = qn("w:tab")
+    TABLE = qn("w:tbl")
+    TABLE_CELL = qn("w:tc")
+    TABLE_ROW = qn("w:tr")
+    TEXT = qn("w:t")
+    TEXT_MATH = qn("m:t")
 
 
-KNOWN_TAGS = {x.default for x in Tags.__dataclass_fields__.values()}
+# elem.attrib key for relationship ids. These can find the information they reference by
+# ``file_instance.rels[elem.attrib[RELS_ID]]``
+RELS_ID = qn("r:id")
+
+_CONTENT_TAGS = {x for x in Tags} - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
 
 
 def has_content(tree: etree.Element) -> Optional[str]:
@@ -89,7 +122,7 @@ def has_content(tree: etree.Element) -> Optional[str]:
     Does the element have any descendent content elements?
 
     :param tree: xml element
-    :return: first content tag found or None if no content tags are found?
+    :return: first content tag found or None if no content tags are found
 
     This is to check for text in any skipped elements.
 
@@ -97,23 +130,14 @@ def has_content(tree: etree.Element) -> Optional[str]:
     that no content (paragraphs, run, text, link, ...) is contained in children of any
     ignored elements.
 
-    If no content is found, the element can be safely ignored.
+    If no content is found, the element can be safely ignored going forward.
     """
-    content_tags = KNOWN_TAGS - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
-    if tree.tag in content_tags:
-        return tree.tag
 
-    def iter_known_tags(tree_: etree.Element) -> Iterator[str]:
-        """ Yield all known tags in tree """
-        if tree_.tag in content_tags:
+    def iter_content(tree_: etree.Element) -> Iterator[str]:
+        """ Yield all content elements in tree """
+        if tree_.tag in _CONTENT_TAGS:
             yield tree_.tag
         for branch in tree_:
-            yield from iter_known_tags(branch)
+            yield from iter_content(branch)
 
-    return next(iter_known_tags(tree), None)
-
-
-# known attributes are compared to determine if runs are distinct (if runs are not
-# distinguishable by docx2text--e.g., runs that only differ by revision--they will be
-# joined). For this purpose, rSid (revision id) is considered an "unknown attribute".
-KNOWN_ATTRIBUTES = {qn("r:id")}
+    return next(iter_content(tree), None)

@@ -44,7 +44,7 @@ from typing import Any, Dict
 from warnings import warn
 
 from .docx_context import collect_docProps, pull_image_files
-from .decode_docx import DocxContext
+from .decode_docx import DocxReader
 from .docx_text import TablesList
 from .iterators import enum_at_depth, get_html_map, iter_at_depth
 
@@ -53,7 +53,8 @@ from .iterators import enum_at_depth, get_html_map, iter_at_depth
 class DocxContent:
     """Holds return values for docx content."""
 
-    context: DocxContext
+    context: DocxReader
+    docx2python_kwargs: Dict[str, Any]
 
     def __getattr__(self, item) -> Any:
         """
@@ -104,8 +105,7 @@ class DocxContent:
 
     @property
     def images(self) -> Dict[str, bytes]:
-        return pull_image_files(self.context, self.context.image_folder)
-
+        return pull_image_files(self.context, self.docx2python_kwargs['image_folder'])
     @property
     def document(self) -> TablesList:
         """All docx "tables" concatenated."""

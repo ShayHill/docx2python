@@ -65,8 +65,8 @@ def _gather_sub_vals(
 
     :return: Style names ('b/', 'sz', etc.) mapped to values.
 
-    To keep things more homogeneous, I've given tags list b/ (bold) a value of None,
-    even though they don't take a value in xml.
+    To keep things more homogeneous, I've given tags like ``<w:b/>`` (bold) a value of
+    None, even though they don't take a value in xml.
 
     Each element of rPr will be either present (returned tag: None) or have a value
     (returned tag: val).
@@ -81,7 +81,7 @@ def _gather_sub_vals(
                 <w:szCs w:val="32"/>
                 <w:u w:val="single"/>
             </w:rPr>
-            <w:t>text styled  with rPr
+            <w:t>text styled  with rPaa
             </w:t>
         </w:r>
 
@@ -117,13 +117,14 @@ def _gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
     Call this with any element. Runs and Paragraphs may have a Pr element. Most
     elements will not, but the function will will quietly return an empty dict.
     """
-    qname = qn(f"w:{element.tag.split('}')[-1]}Pr")
-    return _gather_sub_vals(element, qname)
+    qname = element.tag + "Pr"
+    return _gather_sub_vals(element, element.tag + "Pr")
 
 
 # noinspection PyPep8Naming
 def get_pStyle(paragraph_element: etree.Element) -> str:
-    """Collect and format paragraph -> pPr -> pStyle value.
+    """
+    Collect and format paragraph -> pPr -> pStyle value.
 
     :param paragraph_element: a ``<w:p>`` xml element
 
@@ -157,7 +158,7 @@ def get_run_formatting(
 
     Tuples are always returned in order:
 
-    ``"font"`` first then any other styles in alphabetical order.
+    ``"span"`` first then any other styles in alphabetical order.
 
     Also see docstring for ``gather_rPr``
     """

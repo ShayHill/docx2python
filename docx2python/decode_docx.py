@@ -9,19 +9,17 @@ See the docx file structure in ``README_DOCX_FILE_STRUCTURE.md``. Each file in t
 structure can be stored as a ``File`` instance, though not all will be stored through
 the typical docx2python progression.
 
-The ``File`` class holds content files (e.g., ``document.xml``) and files without
-content (e.g., ``.rels`` files and ``numbering.xml``. Content files will have ``rels``
-and ``content`` attributes. Files without content will not.
-
 The ``File`` class is designed to hold and decode xml files with content (text).
-Several, even most, of the xml files in a docx do not contain content. These contain
-numbering formats, font information, rId-lookup tables, and other. ``File`` instances
-will hold these as well, though they will not have ``rels`` or ``content`` attributes.
+Several of the xml files in a docx do not contain content. These contain numbering
+formats, font information, rId-lookup tables, and other. ``File`` instances will hold
+these as well, though they will not have ``rels`` or ``content`` attributes. Will
+return an empty dictionary or empty list if asked.
 
-Some of these non-content files are shared. The substance of these files is accessible
+Some of these non-content files are shared between between . The substance of these files is accessible
 through the ``DocxContent`` class. This class holds file instances and decodes shared
 non-content in a docx file structure.
 """
+
 from __future__ import annotations
 
 import os
@@ -36,11 +34,59 @@ import copy
 
 from lxml import etree
 
-from .attribute_register import xml2html_formatter
+from .attribute_register import XML2HTML_FORMATTER
 from .docx_context import collect_numFmts, collect_rels
 from .docx_text import get_text, merge_elems
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
+
+# TODO: merge with these instead of html formatting defined in the remainder of docx2python
+_xml_text_formatting_tag_names = {
+    "b",  # Bold
+    "bCs",  # Complex Script Bold
+    "bdr",  # Text Border
+    "caps",  # Display All Characters As Capital Letters
+    "color",  # Run Content Color
+    "cs",  # Use Complex Script Formatting on Run
+    "dstrike",  # Double Strikethrough
+    "eastAsianLayout",  # East Asian Typography Settings
+    "effect",  # Animated Text Effect
+    "em",  # Emphasis Mark
+    "emboss",  # Embossing
+    "fitText",  # Manual Run Width
+    "highlight",  # Text Highlighting
+    "i",  # Italics
+    "iCs",  # Complex Script Italics
+    "imprint",  # Imprinting
+    "kern",  # Font Kerning
+    "lang",  # Languages for Run Content
+    "noProof",  # Do Not Check Spelling or Grammar
+    "oMath",  # Office Open XML Math
+    "outline",  # Display Character Outline
+    "position",  # Vertically Raised or Lowered Text
+    "rFonts",  # Run Fonts
+    "rPrChange",  # Revision Information for Run Properties
+    "rStyle",  # Referenced Character Style
+    "rtl",  # Right To Left Text
+    "shadow",  # Shadow
+    "shd",  # Run Shading
+    "smallCaps",  # Small Caps
+    "snapToGrid",  # Use Document Grid Settings For Inter-Character Spacing
+    "spacing",  # Character Spacing Adjustment
+    "specVanish",  # Paragraph Mark Is Always Hidden
+    "strike",  # Single Strikethrough
+    "sz",  # Font Size
+    "szCs",  # Complex Script Font Size
+    "u",  # Underline
+    "vanish",  # Hidden Text
+    "vertAlign",  # Subscript/Superscript Text
+    "w",  # Expanded/Compressed Text
+}
+
+_xml_test_formatting_tags = {
+    f"{{http://schemas.openxmlformats.org/wordprocessingml/2006/main}}{x}"
+    for x in _xml_text_formatting_tag_names
+}
 
 
 @dataclass
@@ -66,7 +112,7 @@ class File:
     created at runtime.
     """
 
-    def __init__(self, context: DocxContext, attribute_dict: Dict[str, str]) -> None:
+    def __init__(self, context: DocxReader, attribute_dict: Dict[str, str]) -> None:
         """
         Point to container DocxContext instance and store attributes as properties.
 
@@ -217,7 +263,7 @@ class File:
 
 
 @dataclass
-class DocxContext:
+class DocxReader:
     """
     Hold File instances and decode information shared between them (e.g., numFmts)
 
@@ -233,12 +279,11 @@ class DocxContext:
         extract_image: bool = True,
     ):
         self.docx_filename = docx_filename
-        self.image_folder = image_folder
         self.do_pStyle = paragraph_styles
-        self.extract_image = extract_image
+        # self.extract_image = extract_image
 
         if html:
-            self.xml2html_format = xml2html_formatter
+            self.xml2html_format = XML2HTML_FORMATTER
         else:
             self.xml2html_format = {}
 
@@ -267,7 +312,7 @@ class DocxContext:
 
         See docstring for collect_numFmts
 
-        Returns an empty dictionary is word/numbering.xml cannot be found.
+        Returns an empty dictionary if word/numbering.xml cannot be found.
         Ultimately, this will result in any lists (there should NOT be any lists if
         there is no word/numbering.xml) being "numbered" with "--".
         """
@@ -297,13 +342,13 @@ class DocxContext:
                 "in the {self.docx_filename} archive"
             )
 
-    def files_of_type(self, type_: Optional[str]=None) -> List[File]:
+    def files_of_type(self, type_: Optional[str] = None) -> List[File]:
         """
         File instances with attrib Type='http://.../type_'
 
         :param type_: this package looks for any of
             ("header", "officeDocument", "footer", "footnotes", "endnotes")
-            You can try others. If arument is None (default), returns all content file
+            You can try others. If argument is None (default), returns all content file
             types.
         :return: File instances of the requested type, sorted by path
         """
@@ -357,3 +402,28 @@ def _copy_but(
         if item.filename not in exclusions:
             buffer = in_zip.read(item.filename)
             out_zip.writestr(item, buffer)
+
+
+# TODO: delete this mess
+# def     try:
+#         sub_element = element.find(qname)
+#         return {_elem_tag_str(x): x.attrib.get(qn("w:val"), None) for x in sub_element}
+#     except TypeError:
+#         # no formatting for element
+#         return {}
+#
+#
+# def _gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
+#     """
+#     Gather style values for a <w:r> or <w:p> element (maybe others)
+#
+#     :param element: any xml element. r and p elems typically have Pr values.
+#     :return: Style names ('b/', 'sz', etc.) mapped to values.
+#
+#     Will infer a style element qualified name: p -> pPr; r -> rPr
+#
+#     Call this with any element. Runs and Paragraphs may have a Pr element. Most
+#     elements will not, but the function will will quietly return an empty dict.
+#     """
+#     qname = qn(f"w:{element.tag.split('}')[-1]}Pr")
+#     return _gather_sub_vals(element, qname)

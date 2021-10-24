@@ -9,7 +9,7 @@
 from docx2python.main import docx2python
 
 from docx2python.attribute_register import Tags
-from docx2python.decode_docx import DocxContext
+from docx2python.decode_docx import DocxReader
 
 
 class TestFileObject:
@@ -22,7 +22,7 @@ class TestFileObject:
         Return full content if no root given.
         """
         full_extraction = docx2python("resources/example.docx")
-        context = DocxContext("resources/example.docx")
+        context = DocxReader("resources/example.docx")
         assert (
             full_extraction.body_runs
             == context.file_of_type("officeDocument").get_content()
@@ -33,7 +33,7 @@ class TestFileObject:
         Return content below root argument if given.
         """
         full_extraction = docx2python("resources/example.docx")
-        context = DocxContext("resources/example.docx")
+        context = DocxReader("resources/example.docx")
         document_xml = context.file_of_type("officeDocument")
         first_par = next(
             x for x in document_xml.root_element.iter() if x.tag == Tags.PARAGRAPH

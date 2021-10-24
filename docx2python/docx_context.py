@@ -198,13 +198,16 @@ def collect_docProps(root: etree.Element = None) -> Dict[str, str]:
     return docProp2text
 
 
+# TODO: reformat this into a method of DocxReader
+
+
 def pull_image_files(
-    docx_context: DocxContext, image_directory: Optional[str] = None
+    docx_reader: DocxReader, image_directory: Optional[str] = None
 ) -> Dict[str, bytes]:
     """
     Copy images from zip file.
 
-    :param docx_context: DocxContext instance to provide image File objects
+    :param docx_reader: DocxContext instance to provide image File objects
     :param image_directory: optional destination for copied images
     :return: Image names mapped to images in binary format.
 
@@ -216,9 +219,9 @@ def pull_image_files(
     :side effects: Given an optional image_directory, will write the images out to file.
     """
     images = {}
-    for image in docx_context.files_of_type("image"):
+    for image in docx_reader.files_of_type("image"):
         with suppress(KeyError):
-            images[os.path.basename(image.Target)] = docx_context.zipf.read(image.path)
+            images[os.path.basename(image.Target)] = docx_reader.zipf.read(image.path)
     if image_directory is not None:
         pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
         for file, image in images.items():

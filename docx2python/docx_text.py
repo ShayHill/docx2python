@@ -17,12 +17,12 @@ import warnings
 from collections import defaultdict
 from contextlib import suppress
 from itertools import groupby
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from lxml import etree
 
 from . import numbering_formats as nums
-from .attribute_register import KNOWN_ATTRIBUTES, Tags, has_content
+from .attribute_register import RELS_ID, Tags, has_content
 from .depth_collector import DepthCollector
 from .forms import get_checkBox_entry, get_ddList_entry
 from .namespace import qn
@@ -154,14 +154,20 @@ def _get_bullet_string(
         return format_bullet(nums.bullet())
 
 
-def _elem_key(file: File, elem: etree.Element) -> Tuple[str, Dict[str, str], List[str]]:
+_MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
+
+
+def _elem_key(
+    file: File, elem: etree.Element
+) -> Union[Tuple[str, Dict[str, str], List[str]], None]:
     # noinspection SpellCheckingInspection
     """
-    Enough information to tell if two elements are more-or-less identical.
+    Enough information to tell if two elements are more-or-less identically formatted.
 
     :param elem: any element in an xml file.
     :return: A summary of attributes (if two adjacent elements return the same key,
-    they are considered joinable).
+        they are considered mergeable). Only used to merge elements, so returns None if
+        element tags are not in _MERGEABLE_TAGS.
 
     Docx2Text joins consecutive runs and links of the same style. Comparing two
     elem_key return values will tell you if
@@ -169,16 +175,33 @@ def _elem_key(file: File, elem: etree.Element) -> Tuple[str, Dict[str, str], Lis
         * element attributes are same excluding revision 'rsid'
         * element styles are the same (as far as docx2python understands them)
 
-    Elem rId attributes are replaces with rId['Target'] because different rIds can
+    Elem rId attributes are replaced with rId['Target'] because different rIds can
     point to identical targets. This is important for hyperlinks, which can look
     different but point to the same address.
+
     """
     tag = elem.tag
-    attrib = {k: v for k, v in elem.attrib.items() if k in KNOWN_ATTRIBUTES}
+    if tag not in _MERGEABLE_TAGS:
+        return
+    attrib = {k: v for k, v in elem.attrib.items() if k == RELS_ID}
     for k, v in attrib.items():
         with suppress(KeyError):
             attrib[k] = file.rels[v]
+
+    # try:
+    #     aaa = elem.find(elem.tag + "Pr")
+    #
+    #     if aaa:
+    #         breakpoint()
+    # except TypeError:
+    #     bbb = {}
+
     style = get_html_formatting(elem, file.context.xml2html_format)
+    # style = set()
+    # if file.context.xml2html_format:
+    #     Pr = elem.find(elem.tag + "Pr")
+    #     if Pr:
+    #         style = {etree.tostring(x) for x in Pr}
     return tag, attrib, style
 
 
@@ -187,7 +210,7 @@ def merge_elems(file: File, tree: etree.Element) -> None:
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
 
-    :param File: File instancce
+    :param file: File instancce
     :param tree: root_element from an xml in File instance
     :return: None
     :effects: Merges consecutive elements if tag, attrib, and style are the same
@@ -197,7 +220,7 @@ def merge_elems(file: File, tree: etree.Element) -> None:
         * same style
 
     Often, consecutive, "identical" elements are written as separate elements,
-    because they aren't identical to Word. Work keeps track of revision history,
+    because they aren't identical to Word. Word keeps track of revision history,
     spelling errors, etc., which are meaningless to docx2python.
 
     <w:p>
@@ -257,17 +280,16 @@ def merge_elems(file: File, tree: etree.Element) -> None:
         </w:hyperlink>
     </w:p>
 
-    This function only merges runs, text, and hyperlinks, because merging (e.g.)
-    paragraphs would ignore information docx2python DOES want to preserve.
+    This function only merges runs, text, and hyperlinks, because merging paragraphs
+    or larger elements would ignore information docx2python DOES want to preserve.
     """
 
     file_elem_key = functools.partial(_elem_key, file)
 
-    merge_tags = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
     elems = [x for x in tree if has_content(x)]
     runs = [list(y) for x, y in groupby(elems, key=file_elem_key)]
 
-    for run in (x for x in runs if len(x) > 1 and x[0].tag in merge_tags):
+    for run in (x for x in runs if len(x) > 1 and x[0].tag in _MERGEABLE_TAGS):
         if run[0].tag in {Tags.TEXT, Tags.TEXT_MATH}:
             run[0].text = "".join(x.text for x in run)
         for elem in run[1:]:
