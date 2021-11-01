@@ -17,7 +17,7 @@ import warnings
 from collections import defaultdict
 from contextlib import suppress
 from itertools import groupby
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, Set
 
 from lxml import etree
 
@@ -36,6 +36,9 @@ from .text_runs import (
     _elem_tag_str,
     html_open,
     html_close,
+)
+from docx_reader.docx_reader.xml_run_styles import (
+    get_visible_run_style,
 )
 
 TablesList = List[List[List[List[str]]]]
@@ -158,8 +161,8 @@ _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
 
 
 def _elem_key(
-    file: File, elem: etree.Element
-) -> Union[Tuple[str, Dict[str, str], List[str]], None]:
+    file: File, elem: etree.Element, ignore_formatting: bool = False
+) -> Tuple[str, str, Dict[str, Dict[str, str]]]:
     # noinspection SpellCheckingInspection
     """
     Enough information to tell if two elements are more-or-less identically formatted.
@@ -169,11 +172,14 @@ def _elem_key(
         they are considered mergeable). Only used to merge elements, so returns None if
         element tags are not in _MERGEABLE_TAGS.
 
+    Ignore text formatting differences if consecutive link elements point to the same
+    address. Always join these.
+
     Docx2Text joins consecutive runs and links of the same style. Comparing two
     elem_key return values will tell you if
         * elements are the same type
-        * element attributes are same excluding revision 'rsid'
-        * element styles are the same (as far as docx2python understands them)
+        * link rels ids reference the same link
+        * run styles are the same (as far as docx2python understands them)
 
     Elem rId attributes are replaced with rId['Target'] because different rIds can
     point to identical targets. This is important for hyperlinks, which can look
@@ -182,27 +188,17 @@ def _elem_key(
     """
     tag = elem.tag
     if tag not in _MERGEABLE_TAGS:
-        return
-    attrib = {k: v for k, v in elem.attrib.items() if k == RELS_ID}
-    for k, v in attrib.items():
-        with suppress(KeyError):
-            attrib[k] = file.rels[v]
+        return tag, "", {}
 
-    # try:
-    #     aaa = elem.find(elem.tag + "Pr")
-    #
-    #     if aaa:
-    #         breakpoint()
-    # except TypeError:
-    #     bbb = {}
+    # always join links pointing to the same address
+    rels_id = elem.attrib.get(RELS_ID)
+    if rels_id:
+        return tag, file.rels[rels_id], {}
 
-    style = get_html_formatting(elem, file.context.xml2html_format)
-    # style = set()
-    # if file.context.xml2html_format:
-    #     Pr = elem.find(elem.tag + "Pr")
-    #     if Pr:
-    #         style = {etree.tostring(x) for x in Pr}
-    return tag, attrib, style
+    if ignore_formatting:
+        return tag, "", {}
+
+    return tag, "", get_visible_run_style(elem)
 
 
 def merge_elems(file: File, tree: etree.Element) -> None:
@@ -282,6 +278,8 @@ def merge_elems(file: File, tree: etree.Element) -> None:
 
     This function only merges runs, text, and hyperlinks, because merging paragraphs
     or larger elements would ignore information docx2python DOES want to preserve.
+
+    Filter out non-content items so runs can be joined even
     """
 
     file_elem_key = functools.partial(_elem_key, file)

@@ -40,54 +40,6 @@ from .docx_text import get_text, merge_elems
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 
-# TODO: merge with these instead of html formatting defined in the remainder of docx2python
-_xml_text_formatting_tag_names = {
-    "b",  # Bold
-    "bCs",  # Complex Script Bold
-    "bdr",  # Text Border
-    "caps",  # Display All Characters As Capital Letters
-    "color",  # Run Content Color
-    "cs",  # Use Complex Script Formatting on Run
-    "dstrike",  # Double Strikethrough
-    "eastAsianLayout",  # East Asian Typography Settings
-    "effect",  # Animated Text Effect
-    "em",  # Emphasis Mark
-    "emboss",  # Embossing
-    "fitText",  # Manual Run Width
-    "highlight",  # Text Highlighting
-    "i",  # Italics
-    "iCs",  # Complex Script Italics
-    "imprint",  # Imprinting
-    "kern",  # Font Kerning
-    "lang",  # Languages for Run Content
-    "noProof",  # Do Not Check Spelling or Grammar
-    "oMath",  # Office Open XML Math
-    "outline",  # Display Character Outline
-    "position",  # Vertically Raised or Lowered Text
-    "rFonts",  # Run Fonts
-    "rPrChange",  # Revision Information for Run Properties
-    "rStyle",  # Referenced Character Style
-    "rtl",  # Right To Left Text
-    "shadow",  # Shadow
-    "shd",  # Run Shading
-    "smallCaps",  # Small Caps
-    "snapToGrid",  # Use Document Grid Settings For Inter-Character Spacing
-    "spacing",  # Character Spacing Adjustment
-    "specVanish",  # Paragraph Mark Is Always Hidden
-    "strike",  # Single Strikethrough
-    "sz",  # Font Size
-    "szCs",  # Complex Script Font Size
-    "u",  # Underline
-    "vanish",  # Hidden Text
-    "vertAlign",  # Subscript/Superscript Text
-    "w",  # Expanded/Compressed Text
-}
-
-_xml_test_formatting_tags = {
-    f"{{http://schemas.openxmlformats.org/wordprocessingml/2006/main}}{x}"
-    for x in _xml_text_formatting_tag_names
-}
-
 
 @dataclass
 class File:
