@@ -37,9 +37,6 @@ from .text_runs import (
     html_open,
     html_close,
 )
-from docx_reader.docx_reader.xml_run_styles import (
-    get_visible_run_style,
-)
 
 TablesList = List[List[List[List[str]]]]
 
@@ -162,7 +159,7 @@ _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
 
 def _elem_key(
     file: File, elem: etree.Element, ignore_formatting: bool = False
-) -> Tuple[str, str, Dict[str, Dict[str, str]]]:
+) -> Tuple[str, str, List[str]]:
     # noinspection SpellCheckingInspection
     """
     Enough information to tell if two elements are more-or-less identically formatted.
@@ -188,17 +185,18 @@ def _elem_key(
     """
     tag = elem.tag
     if tag not in _MERGEABLE_TAGS:
-        return tag, "", {}
+        return tag, "", []
 
     # always join links pointing to the same address
     rels_id = elem.attrib.get(RELS_ID)
     if rels_id:
-        return tag, file.rels[rels_id], {}
+        return tag, file.rels[rels_id], []
 
+    # TODO: see if ignore_formatting is ever used
     if ignore_formatting:
-        return tag, "", {}
+        return tag, "", []
 
-    return tag, "", get_visible_run_style(elem)
+    return tag, "", get_html_formatting(elem, file.context.xml2html_format)
 
 
 def merge_elems(file: File, tree: etree.Element) -> None:

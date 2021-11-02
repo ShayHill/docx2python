@@ -98,8 +98,7 @@ def test_paragraphs_only() -> None:
         '\n\n<span style="font-size:72pt;font-variant:small-caps">Back to outside '
         "paragraph\n</span>\n\n----media/image20.png----\n\n\n\n2  "
         "\n\n\n\nNoSpacing\n\n\n\n\n\n\n\n\t\t<span "
-        'style="color:808080;font-size:18pt">Page 579 of </span><span style="color:'
-        '808080;font-size:18pt">579</span>'
+        'style="color:808080;font-size:18pt">Page 579 of 579</span>'
         "\n\n\t\n\nFooter\t\t\t\t\n\n\n\n\n\n\n\n"
     )
 
@@ -158,8 +157,7 @@ class TestParsNestedInTables:
                             "",
                             "\t",
                             "\t",
-                            '<span style="color:808080;font-size:18pt">Page 579 of </span>',
-                            '<span style="color:808080;font-size:18pt">579</span>',
+                            '<span style="color:808080;font-size:18pt">Page 579 of 579</span>',
                         ],
                         ["", "\t"],
                     ]
