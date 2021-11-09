@@ -102,6 +102,7 @@ class Tags(str, Enum):
     PAR_PROPERTIES = qn("w:pPr")
     RUN = qn("w:r")
     RUN_PROPERTIES = qn("w:rPr")
+    SYM = qn("w:sym")
     TAB = qn("w:tab")
     TABLE = qn("w:tbl")
     TABLE_CELL = qn("w:tc")

@@ -420,6 +420,12 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
         elif tree.tag == Tags.BR:
             tables.insert_text("\n")
 
+        elif tree.tag == Tags.SYM:
+            font = tree.attrib.get(qn("w:font"))
+            char = tree.attrib.get(qn("w:char"))
+            if char:
+                tables.insert_text("<span style=font-family:{}>&#x0{};</span>".format(font, char[1:]))
+
         elif tree.tag == Tags.FOOTNOTE:
             if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
                 tables.queue_paragraph_text(
