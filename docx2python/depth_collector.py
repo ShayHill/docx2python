@@ -32,8 +32,20 @@ Pass out of package with depth_collector_instance.tree.
 """
 
 from typing import List
+from dataclasses import dataclass
 
 from .text_runs import html_close, html_open
+
+
+@dataclass
+class Run:
+    html_style: str
+    text: str = ""
+
+    def __str__(self):
+        if self.text:
+            return html_open(self.html_style) + self.text + html_close(self.html_style)
+        return ""
 
 
 class CaretDepthError(Exception):
@@ -59,6 +71,8 @@ class DepthCollector:
         self._par_queue = []  # for footnotes (add content before opening paragraph)
         self._rPr_queue = []  # for hyperlinks (add 'a href=""' as prop for next run)
 
+        self._open_runs = []
+
     def queue_rPr(self, style: List[str]) -> None:
         self._rPr_queue += style
 
@@ -72,18 +86,22 @@ class DepthCollector:
         self._pStyles.append(style)
 
     def open_paragraph(self) -> None:
-        if self._pStyles:
-            self.insert(self._pStyles[-1], even_if_empty=True)
-        while self._par_queue:
-            self.insert(self._par_queue.pop(0))
-        if self._pPss and self._pPss[-1]:
-            self.insert(html_open(self._pPss[-1]))
+        pass
+        # if self._pStyles:
+        #     self.insert(self._pStyles[-1], even_if_empty=True)
+        # while self._par_queue:
+        #     self.insert(self._par_queue.pop(0))
+        # if self._pPss and self._pPss[-1]:
+        #     self.insert(html_open(self._pPss[-1]))
 
     def close_paragraph(self) -> None:
-        if self._pPss and self._pPss[-1]:
-            self.insert(html_close(self._pPss[-1]))
-        self._pStyles = self._pStyles[:-1]
-        self._pPss = self._pPss[:-1]
+        for run in self._open_runs:
+            self.insert(str(run))
+        self._open_runs = []
+        # if self._pPss and self._pPss[-1]:
+        #     self.insert(html_close(self._pPss[-1]))
+        # self._pStyles = self._pStyles[:-1]
+        # self._pPss = self._pPss[:-1]
 
     def queue_paragraph_text(self, string_: str) -> None:
         """
@@ -162,12 +180,29 @@ class DepthCollector:
 
         Don't wrap an empty style
         """
+        if not self._open_runs:
+            self._open_runs.append(Run(""))
+        self._open_runs[-1].text += item
+        # try:
+        #     rPs = self._rPss.pop()
+        # except IndexError:
+        #     rPs = []
+        # rPs[:0] = self._rPr_queue
+        # if item and rPs:
+        #     item = html_open(rPs) + item + html_close(rPs)
+        # self.insert(item)
+        # del self._rPr_queue[:]
+
+    def insert_run(self, item: str, styled=False) -> None:
+        """
+        Close any open runs. Insert item. Renew previous style.
+        """
         try:
-            rPs = self._rPss.pop()
+            open_style = self._open_runs[-1].html_style
         except IndexError:
-            rPs = []
-        rPs[:0] = self._rPr_queue
-        if item and rPs:
-            item = html_open(rPs) + item + html_close(rPs)
-        self.insert(item)
-        del self._rPr_queue[:]
+            open_style = ""
+        if styled:
+            self._open_runs.append(Run(open_style, item))
+        else:
+            self._open_runs.append(Run("", item))
+        self._open_runs.append(Run(open_style))
