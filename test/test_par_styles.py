@@ -51,36 +51,39 @@ class TestParStyles:
                 ],
                 [
                     [
-                        ["", "Bold"],
-                        ["", "Italics"],
-                        ["", "Underlined"],
-                        ["", "Large Font"],
-                        ["", "Colored"],
-                        ["", "Large Colored"],
-                        ["", "Large Bold"],
-                        ["", "Large Bold Italics Underlined"],
+                        ["None", "Bold"],
+                        ["None", "Italics"],
+                        ["None", "Underlined"],
+                        ["None", "Large Font"],
+                        ["None", "Colored"],
+                        ["None", "Large Colored"],
+                        ["None", "Large Bold"],
+                        ["None", "Large Bold Italics Underlined"],
                     ]
                 ],
                 [],
             ],
-            [[[["", "Nested"]], [["", "Table"]]], [[["", "A"]], [["", "B"]]]],
             [
-                [[[""]]],
-                [[["", "Tab", "\t", "delimited", "\t", "text"]]],
-                [[["", "10 < 20 and 20 > 10"]]],
+                [[["None", "Nested"]], [["None", "Table"]]],
+                [[["None", "A"]], [["None", "B"]]],
+            ],
+            [
+                [[["None"]]],
+                [[["None", "Tab", "\t", "delimited", "\t", "text"]]],
+                [[["None", "10 < 20 and 20 > 10"]]],
             ],
             [
                 [
                     [
-                        ["", "Text outside table"],
-                        ["", "Reference footnote 1", "----footnote1----"],
-                        ["", "Reference footnote 2", "----footnote2----"],
-                        ["", "Reference endnote 1", "----endnote1----"],
-                        ["", "Reference endnote 2", "----endnote2----"],
+                        ["None", "Text outside table"],
+                        ["None", "Reference footnote 1", "----footnote1----"],
+                        ["None", "Reference footnote 2", "----footnote2----"],
+                        ["None", "Reference endnote 1", "----endnote1----"],
+                        ["None", "Reference endnote 2", "----endnote2----"],
                         ["Heading1", "Heading 1"],
                         ["Heading2", "Heading 2"],
-                        [""],
-                        ["", "----media/image2.jpg----"],
+                        ["None"],
+                        ["None", "----media/image2.jpg----"],
                     ]
                 ]
             ],
@@ -89,8 +92,8 @@ class TestParStyles:
             [[[["Footer"]]]],
             [
                 [
-                    [[""]],
-                    [[""]],
+                    [["None"]],
+                    [["None"]],
                     [["FootnoteText", "footnote1)\t", " First footnote"]],
                     [
                         [
@@ -104,8 +107,8 @@ class TestParStyles:
             ],
             [
                 [
-                    [[""]],
-                    [[""]],
+                    [["None"]],
+                    [["None"]],
                     [["EndnoteText", "endnote1)\t", " First endnote"]],
                     [
                         [

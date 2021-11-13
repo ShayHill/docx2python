@@ -31,21 +31,51 @@ Shorthand for this package. Instances of this class should not escape the packag
 Pass out of package with depth_collector_instance.tree.
 """
 
-from typing import List
-from dataclasses import dataclass
+from typing import List, Iterable
+from contextlib import suppress
+from dataclasses import dataclass, field
 
 from .text_runs import html_close, html_open
+from itertools import chain
 
 
 @dataclass
 class Run:
-    html_style: str
-    text: str = ""
+    html_style: str = field(default="")
+    text: str = field(default="")
 
     def __str__(self):
         if self.text:
             return html_open(self.html_style) + self.text + html_close(self.html_style)
         return ""
+
+
+def _get_run_strings(runs: Iterable[Run]) -> List[str]:
+    """
+    Return a string for each run in the current open paragraph. Ignore ""
+    """
+    # TODO: return an iterator here
+    return [x for x in (str(x) for x in runs) if x]
+
+
+@dataclass
+class Par:
+    html_style: str
+    prefixes: List[Run] = field(default_factory=list)
+    runs: List[Run] = field(default_factory=lambda: [Run()])
+
+    def __iter__(self):
+        # todo: return an iterator from _get_run_strings
+        return iter(
+            _get_run_strings(
+                chain(
+                    self.prefixes,
+                    (html_open(self.html_style),),
+                    self.runs,
+                    (html_close(self.html_style),),
+                )
+            )
+        )
 
 
 class CaretDepthError(Exception):
@@ -71,7 +101,36 @@ class DepthCollector:
         self._par_queue = []  # for footnotes (add content before opening paragraph)
         self._rPr_queue = []  # for hyperlinks (add 'a href=""' as prop for next run)
 
+        self._pars = []
+
+        self._open_pars = []
         self._open_runs = []
+
+    @staticmethod
+    def _get_run_strings(runs: List[Run]) -> List[str]:
+        """
+        Return a string for each run in the current open paragraph. Ignore ""
+        """
+        return [x for x in (str(x) for x in runs) if x]
+
+    def _adopt_orphan_runs(self) -> List[str]:
+        """
+        Pass any open runs with no parent paragraph
+        """
+        runs = self._open_runs
+        self._open_runs = []
+        return self._get_run_strings(runs)
+
+    def open_par(self, html_style):
+        self._open_pars.append(Par(html_style, self._adopt_orphan_runs()))
+
+    def close_par(self):
+        # aaa = [[x for x in y] for y in self._open_pars]
+        # breakpoint()
+        self._pars.append([x for x in self._open_pars.pop()])
+
+    def open_run(self, html_style):
+        self._open_pars[-1].append(Run(html_style))
 
     def queue_rPr(self, style: List[str]) -> None:
         self._rPr_queue += style
@@ -180,9 +239,16 @@ class DepthCollector:
 
         Don't wrap an empty style
         """
-        if not self._open_runs:
-            self._open_runs.append(Run(""))
-        self._open_runs[-1].text += item
+        with suppress(IndexError):
+            self._open_pars[-1].runs[-1].text += item
+            return
+        with suppress(IndexError):
+            self._open_runs[-1].text += item
+            return
+        self._open_runs.append(Run("", item))
+        # if not self._open_runs:
+        #     self._open_runs.append(Run(""))
+        # self._open_runs[-1].text += item
         # try:
         #     rPs = self._rPss.pop()
         # except IndexError:
@@ -197,12 +263,23 @@ class DepthCollector:
         """
         Close any open runs. Insert item. Renew previous style.
         """
+
+        if self._open_pars:
+            runs = self._open_pars[-1].runs
+        else:
+            runs = self._open_runs
+
+        if isinstance(item, Run):
+            runs.append(item)
+            return
+
         try:
-            open_style = self._open_runs[-1].html_style
+            open_style = runs[-1].html_style
         except IndexError:
             open_style = ""
         if styled:
-            self._open_runs.append(Run(open_style, item))
+            runs.append(Run(open_style, item))
         else:
-            self._open_runs.append(Run("", item))
-        self._open_runs.append(Run(open_style))
+            runs.append(Run("", item))
+        runs.append(Run(open_style))
+        # self._open_runs.append(Run(open_style))
