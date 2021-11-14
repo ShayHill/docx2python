@@ -395,8 +395,6 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
 
     xml2html = file.context.xml2html_format
 
-    do_descend = True
-
     # noinspection PyPep8Naming
     def branches(tree: etree.Element) -> None:
         """
@@ -407,56 +405,21 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
         """
         do_descend = True
 
-        # queue up tags before opening any paragraphs or runs
-        if tree.tag == Tags.PARAGRAPH:
-            pass
-            # breakpoint()
-            # pars = get_paragraphs(file, tree)
-            # pStyle = get_pStyle(tree)
-            # if any(iter_at_depth(pars, 5)) and pStyle:
-            #     pars[0][0][0][0].insert(0, html_open(pStyle))
-            #     pars[-1][-1][-1][-1].append(html_close(pStyle))
-            # tables.rightmost_branches = [tables.tree + pars]
-            # do_descend = False
-            # # if file.context.do_pStyle:
-            # #     tables.add_pStyle(get_pStyle(tree))
-            # # tables.add_pPs(get_paragraph_formatting(tree, xml2html))
-
-        elif tree.tag == Tags.RUN:
-            tables.insert_run(Run(get_run_formatting(tree, xml2html)))
-            tables.add_rPs(get_run_formatting(tree, xml2html))
-
-        # set appropriate depth for element (this will trigger methods in ``tables``)
         tree_depth = _get_elem_depth(tree)
         tables.set_caret(tree_depth)
 
-        # add text where found
+        # queue up tags before opening any paragraphs or runs
         if tree.tag == Tags.PARAGRAPH:
-            tables.open_par(get_paragraph_formatting(tree, xml2html))
+            par = tables.commence_paragraph(get_paragraph_formatting(tree, xml2html))
             if file.context.do_pStyle:
-                pStyle = get_pStyle(tree) or "None"
-                tables._open_pars[-1].prefixes.insert(0, pStyle)
+                par.runs.insert(0, Run("", get_pStyle(tree) or "None"))
             # TODO: simplify this call
-            tables.insert_run(
+            tables.insert_text_as_new_run(
                 _get_bullet_string(file.context.numId2numFmts, numId2count, tree)
             )
-            # if bullet:
-            #     # pars.insert(0, bullet)
-            #     tables.insert_text(bullet)
-            # pars = [str(x) for x in tables._open_runs] + pars
-            # tables._open_runs = []
-            # pPr = get_paragraph_formatting(tree, xml2html)
-            # if pPr:
-            #     pars.insert(0, html_open(pPr))
-            #     pars.append(html_close(pPr))
-            # pars = [x for x in pars if x]
-            # if file.context.do_pStyle:
-            #     pStyle = get_pStyle(tree)
-            #     pars.insert(0, pStyle)
-            # do_descend = False
-            # tables.insert(
-            #     _get_bullet_string(file.context.numId2numFmts, numId2count, tree)
-            # )
+
+        elif tree.tag == Tags.RUN:
+            tables.commence_run(get_run_formatting(tree, xml2html))
 
         elif tree.tag in {Tags.TEXT, Tags.TEXT_MATH}:
             # oddly enough, these don't all contain text
@@ -464,27 +427,31 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
             if xml2html:
                 text = text.replace("<", "&lt;")
                 text = text.replace(">", "&gt;")
-            tables.insert_text(text)
+            tables.add_text_into_open_run(text)
 
         # TODO: tags for all known "replace with some text" types (BR, TAB, etc.)
         elif tree.tag == Tags.BR:
-            tables.insert_text("\n")
+            tables.add_text_into_open_run("\n")
 
         elif tree.tag == Tags.SYM:
             font = tree.attrib.get(qn("w:font"))
             char = tree.attrib.get(qn("w:char"))
             if char:
-                tables.insert_text(
+                tables.add_text_into_open_run(
                     "<span style=font-family:{}>&#x0{};</span>".format(font, char[1:])
                 )
 
         elif tree.tag == Tags.FOOTNOTE:
             if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
-                tables.insert_run("footnote{})\t".format(tree.attrib[qn("w:id")]))
+                tables.insert_text_as_new_run(
+                    "footnote{})\t".format(tree.attrib[qn("w:id")])
+                )
 
         elif tree.tag == Tags.ENDNOTE:
             if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
-                tables.insert_run("endnote{})\t".format(tree.attrib[qn("w:id")]))
+                tables.insert_text_as_new_run(
+                    "endnote{})\t".format(tree.attrib[qn("w:id")])
+                )
 
         elif tree.tag == Tags.HYPERLINK:
             # look for an href, ignore internal references (anchors)
@@ -493,62 +460,61 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
             try:
                 rId = tree.attrib[qn("r:id")]
                 link = file.rels[rId]
-                tables.insert_run('<a href="{}">{}</a>'.format(link, text))
+                tables.insert_text_as_new_run('<a href="{}">{}</a>'.format(link, text))
                 # tables.queue_rPr(['a href="{}"'.format(link)])
             except KeyError:
-                tables.insert_run(text)
+                tables.insert_text_as_new_run(text)
                 # breakpoint()
 
         if tree.tag == Tags.FORM_CHECKBOX:
-            tables.insert_run(get_checkBox_entry(tree))
+            tables.insert_text_as_new_run(get_checkBox_entry(tree))
 
         elif tree.tag == Tags.FORM_DDLIST:
-            tables.insert_run(get_ddList_entry(tree))
+            tables.insert_text_as_new_run(get_ddList_entry(tree))
 
         elif tree.tag == Tags.FOOTNOTE_REFERENCE:
-            tables.insert_run("----footnote{}----".format(tree.attrib[qn("w:id")]))
+            tables.insert_text_as_new_run(
+                "----footnote{}----".format(tree.attrib[qn("w:id")])
+            )
 
         elif tree.tag == Tags.ENDNOTE_REFERENCE:
-            tables.insert_run("----endnote{}----".format(tree.attrib[qn("w:id")]))
+            tables.insert_text_as_new_run(
+                "----endnote{}----".format(tree.attrib[qn("w:id")])
+            )
 
         elif tree.tag == Tags.IMAGE:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:embed")]
                 image = file.rels[rId]
-                tables.insert_run("----{}----".format(image))
+                tables.insert_text_as_new_run("----{}----".format(image))
 
         elif tree.tag == Tags.IMAGEDATA:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:id")]
                 image = file.rels[rId]
-                tables.insert_run("----{}----".format(image))
+                tables.insert_text_as_new_run("----{}----".format(image))
 
         # TODO: delete to merge with SYM and other "replace with text" elements
         elif tree.tag == Tags.TAB:
-            tables.insert_run("\t")
+            tables.insert_text_as_new_run("\t")
 
         if do_descend:
             for branch in tree:
                 branches(branch)
 
         if tree.tag == Tags.PARAGRAPH:
-            tables.close_par()
-            tables.set_caret(4)
-            tables.rightmost_branches[-1].append(tables._pars[-1])
+            tables.conclude_paragraph()
 
         elif tree.tag == Tags.RUN:
-            tables.insert_run(Run())
-            # tables.close_par()
-            # tables.rightmost_branches[-1].append(tables._pars[-1])
+            tables.conclude_run()
+
         tables.set_caret(tree_depth)
 
     branches(root)
 
-    if tables._open_runs:
-        tables.open_par("")
+    if tables._orphan_runs:
+        tables.commence_paragraph()
     if tables._open_pars:
-        tables.close_par()
-        tables.set_caret(4)
-        tables.rightmost_branches[-1].append(tables._pars[-1])
+        tables.conclude_paragraph()
 
     return tables.tree

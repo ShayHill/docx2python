@@ -50,32 +50,14 @@ class Run:
         return ""
 
 
-def _get_run_strings(runs: Iterable[Run]) -> List[str]:
-    """
-    Return a string for each run in the current open paragraph. Ignore ""
-    """
-    # TODO: return an iterator here
-    return [x for x in (str(x) for x in runs) if x]
-
-
 @dataclass
 class Par:
     html_style: str
-    prefixes: List[Run] = field(default_factory=list)
-    runs: List[Run] = field(default_factory=lambda: [Run()])
+    runs: List[Run] = field(default_factory=list)
 
-    def __iter__(self):
-        # todo: return an iterator from _get_run_strings
-        return iter(
-            _get_run_strings(
-                chain(
-                    self.prefixes,
-                    (html_open(self.html_style),),
-                    self.runs,
-                    (html_close(self.html_style),),
-                )
-            )
-        )
+    @property
+    def strings(self) -> List[str]:
+        return [x for x in (str(y) for y in self.runs) if x]
 
 
 class CaretDepthError(Exception):
@@ -93,18 +75,13 @@ class DepthCollector:
             may appear above. I.e., this is how many brackets to open before inserting
             an item. E.g., item_depth = 3 => [[['item']]].
         """
+        # TODO: factor out item_depth
         self.item_depth = item_depth
-        self.rightmost_branches = [[]]
-        self._rPss = []  # current open run styles
-        self._pPss = []  # current open run-style-type paragraph styles
-        self._pStyles = []  # current open paragraph-only styles (e.g.: <h1>)
-        self._par_queue = []  # for footnotes (add content before opening paragraph)
-        self._rPr_queue = []  # for hyperlinks (add 'a href=""' as prop for next run)
-
-        self._pars = []
+        self._par_depth = 4
+        self._rightmost_branches = [[]]
 
         self._open_pars = []
-        self._open_runs = []
+        self._orphan_runs = []
 
     @staticmethod
     def _get_run_strings(runs: List[Run]) -> List[str]:
@@ -113,94 +90,61 @@ class DepthCollector:
         """
         return [x for x in (str(x) for x in runs) if x]
 
-    def _adopt_orphan_runs(self) -> List[str]:
-        """
-        Pass any open runs with no parent paragraph
-        """
-        runs = self._open_runs
-        self._open_runs = []
-        return self._get_run_strings(runs)
+    def commence_paragraph(self, html_style: str = "") -> Par:
+        new_par = Par(html_style, self._orphan_runs + [Run("", html_open(html_style))])
+        self._orphan_runs = []
+        self._open_pars.append(new_par)
+        return new_par
 
-    def open_par(self, html_style):
-        self._open_pars.append(Par(html_style, self._adopt_orphan_runs()))
+    def conclude_paragraph(self) -> None:
+        old_par = self._open_pars.pop()
+        old_par.runs.append(Run("", html_close(old_par.html_style)))
+        self.insert(old_par.strings)
 
-    def close_par(self):
-        # aaa = [[x for x in y] for y in self._open_pars]
-        # breakpoint()
-        self._pars.append([x for x in self._open_pars.pop()])
+    def commence_run(self, html_style: str = "") -> None:
+        self._open_runs.append(Run(html_style))
 
-    def open_run(self, html_style):
-        self._open_pars[-1].append(Run(html_style))
-
-    def queue_rPr(self, style: List[str]) -> None:
-        self._rPr_queue += style
-
-    def add_rPs(self, style: List[str]) -> None:
-        self._rPss.append(style)
-
-    def add_pPs(self, style: List[str]) -> None:
-        self._pPss.append(style)
-
-    def add_pStyle(self, style: str) -> None:
-        self._pStyles.append(style)
-
-    def open_paragraph(self) -> None:
-        pass
-        # if self._pStyles:
-        #     self.insert(self._pStyles[-1], even_if_empty=True)
-        # while self._par_queue:
-        #     self.insert(self._par_queue.pop(0))
-        # if self._pPss and self._pPss[-1]:
-        #     self.insert(html_open(self._pPss[-1]))
-
-    def close_paragraph(self) -> None:
-        for run in self._open_runs:
-            self.insert(str(run))
-        self._open_runs = []
-        # if self._pPss and self._pPss[-1]:
-        #     self.insert(html_close(self._pPss[-1]))
-        # self._pStyles = self._pStyles[:-1]
-        # self._pPss = self._pPss[:-1]
-
-    def queue_paragraph_text(self, string_: str) -> None:
-        """
-        Add text to be inserted when next paragraph is opened.
-
-        :param string_: this text will appear after pStyle, before pPr
-        :effect: add item to self._par_queue
-        """
-        self._par_queue.append(string_)
+    def conclude_run(self) -> None:
+        self.commence_run()
 
     @property
     def tree(self) -> List:
         """All collected items."""
-        return self.rightmost_branches[0]
+        return self._rightmost_branches[0]
 
     @property
     def caret(self) -> List:
         """Lowest open child."""
-        return self.rightmost_branches[-1]
+        return self._rightmost_branches[-1]
 
     @property
     def caret_depth(self) -> int:
-        return len(self.rightmost_branches)
+        return len(self._rightmost_branches)
 
-    def drop_caret(self) -> None:
+    @property
+    def _open_runs(self) -> List[Run]:
+        with suppress(IndexError):
+            return self._open_pars[-1].runs
+        return self._orphan_runs
+
+    @property
+    def _open_run(self) -> Run:
+        if not self._open_runs:
+            self._open_runs.append(Run())
+        return self._open_runs[-1]
+
+    def _drop_caret(self) -> None:
         """Create a new branch under caret."""
         if self.caret_depth >= self.item_depth:
             raise CaretDepthError("will not lower caret beneath item_depth")
-        self.rightmost_branches[-1].append([])
-        self.rightmost_branches.append(self.rightmost_branches[-1][-1])
-        if self.caret_depth == self.item_depth:
-            self.open_paragraph()
+        self._rightmost_branches[-1].append([])
+        self._rightmost_branches.append(self._rightmost_branches[-1][-1])
 
-    def raise_caret(self) -> None:
+    def _raise_caret(self) -> None:
         """Close branch at caret and move up to parent."""
         if self.caret_depth == 1:
             raise CaretDepthError("will not raise caret above root")
-        if self.caret_depth == self.item_depth:
-            self.close_paragraph()
-        self.rightmost_branches = self.rightmost_branches[:-1]
+        self._rightmost_branches = self._rightmost_branches[:-1]
 
     def set_caret(self, depth: int) -> None:
         """
@@ -212,24 +156,24 @@ class DepthCollector:
         text runs.
         """
         """Set caret at given depth."""
+        # TODO: figure out the purpose of depth == None
         if depth == None:
             return
-        # if reset and self.caret_depth > 1 and depth == self.caret_depth:
-        #     self.raise_caret(reason + f"_{self.caret_depth} -> {depth}")
         while self.caret_depth < depth:
-            self.drop_caret()
+            self._drop_caret()
         while self.caret_depth > depth:
-            self.raise_caret()
+            self._raise_caret()
 
-    def insert(self, item: str, even_if_empty: bool = False) -> None:
+    def insert(self, item: List[str]) -> None:
+        # TODO: update insert docstring
+        # TODO: rename insert and update tests
         """Add item at item_depth. Add branches if necessary to reach depth."""
-        self.set_caret(self.item_depth)
-        if item or even_if_empty:
-            self.caret.append(f"{item}")
-        self._rPss = self._rPss[-1:]
+        self.set_caret(self._par_depth)
+        self._rightmost_branches[-1].append(item)
 
-    def insert_text(self, item: str) -> None:
+    def add_text_into_open_run(self, item: str) -> None:
         """
+        # TODO: update docstring
         Add text which might be wrapped in html tags.
 
         :param item:
@@ -239,47 +183,16 @@ class DepthCollector:
 
         Don't wrap an empty style
         """
-        with suppress(IndexError):
-            self._open_pars[-1].runs[-1].text += item
-            return
-        with suppress(IndexError):
-            self._open_runs[-1].text += item
-            return
-        self._open_runs.append(Run("", item))
-        # if not self._open_runs:
-        #     self._open_runs.append(Run(""))
-        # self._open_runs[-1].text += item
-        # try:
-        #     rPs = self._rPss.pop()
-        # except IndexError:
-        #     rPs = []
-        # rPs[:0] = self._rPr_queue
-        # if item and rPs:
-        #     item = html_open(rPs) + item + html_close(rPs)
-        # self.insert(item)
-        # del self._rPr_queue[:]
+        self._open_run.text += item
 
-    def insert_run(self, item: str, styled=False) -> None:
+    def insert_text_as_new_run(self, item: str, styled=False) -> None:
         """
+        # TODO: update docstrijng
         Close any open runs. Insert item. Renew previous style.
         """
-
-        if self._open_pars:
-            runs = self._open_pars[-1].runs
-        else:
-            runs = self._open_runs
-
-        if isinstance(item, Run):
-            runs.append(item)
-            return
-
-        try:
-            open_style = runs[-1].html_style
-        except IndexError:
-            open_style = ""
+        open_style = self._open_run.html_style
         if styled:
-            runs.append(Run(open_style, item))
+            self._open_runs.append(Run(open_style, item))
         else:
-            runs.append(Run("", item))
-        runs.append(Run(open_style))
-        # self._open_runs.append(Run(open_style))
+            self._open_runs.append(Run("", item))
+        self._open_runs.append(Run(open_style))

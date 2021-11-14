@@ -156,7 +156,7 @@ def get_run_formatting(
 
     :return: ``['b', 'i', ...]``
 
-    Tuples are always returned in order:
+    Lists are always returned in order:
 
     ``"span"`` first then any other styles in alphabetical order.
 
