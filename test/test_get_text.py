@@ -14,8 +14,11 @@ from typing import Dict
 import pytest
 from lxml import etree
 
-# noinspection PyProtectedMember,PyProtectedMember
-from docx2python.docx_text import _get_bullet_string, _increment_list_counter
+# noinspection PyProtectedMember
+from docx2python.bullets_and_numbering import (
+    BulletGenerator,
+    _increment_list_counter,
+)
 
 # noinspection PyUnresolvedReferences
 from helpers.utils import valid_xml
@@ -46,6 +49,7 @@ def numbered_paragraphs():
     return [valid_xml(x) for x in paragraphs]
 
 
+# noinspection PyPep8Naming
 @pytest.fixture()
 def numbering_context() -> Dict[str, Dict]:
     """
@@ -67,10 +71,6 @@ def numbering_context() -> Dict[str, Dict]:
     return {"numId2numFmts": numId2numFmts, "numId2count": numId2count}
 
 
-def numbered_list_counter():
-    return defaultdict(lambda: defaultdict(lambda: 0))
-
-
 class TestGetBulletString:
     """Test strip_test.get_bullet_string """
 
@@ -78,14 +78,8 @@ class TestGetBulletString:
         """Returns '-- ' for 'bullet'"""
 
         paragraph = etree.fromstring(numbered_paragraphs[0])[0]
-        assert (
-            _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
-            == "--\t"
-        )
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        assert bullets.get_bullet(paragraph) == "--\t"
 
     def test_decimal(self, numbered_paragraphs, numbering_context) -> None:
         """
@@ -93,14 +87,8 @@ class TestGetBulletString:
         indented one tab
         """
         paragraph = etree.fromstring(numbered_paragraphs[1])[0]
-        assert (
-            _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
-            == "\t1)\t"
-        )
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        assert bullets.get_bullet(paragraph) == "\t1)\t"
 
     def test_lower_letter(self, numbered_paragraphs, numbering_context) -> None:
         """
@@ -108,14 +96,8 @@ class TestGetBulletString:
         indented two tabs
         """
         paragraph = etree.fromstring(numbered_paragraphs[2])[0]
-        assert (
-            _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
-            == "\t\ta)\t"
-        )
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        assert bullets.get_bullet(paragraph) == "\t\ta)\t"
 
     def test_upper_letter(self, numbered_paragraphs, numbering_context) -> None:
         """
@@ -123,14 +105,8 @@ class TestGetBulletString:
         indented three tabs
         """
         paragraph = etree.fromstring(numbered_paragraphs[3])[0]
-        assert (
-            _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
-            == "\t\t\tA)\t"
-        )
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        assert bullets.get_bullet(paragraph) == "\t\t\tA)\t"
 
     def test_lower_roman(self, numbered_paragraphs, numbering_context) -> None:
         """
@@ -138,14 +114,8 @@ class TestGetBulletString:
         indented 4 tabs
         """
         paragraph = etree.fromstring(numbered_paragraphs[4])[0]
-        assert (
-            _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
-            == "\t\t\t\ti)\t"
-        )
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        assert bullets.get_bullet(paragraph) == "\t\t\t\ti)\t"
 
     def test_upper_roman(self, numbered_paragraphs, numbering_context) -> None:
         """
@@ -153,14 +123,8 @@ class TestGetBulletString:
         indented 5 tabs
         """
         paragraph = etree.fromstring(numbered_paragraphs[5])[0]
-        assert (
-            _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
-            == "\t\t\t\t\tI)\t"
-        )
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        assert bullets.get_bullet(paragraph) == "\t\t\t\t\tI)\t"
 
     def test_undefined(self, numbered_paragraphs, numbering_context) -> None:
         """
@@ -171,12 +135,9 @@ class TestGetBulletString:
         to bullet string (with a warning).
         """
         paragraph = etree.fromstring(numbered_paragraphs[6])[0]
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
         with pytest.warns(UserWarning):
-            _ = _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
+            _ = bullets.get_bullet(paragraph)
 
     def test_not_numbered(self, numbering_context) -> None:
         """
@@ -184,14 +145,8 @@ class TestGetBulletString:
         """
         one_par_file = valid_xml("<w:p></w:p>")
         paragraph = etree.fromstring(one_par_file)[0]
-        assert (
-            _get_bullet_string(
-                numbering_context["numId2numFmts"],
-                numbering_context["numId2count"],
-                paragraph,
-            )
-            == ""
-        )
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        assert bullets.get_bullet(paragraph) == ""
 
     def test_resets_sublists(self, numbered_paragraphs, numbering_context):
         """Numbers reset when returning to shallower level
@@ -206,15 +161,10 @@ class TestGetBulletString:
             a)  NEW sublist of top level
         """
         pars = [numbered_paragraphs[x] for x in (1, 2, 2, 3, 2, 3, 1, 2)]
-        bullets = []
+        bullets = BulletGenerator(numbering_context["numId2numFmts"])
+        bullet_strings = []
         for par in pars:
             paragraph = etree.fromstring(par)[0]
-            bullets.append(
-                _get_bullet_string(
-                    numbering_context["numId2numFmts"],
-                    numbering_context["numId2count"],
-                    paragraph,
-                ).strip()
-            )
+            bullet_strings.append(bullets.get_bullet(paragraph).strip())
 
-        assert bullets == ["1)", "a)", "b)", "A)", "c)", "A)", "2)", "a)"]
+        assert bullet_strings == ["1)", "a)", "b)", "A)", "c)", "A)", "2)", "a)"]

@@ -13,145 +13,27 @@ Content in the extracted docx is found in the ``word`` folder:
 from __future__ import annotations
 
 import functools
-import warnings
-from collections import defaultdict
 from contextlib import suppress
 from itertools import groupby
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, Set
+from typing import List, Optional, Sequence, Tuple
 
 from lxml import etree
 
-from . import numbering_formats as nums
 from .attribute_register import RELS_ID, Tags, has_content
+from .bullets_and_numbering import BulletGenerator
 from .depth_collector import DepthCollector, Run
 from .forms import get_checkBox_entry, get_ddList_entry
 from .namespace import qn
 from .text_runs import (
-    _format_Pr_into_html,
     get_pStyle,
     get_run_formatting,
     get_html_formatting,
     get_paragraph_formatting,
-    _gather_Pr,
-    _elem_tag_str,
-    html_open,
-    html_close,
 )
 
 TablesList = List[List[List[List[str]]]]
 
-
-def _new_list_counter() -> defaultdict[Any, defaultdict[Any, 0]]:
-    """
-    A counter, starting at zero, for each numId
-
-    :return: {
-        a_numId: 0,
-        b_numId: 0
-    }
-
-    This is what you need to keep track of where every nested list is at.
-    """
-    return defaultdict(lambda: defaultdict(lambda: 0))
-
-
-def _increment_list_counter(ilvl2count: Dict[str, int], ilvl: str) -> int:
-    # noinspection SpellCheckingInspection
-    """
-    Increase counter at ilvl, reset counter at deeper levels.
-
-    :param ilvl2count: context['numId2count']
-    :param ilvl: string representing an integer
-    :return: updated count at ilvl.
-        updates context['numId2count'] by reference
-
-    On a numbered list, the count for sub-lists should reset when a parent list
-    increases, e.g.,
-
-    1. top-level list
-        a. sublist
-        b. sublist continues
-    2. back to top-level list
-        a. sublist counter has been reset
-
-    List counters are defaultdicts, so we can reset sublist counters by deleting them.
-    """
-    ilvl2count[ilvl] += 1
-    deeper_levels = [x for x in ilvl2count.keys() if x > ilvl]
-    for level in deeper_levels:
-        del ilvl2count[level]
-    return ilvl2count[ilvl]
-
-
 # noinspection PyPep8Naming
-def _get_bullet_string(
-    numId2numFmts: Dict[str, List[str]],
-    numId2count: defaultdict[Any, defaultdict[Any, 0]],
-    paragraph: etree.Element,
-) -> str:
-    """
-    Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
-
-    :param paragraph: <w:p> xml element
-    :return: specified 'bullet' string or '' if paragraph is not numbered
-
-    <w:p>
-        <w:pPr>
-            <w:numPr>
-                <w:ilvl w:val="0"/>
-                <w:numId w:val="9"/>
-            </w:numPr>
-        </wpPr>
-        <w:r>
-            <w:t>this text in numbered or bulleted list
-            </w:t>
-        </w:r>
-    </w:p>
-
-    bullet preceded by four spaces for every indentation level.
-    """
-    try:
-        pPr = paragraph.find(qn("w:pPr"))
-        numPr = pPr.find(qn("w:numPr"))
-        numId = numPr.find(qn("w:numId")).attrib[qn("w:val")]
-        ilvl = numPr.find(qn("w:ilvl")).attrib[qn("w:val")]
-        try:
-            numFmt = numId2numFmts[numId][int(ilvl)]
-        except IndexError:
-            # give up and put a bullet
-            numFmt = "bullet"
-    except (AttributeError, KeyError):
-        # not a numbered paragraph
-        return ""
-
-    number = _increment_list_counter(numId2count[numId], ilvl)
-    indent = "\t" * int(ilvl)
-
-    def format_bullet(bullet: str) -> str:
-        """Indent, format and pad the bullet or number string."""
-        if bullet != nums.bullet():
-            bullet += ")"
-        return indent + bullet + "\t"
-
-    if numFmt == "decimal":
-        return format_bullet(nums.decimal(number))
-    elif numFmt == "lowerLetter":
-        return format_bullet(nums.lower_letter(number))
-    elif numFmt == "upperLetter":
-        return format_bullet(nums.upper_letter(number))
-    elif numFmt == "lowerRoman":
-        return format_bullet(nums.lower_roman(number))
-    elif numFmt == "upperRoman":
-        return format_bullet(nums.upper_roman(number))
-    elif numFmt == "bullet":
-        return format_bullet(nums.bullet())
-    else:
-        warnings.warn(
-            "{} numbering format not implemented, substituting '{}'".format(
-                numFmt, nums.bullet()
-            )
-        )
-        return format_bullet(nums.bullet())
 
 
 _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
@@ -390,7 +272,8 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
     want to do it. Nothing tricky here except keeping track of the text formatting.
     """
     root = root if root is not None else file.root_element
-    numId2count = _new_list_counter()
+    bullets = BulletGenerator(file.context.numId2numFmts)
+    # numId2count = _new_list_counter()
     tables = DepthCollector(5)
 
     xml2html = file.context.xml2html_format
@@ -415,7 +298,8 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
                 par.runs.insert(0, Run("", get_pStyle(tree) or "None"))
             # TODO: simplify this call
             tables.insert_text_as_new_run(
-                _get_bullet_string(file.context.numId2numFmts, numId2count, tree)
+                bullets.get_bullet(tree)
+                # _get_bullet_string(file.context.numId2numFmts, numId2count, tree)
             )
 
         elif tree.tag == Tags.RUN:
