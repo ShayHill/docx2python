@@ -17,10 +17,6 @@ from lxml import etree
 from docx2python.namespace import qn
 
 
-# TODO: test file for special characters
-# &lt < &amp & &gt > &quot " &apos '
-
-
 class HtmlFormatter(NamedTuple):
     """
     The information needed to group and format html tags.
@@ -135,7 +131,7 @@ def has_content(tree: etree.Element) -> Optional[str]:
     """
 
     def iter_content(tree_: etree.Element) -> Iterator[str]:
-        """ Yield all content elements in tree """
+        """Yield all content elements in tree"""
         if tree_.tag in _CONTENT_TAGS:
             yield tree_.tag
         for branch in tree_:
