@@ -6,54 +6,19 @@ author: Shay Hill
 created: 6/26/2019
 """
 import os
-import shutil
 import zipfile
+from tempfile import TemporaryDirectory
 
-import pytest
 from lxml import etree
-from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 from docx2python.attribute_register import Tags
+from docx2python.decode_docx import DocxReader
 from docx2python.docx_context import (
     collect_numFmts,
     pull_image_files,
 )
-from docx2python.decode_docx import DocxReader
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
-
-
-# TODO: remove these tests. Method factored out.
-# class TestDocxContextObject:
-#     """
-#     Test methods of DocxContext object which are not tested elsewhere.
-#     """
-#
-# def test_file_of_type_exactly_one(self) -> None:
-#     """
-#     Return single file instance of type_ argument.
-#     """
-#     context = DocxReader("resources/example.docx")
-#     assert len(context.files_of_type("officeDocument")) == 1
-#     assert context.file_of_type("officeDocument").path == "word/document.xml"
-#
-# def test_file_of_type_more_than_one(self) -> None:
-#     """
-#     Warn when multiple file instances of type_ argument.
-#     """
-#     context = DocxReader("resources/example.docx")
-#     assert len(context.files_of_type("header")) == 3
-#     with pytest.warns(UserWarning):
-#         first_header = context.file_of_type("header")
-#     assert first_header.path == "word/header1.xml"
-#
-# def test_file_of_type_zero(self) -> None:
-#     """
-#     Raise KeyError when no file instances of type_ are found.
-#     """
-#     context = DocxReader("resources/example.docx")
-#     with pytest.raises(KeyError):
-#         _ = context.file_of_type("invalid_type")
 
 
 class TestSaveDocx:
@@ -83,7 +48,7 @@ class TestSaveDocx:
 
 
 class TestCollectNumFmts:
-    """Test strip_text.collect_numFmts """
+    """Test strip_text.collect_numFmts"""
 
     # noinspection PyPep8Naming
     def test_gets_formats(self) -> None:
@@ -111,7 +76,7 @@ class TestCollectNumFmts:
 
 
 class TestCollectDocProps:
-    """Test strip_text.collect_docProps """
+    """Test strip_text.collect_docProps"""
 
     def test_gets_properties(self) -> None:
         """Retrieves properties from docProps"""
@@ -130,7 +95,7 @@ class TestCollectDocProps:
 
 # noinspection PyPep8Naming
 class TestGetContext:
-    """Text strip_text.get_context """
+    """Text strip_text.get_context"""
 
     def test_numId2numFmts(self) -> None:
         """All targets mapped"""
@@ -146,7 +111,7 @@ class TestGetContext:
 
 
 class TestPullImageFiles:
-    """Test strip_text.pull_image_files """
+    """Test strip_text.pull_image_files"""
 
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""

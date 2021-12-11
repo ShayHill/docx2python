@@ -11,24 +11,12 @@ class TestAsciiPrintable:
     """ Confirming this works with v1.25 """
 
     def test_exact_representation(self) -> None:
-        """Most characters are represented exactly"""
+        """Most characters are represented exactly
+        The last seven characters are
+        \n\r\x0b\b0cEND
+        \n \r \x0b and \x0c are ignored by word when typed.
+        END is there (added by hand to docx file) to let me know I'm past any
+        trailing characters
+        """
         pars = docx2python("resources/ascii_printable.docx")
-        assert pars.text[:-3] == string.printable[:-3]
-
-    def test_line_feed(self) -> None:
-        """A carriage return becomes a linefeed"""
-        pars = docx2python("resources/ascii_printable.docx")
-        assert string.printable[-3] == '\r'
-        assert pars.text[-3] == '\n'
-
-    def test_vertical_tab(self) -> None:
-        """A vertical_tab becomes a linefeed"""
-        pars = docx2python("resources/ascii_printable.docx")
-        assert string.printable[-2] == '\x0b'
-        assert pars.text[-2] == '\n'
-
-    def test_form_feed(self) -> None:
-        """A form_feed becomes a linefeed"""
-        pars = docx2python("resources/ascii_printable.docx")
-        assert string.printable[-1] == '\x0c'
-        assert pars.text[-1] == '\n'
+        assert pars.text[:-7] == string.printable[:-4]
