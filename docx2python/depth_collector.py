@@ -31,12 +31,11 @@ Shorthand for this package. Instances of this class should not escape the packag
 Pass out of package with depth_collector_instance.tree.
 """
 
-from typing import List, Iterable
 from contextlib import suppress
 from dataclasses import dataclass, field
+from typing import List
 
 from .text_runs import html_close, html_open
-from itertools import chain
 
 
 @dataclass
@@ -153,11 +152,11 @@ class DepthCollector:
         :param depth: depth level for caret (between 1 and item_depth inclusive)
         another at the same depth. This is how consecutive paragraphs avoid being
         merged into one paragraph. You'll want this true for every element except
-        text runs.
+        text runs. :depth: == None means the element (perhaps ``body``) does not
+        effect depth (see details in docx_text._get_elem_depth).
         """
         """Set caret at given depth."""
-        # TODO: figure out the purpose of depth == None
-        if depth == None:
+        if depth is None:
             return
         while self.caret_depth < depth:
             self._drop_caret()
@@ -165,30 +164,41 @@ class DepthCollector:
             self._raise_caret()
 
     def insert(self, item: List[str]) -> None:
-        # TODO: update insert docstring
-        # TODO: rename insert and update tests
-        """Add item at item_depth. Add branches if necessary to reach depth."""
+        """Add item at self._par_depth. Add branches if necessary to reach depth.
+
+        This dumps the contents of the most recently closed paragraph into the
+        _rightmost_branches collector.
+        """
         self.set_caret(self._par_depth)
         self._rightmost_branches[-1].append(item)
 
     def add_text_into_open_run(self, item: str) -> None:
         """
-        # TODO: update docstring
-        Add text which might be wrapped in html tags.
+        Add item into previous run.
 
-        :param item:
-        :return:
-
-        This text catches any open run styles
-
-        Don't wrap an empty style
+        This is for tags and other text that appears between run tags. All entries to
+        ``add_text_into_open_run`` will be merged together.
         """
         self._open_run.text += item
 
     def insert_text_as_new_run(self, item: str, styled=False) -> None:
         """
-        # TODO: update docstrijng
-        Close any open runs. Insert item. Renew previous style.
+        Close previous run, cache style, open and close new run, re-open cached style.
+
+        This is for items like links that may be inside a run element with other text.
+
+        Paraphrased in html:
+
+            <run><b>some text<a href="">link</a>other text</b></run>
+
+        Starts with an open run
+            <run><b>some text
+
+        Then hits the link. We'll make this a run inside the actual run
+
+            <run><b>some text</b></run>  # close this open run
+            <run><a href="">link</a></run>  # add link as a new run
+            <run><b>  # open a new run with the same style as the aborted first run
         """
         open_style = self._open_run.html_style
         if styled:

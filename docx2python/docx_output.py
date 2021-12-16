@@ -43,8 +43,8 @@ from dataclasses import dataclass
 from typing import Any, Dict
 from warnings import warn
 
-from .docx_context import collect_docProps, pull_image_files
-from .decode_docx import DocxReader
+from .docx_context import collect_docProps
+from .docx_reader import DocxReader
 from .docx_text import TablesList
 from .iterators import enum_at_depth, get_html_map, iter_at_depth
 
@@ -53,7 +53,7 @@ from .iterators import enum_at_depth, get_html_map, iter_at_depth
 class DocxContent:
     """Holds return values for docx content."""
 
-    context: DocxReader
+    docx_reader: DocxReader
     docx2python_kwargs: Dict[str, Any]
 
     def __getattr__(self, item) -> Any:
@@ -75,7 +75,7 @@ class DocxContent:
 
     def _get_runs(self, type_: str) -> TablesList:
         content = []
-        for file in self.context.files_of_type(type_):
+        for file in self.docx_reader.files_of_type(type_):
             content += file.content
         return content
 
@@ -105,7 +105,7 @@ class DocxContent:
 
     @property
     def images(self) -> Dict[str, bytes]:
-        return pull_image_files(self.context, self.docx2python_kwargs['image_folder'])
+        return self.docx_reader.pull_image_files(self.docx2python_kwargs['image_folder'])
     @property
     def document(self) -> TablesList:
         """All docx "tables" concatenated."""
@@ -158,7 +158,7 @@ class DocxContent:
         Docx files created with Google docs won't have core-properties. If the file
         `core-properties` is missing, return an empty dict."""
         try:
-            docProps = next(iter(self.context.files_of_type("core-properties")))
+            docProps = next(iter(self.docx_reader.files_of_type("core-properties")))
             return collect_docProps(docProps.root_element)
         except StopIteration:
             warn(
@@ -170,4 +170,4 @@ class DocxContent:
             return {}
 
     def save_images(self, image_folder: str) -> Dict[str, bytes]:
-        return pull_image_files(self.context, image_folder)
+        return self.docx_reader.pull_image_files(image_folder)

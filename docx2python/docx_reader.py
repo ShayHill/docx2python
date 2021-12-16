@@ -22,21 +22,23 @@ non-content in a docx file structure.
 
 from __future__ import annotations
 
+import copy
 import os
-from typing import Optional
+import pathlib
 import zipfile
+from contextlib import suppress
 from dataclasses import dataclass
 from functools import cached_property
 from operator import attrgetter
-from typing import Dict, List, Optional, Union, Set
+from typing import Dict, List, Optional, Set, Union
 from warnings import warn
-import copy
 
 from lxml import etree
 
 from .attribute_register import XML2HTML_FORMATTER
 from .docx_context import collect_numFmts, collect_rels
-from .docx_text import get_text, merge_elems
+from .docx_text import get_text
+from .merge_runs import merge_elems
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 
@@ -218,21 +220,13 @@ class File:
 class DocxReader:
     """
     Hold File instances and decode information shared between them (e.g., numFmts)
-
-    TODO: document how this unfortunately holds all docx2python optional arguments like do_pStyle and html.
     """
 
     def __init__(
-        self,
-        docx_filename: str,
-        image_folder: Optional[str] = None,
-        html: bool = False,
-        paragraph_styles: bool = False,
-        extract_image: bool = True,
+        self, docx_filename: str, html: bool = False, paragraph_styles: bool = False
     ):
         self.docx_filename = docx_filename
         self.do_pStyle = paragraph_styles
-        # self.extract_image = extract_image
 
         if html:
             self.xml2html_format = XML2HTML_FORMATTER
@@ -318,7 +312,6 @@ class DocxReader:
         Content files (contain displayed text) inside the docx.
 
         :return: File instances of context files, sorted by path
-        TODO: test this one
         """
         return self.files_of_type()
 
@@ -338,6 +331,34 @@ class DocxReader:
             for file in content_files:
                 zout.writestr(file.path, etree.tostring(file.root_element))
 
+    def pull_image_files(
+        self, image_directory: Optional[str] = None
+    ) -> Dict[str, bytes]:
+        """
+        Copy images from zip file.
+
+        :param image_directory: optional destination for copied images
+        :return: Image names mapped to images in binary format.
+
+            To write these to disc::
+
+                with open(key, 'wb') as file:
+                    file.write(value)
+
+        :side effects: Given an optional image_directory, will write the images out
+        to file.
+        """
+        images = {}
+        for image in self.files_of_type("image"):
+            with suppress(KeyError):
+                images[os.path.basename(image.Target)] = self.zipf.read(image.path)
+        if image_directory is not None:
+            pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
+            for file, image in images.items():
+                with open(os.path.join(image_directory, file), "wb") as image_copy:
+                    image_copy.write(image)
+        return images
+
 
 def _copy_but(
     in_zip: zipfile.ZipFile, out_zip: zipfile.ZipFile, exclusions: Optional[Set] = None
@@ -354,28 +375,3 @@ def _copy_but(
         if item.filename not in exclusions:
             buffer = in_zip.read(item.filename)
             out_zip.writestr(item, buffer)
-
-
-# TODO: delete this mess
-# def     try:
-#         sub_element = element.find(qname)
-#         return {_elem_tag_str(x): x.attrib.get(qn("w:val"), None) for x in sub_element}
-#     except TypeError:
-#         # no formatting for element
-#         return {}
-#
-#
-# def _gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
-#     """
-#     Gather style values for a <w:r> or <w:p> element (maybe others)
-#
-#     :param element: any xml element. r and p elems typically have Pr values.
-#     :return: Style names ('b/', 'sz', etc.) mapped to values.
-#
-#     Will infer a style element qualified name: p -> pPr; r -> rPr
-#
-#     Call this with any element. Runs and Paragraphs may have a Pr element. Most
-#     elements will not, but the function will will quietly return an empty dict.
-#     """
-#     qname = qn(f"w:{element.tag.split('}')[-1]}Pr")
-#     return _gather_sub_vals(element, qname)

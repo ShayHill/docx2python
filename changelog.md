@@ -60,7 +60,7 @@ Simple docx files *are* structured this way, but there are elements (e.g., ``<w:
 
 Now only supports Python 3.6+
 
---  XML and other information from an unzipped docx file now available as a DocxContext instance.
+--  XML and other information from an unzipped docx file now available as a DocxReader instance.
 
 Docx2Python v1 extracted xml from a zip file and passed it straight to formatting functions. Docx2Python v2 takes an intermediate step: hold the xml and inferred attributes of the input docx in DocxContext and File instances. These allow a view into the xml for users who are comfortable working that way. A user can now execute search&replace and other simple operations before extracting the text.
 
@@ -92,3 +92,9 @@ Equations in Word's Inline format will return valid LaTeX (e.g., ``'\\int_{0}^{1
 -- Now works with LibreOffice conversions
 
 User shadowmimosa reported that docx files converted by LibreOffice from docx raised a CaretDepthError. This files now extract without error.
+
+-- New option `paragraph_styles=True` will append a paragraph style as the first run of each paragraph. These will often be "None", but may be a "Header", "Footnote" or similar. These can be used for factoring extracted paragraphs.
+
+-- Replace `&` with `&amp` when exporting html styles
+
+Docx2Python v1 did not replace `&`

@@ -8,7 +8,7 @@
 from typing import Optional
 
 from .docx_output import DocxContent
-from .decode_docx import DocxReader
+from .docx_reader import DocxReader
 from warnings import warn
 
 
@@ -39,7 +39,7 @@ def docx2python(
             "``docx2python(filename).write_images(image_folder)``. Images files are "
             "available as before with ``docx2text(filename).images`` attribute."
         )
-    docx_context = DocxReader(docx_filename, image_folder, html, paragraph_styles)
+    docx_context = DocxReader(docx_filename, html, paragraph_styles)
     docx_content = DocxContent(docx_context, locals())
     if image_folder:
         _ = docx_content.images

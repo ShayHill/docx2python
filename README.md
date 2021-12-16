@@ -9,7 +9,6 @@ The code is an expansion/contraction of [python-docx2txt](https://github.com/ank
 __shared features__:
 * extracts text from docx files
 * extracts images from docx files
-* no dependencies (docx2python requires pytest to test)
 
 __additions:__
 * extracts footnotes and endnotes
@@ -20,12 +19,12 @@ __additions:__
 * inserts image placeholders in text (``'----image1.jpg----'``)
 * inserts plain text footnote and endnote references in text (``'----footnote1----'``)
 * (optionally) retains font size, font color, bold, italics, and underscore as html
+* extract math equations
 * extract user selections from checkboxes and dropdown menus
-* full test coverage and documentation for developers
   
 __subtractions:__
 * no command-line interface
-* will only work with Python 3.4+
+* will only work with Python 3.6+
 
 
 ## Installation
@@ -52,10 +51,10 @@ docx2python('path/to/file.docx', html=True)
 ```
 
 Note on html feature:
-* font size, font color, bold, italics, and underline supported
+* supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript, ``<span style="font-variant: small-caps">``small caps, ``<span style="text-transform:uppercase">``all caps, ``<span style="background-color: yellow">``highlighted, ``<span style="font-size:32">``font size, ``<span style="color:#ff0000">``colored text.
 * hyperlinks will always be exported as html (``<a href="http:/...">link text</a>``), even if ``html=False``, because I couldn't think of a more cononical representation.
 * every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph a</b>`, `<b>paragraph b</b>`. This is intentional to make  each paragraph its own entity. 
-* if you specify `html=True`, `>` and `<` in your docx text will be encoded as `&gt;` and `&lt;`
+* if you specify `html=True`, `&`, `>` and `<` in your docx text will be encoded as `&amp`, `&gt;` and `&lt;`
 
 ## Return Value
 
@@ -84,6 +83,9 @@ for name, image in result.images.items():
     with open(name, 'wb') as image_destination:
         write(image_destination, image)
 ```
+
+__docx_reader__ - a DocxReader (see `docx_reader.py`) instance with several methods for extracting xml portions.
+
 
 ## Return Format
 
@@ -116,65 +118,7 @@ Table cells will appear as table cells. Text outside tables will appear as table
 
 
 A docx document can be tables within tables within tables. Docx2Python flattens most of this to more easily navigate
-within the content. To preserve this "flat" depth (text always at depth 4), nested tables will appear as new, top-level
-tables. This is clearer with an example:
-
-```python
-#  docx structure
-
-[  # document
-    [  # table A
-        [  # table A row
-            [  # table A cell 1
-                "paragraph in table A cell 1"
-            ],
-            [  # nested table B
-                [  # table B row
-                    [  # table B cell
-                        "paragraph in table B"
-                    ]
-                ]
-            ],
-            [  # table A cell 2
-                'paragraph in table A cell 2'
-            ]
-        ]
-    ]
-]
-```
-
-becomes ...
-```python
-[  # document 
-    [  # table A
-        [  # row in table A
-            [  # cell in table A
-                "table A cell 1"
-            ]
-        ]
-    ],
-    [  # table B
-        [  # row in table B
-            [  # cell in table B
-                "table B cell"
-            ]
-        ]
-    ],
-    [  # table C
-        [  # row in table C
-            [  # cell in table C
-                "table A cell 2"
-            ]
-        ]
-    ]
-]
-```
-
-This ensures text appears
-
-1. only once
-1. in the order it appears in the docx
-1. always at depth four (i.e., `result.body[i][j][k][l]` will be a string).
+within the content. 
     
 ## Working with output
 
@@ -231,7 +175,7 @@ def html_map(tables) -> str:
 
 ```
 >>> tables = [[[['a', 'b'], ['a', 'd']]]]
->>> html_toc(tables)
+>>> html_map(tables)
 <html>
     <body>
         <table border="1">

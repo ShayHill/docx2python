@@ -9,7 +9,7 @@
 from docx2python.main import docx2python
 
 from docx2python.attribute_register import Tags
-from docx2python.decode_docx import DocxReader
+from docx2python.docx_reader import DocxReader
 
 
 class TestFileObject:

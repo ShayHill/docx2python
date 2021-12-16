@@ -12,11 +12,8 @@ from tempfile import TemporaryDirectory
 from lxml import etree
 
 from docx2python.attribute_register import Tags
-from docx2python.decode_docx import DocxReader
-from docx2python.docx_context import (
-    collect_numFmts,
-    pull_image_files,
-)
+from docx2python.docx_reader import DocxReader
+from docx2python.docx_context import collect_numFmts
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
@@ -117,7 +114,7 @@ class TestPullImageFiles:
         """Copy image files to output path."""
         docx_context = DocxReader("resources/example.docx")
         with TemporaryDirectory() as image_folder:
-            pull_image_files(docx_context, image_folder)
+            docx_context.pull_image_files(image_folder)
             assert os.listdir(image_folder) == ["image1.png", "image2.jpg"]
 
     def test_no_image_files(self) -> None:
@@ -125,5 +122,5 @@ class TestPullImageFiles:
 
         docx_context = DocxReader("resources/basic.docx")
         with TemporaryDirectory() as image_folder:
-            pull_image_files(docx_context, image_folder)
+            docx_context.pull_image_files(image_folder)
             assert os.listdir(image_folder) == []

@@ -12,14 +12,12 @@ Content in the extracted docx is found in the ``word`` folder:
 """
 from __future__ import annotations
 
-import functools
 from contextlib import suppress
-from itertools import groupby
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, TYPE_CHECKING
 
 from lxml import etree
 
-from .attribute_register import RELS_ID, Tags, has_content
+from .attribute_register import Tags
 from .bullets_and_numbering import BulletGenerator
 from .depth_collector import DepthCollector, Run
 from .forms import get_checkBox_entry, get_ddList_entry
@@ -27,155 +25,13 @@ from .namespace import qn
 from .text_runs import (
     get_pStyle,
     get_run_formatting,
-    get_html_formatting,
     get_paragraph_formatting,
 )
 
+if TYPE_CHECKING:
+    from docx_reader import File
+
 TablesList = List[List[List[List[str]]]]
-
-# noinspection PyPep8Naming
-
-
-_MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
-
-
-def _elem_key(
-    file: File, elem: etree.Element, ignore_formatting: bool = False
-) -> Tuple[str, str, List[str]]:
-    # noinspection SpellCheckingInspection
-    """
-    Enough information to tell if two elements are more-or-less identically formatted.
-
-    :param elem: any element in an xml file.
-    :return: A summary of attributes (if two adjacent elements return the same key,
-        they are considered mergeable). Only used to merge elements, so returns None if
-        element tags are not in _MERGEABLE_TAGS.
-
-    Ignore text formatting differences if consecutive link elements point to the same
-    address. Always join these.
-
-    Docx2Text joins consecutive runs and links of the same style. Comparing two
-    elem_key return values will tell you if
-        * elements are the same type
-        * link rels ids reference the same link
-        * run styles are the same (as far as docx2python understands them)
-
-    Elem rId attributes are replaced with rId['Target'] because different rIds can
-    point to identical targets. This is important for hyperlinks, which can look
-    different but point to the same address.
-
-    """
-    tag = elem.tag
-    if tag not in _MERGEABLE_TAGS:
-        return tag, "", []
-
-    # always join links pointing to the same address
-    rels_id = elem.attrib.get(RELS_ID)
-    if rels_id:
-        return tag, file.rels[rels_id], []
-
-    # TODO: see if ignore_formatting is ever used
-    if ignore_formatting:
-        return tag, "", []
-
-    return tag, "", get_html_formatting(elem, file.context.xml2html_format)
-
-
-def merge_elems(file: File, tree: etree.Element) -> None:
-    # noinspection SpellCheckingInspection
-    """
-    Recursively merge duplicate (as far as docx2python is concerned) elements.
-
-    :param file: File instancce
-    :param tree: root_element from an xml in File instance
-    :return: None
-    :effects: Merges consecutive elements if tag, attrib, and style are the same
-
-    There are a few ways consecutive elements can be "identical":
-        * same link
-        * same style
-
-    Often, consecutive, "identical" elements are written as separate elements,
-    because they aren't identical to Word. Word keeps track of revision history,
-    spelling errors, etc., which are meaningless to docx2python.
-
-    <w:p>
-        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
-            <w:r>
-                <w:t>hy</w:t>
-            </w:r>
-        </w:hyperlink>
-        <w:proofErr/>  <!-- docx2python will ignore this proofErr -->
-        <w:hyperlink r:id="rId8">  <!-- points to http://www.shayallenhill.com -->
-            <w:r>
-                <w:t>per</w:t>
-            </w:r>
-        </w:hyperlink>
-        <w:hyperlink r:id="rId9">  <!-- points to http://www.shayallenhill.com -->
-            <w:r w:rsid="asdfas">  <!-- docx2python will ignore this rsid -->
-                <w:t>link</w:t>
-            </w:r>
-        </w:hyperlink>
-    </w:p>
-
-    Docx2python condenses the above to (by merging links)
-
-    <w:p>
-        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
-            <w:r>
-                <w:t>hy</w:t>
-            </w:r>
-            <w:r>
-                <w:t>per</w:t>
-            </w:r>
-            <w:r w:rsid="asdfas">  <!-- docx2python will ignore this rsid -->
-                <w:t>link</w:t>
-            </w:r>
-        </w:hyperlink>
-    </w:p>
-
-    Then to (by merging runs)
-
-    <w:p>
-        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
-            <w:r>
-                <w:t>hy</w:t>
-                <w:t>per</w:t>
-                <w:t>link</w:t>
-            </w:r>
-        </w:hyperlink>
-    </w:p>
-
-    Then finally to (by merging text)
-
-    <w:p>
-        <w:hyperlink r:id="rId7">  <!-- points to http://www.shayallenhill.com -->
-            <w:r>
-                <w:t>hyperlink</w:t>
-            </w:r>
-        </w:hyperlink>
-    </w:p>
-
-    This function only merges runs, text, and hyperlinks, because merging paragraphs
-    or larger elements would ignore information docx2python DOES want to preserve.
-
-    Filter out non-content items so runs can be joined even
-    """
-
-    file_elem_key = functools.partial(_elem_key, file)
-
-    elems = [x for x in tree if has_content(x)]
-    runs = [list(y) for x, y in groupby(elems, key=file_elem_key)]
-
-    for run in (x for x in runs if len(x) > 1 and x[0].tag in _MERGEABLE_TAGS):
-        if run[0].tag in {Tags.TEXT, Tags.TEXT_MATH}:
-            run[0].text = "".join(x.text for x in run)
-        for elem in run[1:]:
-            run[0].extend(elem)
-            tree.remove(elem)
-
-    for branch in tree:
-        merge_elems(file, branch)
 
 
 def _get_elem_depth(tree: etree.Element) -> Optional[int]:
@@ -226,7 +82,7 @@ def _get_elem_depth(tree: etree.Element) -> Optional[int]:
         return
 
     def search_at_depth(tree_: Sequence[etree.Element], _depth=0):
-        """ Width-first recursive search for Tags.PARAGRAPH """
+        """Width-first recursive search for Tags.PARAGRAPH"""
         if not tree_:
             return
         if any(x.tag == Tags.PARAGRAPH for x in tree_):
@@ -296,11 +152,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
             par = tables.commence_paragraph(get_paragraph_formatting(tree, xml2html))
             if file.context.do_pStyle:
                 par.runs.insert(0, Run("", get_pStyle(tree) or "None"))
-            # TODO: simplify this call
-            tables.insert_text_as_new_run(
-                bullets.get_bullet(tree)
-                # _get_bullet_string(file.context.numId2numFmts, numId2count, tree)
-            )
+            tables.insert_text_as_new_run(bullets.get_bullet(tree))
 
         elif tree.tag == Tags.RUN:
             tables.commence_run(get_run_formatting(tree, xml2html))
@@ -309,11 +161,11 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
             # oddly enough, these don't all contain text
             text = tree.text if tree.text is not None else ""
             if xml2html:
+                text = text.replace("&", "&amp;")
                 text = text.replace("<", "&lt;")
                 text = text.replace(">", "&gt;")
             tables.add_text_into_open_run(text)
 
-        # TODO: tags for all known "replace with some text" types (BR, TAB, etc.)
         elif tree.tag == Tags.BR:
             tables.add_text_into_open_run("\n")
 
@@ -378,7 +230,6 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
                 image = file.rels[rId]
                 tables.insert_text_as_new_run("----{}----".format(image))
 
-        # TODO: delete to merge with SYM and other "replace with text" elements
         elif tree.tag == Tags.TAB:
             tables.insert_text_as_new_run("\t")
 
