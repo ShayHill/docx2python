@@ -87,7 +87,7 @@ def _get_elem_depth(tree: etree.Element) -> Optional[int]:
             return
         if any(x.tag == Tags.PARAGRAPH for x in tree_):
             return max(4 - _depth, 1)
-        return search_at_depth(sum([list(x) for x in tree_], start=[]), _depth + 1)
+        return search_at_depth(sum([list(x) for x in tree_], []), _depth + 1)
 
     return search_at_depth([tree])
 
