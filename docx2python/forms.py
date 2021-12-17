@@ -48,13 +48,13 @@ def get_checkBox_entry(checkBox: etree.Element) -> str:
         <w:checked w:val="0"/>
     </w:checkBox>
 
-    The ``checked`` value might be absent or blank if the selected value matches the
-    default.
+    If the ``checked`` attribute is absent, return the default
+    If the ``checked`` attribute is present, but not w:val is given, return unchecked
     """
 
     def get_wval() -> Union[str, None]:
         with suppress(AttributeError, KeyError):
-            return checkBox.find(qn("w:checked")).attrib[qn("w:val")]
+            return checkBox.find(qn("w:checked")).attrib.get(qn("w:val"), "1")
         with suppress(AttributeError, KeyError):
             return checkBox.find(qn("w:default")).attrib[qn("w:val")]
 
