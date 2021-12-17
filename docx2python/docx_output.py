@@ -105,7 +105,10 @@ class DocxContent:
 
     @property
     def images(self) -> Dict[str, bytes]:
-        return self.docx_reader.pull_image_files(self.docx2python_kwargs['image_folder'])
+        return self.docx_reader.pull_image_files(
+            self.docx2python_kwargs["image_folder"]
+        )
+
     @property
     def document(self) -> TablesList:
         """All docx "tables" concatenated."""
@@ -125,11 +128,11 @@ class DocxContent:
     @property
     def text(self) -> str:
         """All docx paragraphs, "\n\n" delimited."""
-        if self.docx2python_kwargs['paragraph_styles'] is True:
+        if self.docx2python_kwargs["paragraph_styles"] is True:
             # Paragraph descriptors have been inserted as the first run of each
             # paragraph. Take them out.
-            pars = [''.join(x[1:]) for x in iter_at_depth(self.document_runs, 4)]
-            return '\n\n'.join(pars)
+            pars = ["".join(x[1:]) for x in iter_at_depth(self.document_runs, 4)]
+            return "\n\n".join(pars)
         return "\n\n".join(iter_at_depth(self.document, 4))
 
     @property

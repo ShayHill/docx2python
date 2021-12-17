@@ -10,7 +10,6 @@ always the case.
 """
 
 from docx2python.main import docx2python
-import os
 
 from .conftest import RESOURCES
 

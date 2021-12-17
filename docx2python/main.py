@@ -5,13 +5,12 @@
 :author: Shay Hill
 :created: 7/2/2019
 """
-from typing import Optional, TYPE_CHECKING, Union
+from pathlib import Path
+from typing import Optional, Union
+from warnings import warn
 
 from .docx_output import DocxContent
 from .docx_reader import DocxReader
-from warnings import warn
-
-from pathlib import Path
 
 
 def docx2python(

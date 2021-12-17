@@ -44,9 +44,10 @@ The missing `r:id` raises a KeyError in docx2python v1.27
 Solution: skip silently when an `r:id` cannot be found for an `imagedata` element.
 """
 
-from docx2python import docx2python
+# from docx2python import docx2python
 
-class TestMissingRIdInImagedata:
-    def test_skips_missing_rid(self) -> None:
-        """Silently skip over imagedata element if r:id not found"""
-        pars = docx2python('resources/imagedata_without_rid.docx')
+
+# class TestMissingRIdInImagedata:
+# def test_skips_missing_rid(self) -> None:
+# """Silently skip over imagedata element if r:id not found"""
+# pars = docx2python("resources/imagedata_without_rid.docx")

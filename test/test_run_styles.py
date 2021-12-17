@@ -36,8 +36,8 @@
 from docx2python.main import docx2python
 
 from .conftest import RESOURCES
-OUTPUT = docx2python(RESOURCES / "run_styles.docx", html=True)
 
+OUTPUT = docx2python(RESOURCES / "run_styles.docx", html=True)
 
 
 class TestParStyles:

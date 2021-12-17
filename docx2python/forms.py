@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # _*_ coding: utf-8 _*_
-"""Form checkboxes, dropdowns, and other non-text elements visible in Word.
+""" Form checkboxes, dropdowns, and other non-text elements visible in Word.
 
 :author: Shay Hill
 :created: 6/17/2020
@@ -23,8 +23,7 @@ from .namespace import qn
 
 # noinspection PyPep8Naming
 def get_checkBox_entry(checkBox: etree.Element) -> str:
-    """
-    Create text representation for a checkBox element.
+    """Create text representation for a checkBox element.
 
     :param checkBox: a checkBox xml element
     :returns:
@@ -63,8 +62,7 @@ def get_checkBox_entry(checkBox: etree.Element) -> str:
 
 # noinspection PyPep8Naming
 def get_ddList_entry(ddList: etree.Element) -> str:
-    """
-    Get only the selected string of a dropdown list.
+    """Get only the selected string of a dropdown list.
 
     <w:ddList>
         <w:result w:val="1"/>

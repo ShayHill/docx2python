@@ -1,2 +1,1 @@
-from .main import docx2python
-
+from .main import docx2python  # noqa: 401

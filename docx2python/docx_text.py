@@ -13,30 +13,26 @@ Content in the extracted docx is found in the ``word`` folder:
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import List, Optional, Sequence, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Sequence
 
 from lxml import etree
 
+if TYPE_CHECKING:
+    from docx_reader import File
+
+from .iterators import iter_at_depth
 from .attribute_register import Tags
 from .bullets_and_numbering import BulletGenerator
 from .depth_collector import DepthCollector, Run
 from .forms import get_checkBox_entry, get_ddList_entry
 from .namespace import qn
-from .text_runs import (
-    get_pStyle,
-    get_run_formatting,
-    get_paragraph_formatting,
-)
-
-if TYPE_CHECKING:
-    from docx_reader import File
+from .text_runs import get_paragraph_formatting, get_pStyle, get_run_formatting
 
 TablesList = List[List[List[List[str]]]]
 
 
 def _get_elem_depth(tree: etree.Element) -> Optional[int]:
-    """
-    What depth is this element in a nested list, relative to paragraphs (depth 4)?
+    """What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
     :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
 
@@ -92,9 +88,6 @@ def _get_elem_depth(tree: etree.Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-from .iterators import iter_at_depth
-
-
 def get_paragraphs(file, root):
     all_paragraphs = []
     for branch in root:
@@ -108,8 +101,7 @@ def merged_text_tree(file, root):
 
 # noinspection PyPep8Naming
 def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
-    """
-    Xml as a string to a list of cell strings.
+    """Xml as a string to a list of cell strings.
 
     :param file: File instance from which text will be extracted.
     :param root: Optionally extract content from a single element.

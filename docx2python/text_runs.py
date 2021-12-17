@@ -10,7 +10,7 @@ those elements to extract formatting information.
 """
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional, Sequence, Tuple, Union, Callable
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from lxml import etree
 
@@ -45,7 +45,10 @@ def _elem_tag_str(elem: etree.Element) -> str:
 
         'document'
     """
-    return re.match(r"{.*}(?P<tag_name>\w+)", elem.tag).group("tag_name")
+    tag_str = re.match(r"{.*}(?P<tag_name>\w+)", elem.tag)
+    if tag_str:
+        return tag_str.group("tag_name")
+    raise RuntimeError("could not get tag from elem")
 
 
 # noinspection PyPep8Naming
@@ -117,7 +120,6 @@ def _gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
     Call this with any element. Runs and Paragraphs may have a Pr element. Most
     elements will not, but the function will will quietly return an empty dict.
     """
-    qname = element.tag + "Pr"
     return _gather_sub_vals(element, element.tag + "Pr")
 
 

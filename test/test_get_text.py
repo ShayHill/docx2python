@@ -24,9 +24,8 @@ from docx2python.bullets_and_numbering import (
 from .helpers.utils import valid_xml
 
 
-
 class TestIncrementListCounter:
-    """Test get_text.increment_list_counter """
+    """Test get_text.increment_list_counter"""
 
     def test_function(self) -> None:
         """Increments counter at ilvl, deletes deeper counters."""
@@ -73,7 +72,7 @@ def numbering_context() -> Dict[str, Dict]:
 
 
 class TestGetBulletString:
-    """Test strip_test.get_bullet_string """
+    """Test strip_test.get_bullet_string"""
 
     def test_bullet(self, numbered_paragraphs, numbering_context) -> None:
         """Returns '-- ' for 'bullet'"""

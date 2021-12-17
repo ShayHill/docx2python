@@ -14,9 +14,16 @@ from docx2python.main import docx2python
 
 from .conftest import RESOURCES
 
+import pytest
+
 
 class TestLibreofficeConversion:
     def test_libreoffice_conversion(self) -> None:
-        """Extracts text without a CaretDepthError"""
+        """Extracts text without a CaretDepthError
+
+        This test file for a user just happens to be in Chinese and contains an
+        unsupported Chinese numbering format, hence the ``pytest.warns`` context.
+        """
         extraction = docx2python(RESOURCES / "libreoffice_conversion.docx")
-        _ = extraction.document
+        with pytest.warns(UserWarning):
+            _ = extraction.document

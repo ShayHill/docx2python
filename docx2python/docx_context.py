@@ -10,12 +10,9 @@ numbering formats, images, and font styles from *other* files in a decompressed 
 """
 from __future__ import annotations
 
-import os
-import pathlib
 import re
 import zipfile
-from contextlib import suppress
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from lxml import etree
 
@@ -155,7 +152,7 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
 
 
 # noinspection PyPep8Naming
-def collect_docProps(root: etree.Element = None) -> Dict[str, str]:
+def collect_docProps(root: etree.Element) -> Dict[str, str]:
     # noinspection SpellCheckingInspection
     """
     Get author, modified, etc. from core-properties (should be docProps/core.xml)
@@ -194,5 +191,7 @@ def collect_docProps(root: etree.Element = None) -> Dict[str, str]:
     docProp2text = {}
     capture_tag_name = re.compile(r"{.+}(?P<tag_name>\w+)")
     for dc in root:
-        docProp2text[re.match(capture_tag_name, dc.tag).group("tag_name")] = dc.text
+        tag_match = re.match(capture_tag_name, dc.tag)
+        if tag_match:
+            docProp2text[tag_match.group("tag_name")] = dc.text
     return docProp2text

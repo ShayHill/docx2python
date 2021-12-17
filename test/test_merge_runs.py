@@ -72,7 +72,7 @@ Then finally to (by merging text)
 """
 
 from docx2python.main import docx2python
-import os
+
 from .conftest import RESOURCES
 
 

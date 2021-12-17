@@ -15,12 +15,12 @@ from docx2python.iterators import (
     enum_paragraphs,
     enum_rows,
     enum_tables,
+    get_html_map,
     get_text,
     iter_cells,
     iter_paragraphs,
     iter_rows,
     iter_tables,
-    get_html_map,
 )
 
 TABLES = [
@@ -44,7 +44,7 @@ class TestOutOfRange:
 
 
 class TestIterators:
-    """Test iterators.iter_* """
+    """Test iterators.iter_*"""
 
     def test_iter_tables(self) -> None:
         assert list(iter_tables(TABLES)) == TABLES
@@ -74,7 +74,7 @@ class TestIterators:
 
 class TestEnumerators:
 
-    """Test iterators.enum_* """
+    """Test iterators.enum_*"""
 
     def test_enum_tables(self) -> None:
         assert list(enum_tables(TABLES)) == [
@@ -155,52 +155,52 @@ class TestGetHtmlMap:
         # noinspection PyPep8
         assert get_html_map(TABLES) == (
             '<html>'
-                '<body>'
-                    '<table border="1">'
-                        '<tr>'
-                            '<td>'
-                                '<pre>(0, 0, 0, 0) 0000</pre>'
-                                '<pre>(0, 0, 0, 1) 0001</pre>'
-                            '</td>'
-                                '<td>'
-                                '<pre>(0, 0, 1, 0) 0010</pre>'
-                                '<pre>(0, 0, 1, 1) 0011</pre>'
-                            '</td>'
-                        '</tr>'
-                        '<tr>'
-                            '<td>'
-                                '<pre>(0, 1, 0, 0) 0100</pre>'
-                                '<pre>(0, 1, 0, 1) 0101</pre>'
-                            '</td>'
-                            '<td>'
-                                '<pre>(0, 1, 1, 0) 0110</pre>'
-                                '<pre>(0, 1, 1, 1) 0111</pre>'
-                            '</td>'
-                        '</tr>'
-                    '</table>'
-                    '<table border="1">'
-                        '<tr>'
-                            '<td>'
-                                '<pre>(1, 0, 0, 0) 1000</pre>'
-                                '<pre>(1, 0, 0, 1) 1001</pre>'
-                            '</td>'
-                            '<td>'
-                                '<pre>(1, 0, 1, 0) 1010</pre>'
-                                '<pre>(1, 0, 1, 1) 1011</pre>'
-                            '</td>'
-                        '</tr>'
-                        '<tr>'
-                            '<td>'
-                                '<pre>(1, 1, 0, 0) 1100</pre>'
-                                '<pre>(1, 1, 0, 1) 1101</pre>'
-                            '</td>'
-                            '<td>'
-                                '<pre>(1, 1, 1, 0) 1110</pre>'
-                                '<pre>(1, 1, 1, 1) 1111</pre>'
-                            '</td>'
-                        '</tr>'
-                    '</table>'
-               '</body>'
+            '<body>'
+            '<table border="1">'
+            '<tr>'
+            '<td>'
+            '<pre>(0, 0, 0, 0) 0000</pre>'
+            '<pre>(0, 0, 0, 1) 0001</pre>'
+            '</td>'
+            '<td>'
+            '<pre>(0, 0, 1, 0) 0010</pre>'
+            '<pre>(0, 0, 1, 1) 0011</pre>'
+            '</td>'
+            '</tr>'
+            '<tr>'
+            '<td>'
+            '<pre>(0, 1, 0, 0) 0100</pre>'
+            '<pre>(0, 1, 0, 1) 0101</pre>'
+            '</td>'
+            '<td>'
+            '<pre>(0, 1, 1, 0) 0110</pre>'
+            '<pre>(0, 1, 1, 1) 0111</pre>'
+            '</td>'
+            '</tr>'
+            '</table>'
+            '<table border="1">'
+            '<tr>'
+            '<td>'
+            '<pre>(1, 0, 0, 0) 1000</pre>'
+            '<pre>(1, 0, 0, 1) 1001</pre>'
+            '</td>'
+            '<td>'
+            '<pre>(1, 0, 1, 0) 1010</pre>'
+            '<pre>(1, 0, 1, 1) 1011</pre>'
+            '</td>'
+            '</tr>'
+            '<tr>'
+            '<td>'
+            '<pre>(1, 1, 0, 0) 1100</pre>'
+            '<pre>(1, 1, 0, 1) 1101</pre>'
+            '</td>'
+            '<td>'
+            '<pre>(1, 1, 1, 0) 1110</pre>'
+            '<pre>(1, 1, 1, 1) 1111</pre>'
+            '</td>'
+            '</tr>'
+            '</table>'
+            '</body>'
             '</html>'
         )
         # fmt: on

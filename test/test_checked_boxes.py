@@ -95,6 +95,5 @@ def test_unchecked_boxes() -> None:
     """
     pars = docx2python(RESOURCES / "checked_boxes.docx")
     all_text = "".join(iter_at_depth(pars.text, 5))
-    assert all_text.count('\u2612') == 12
-    assert all_text.count('\u2610') == 32
-
+    assert all_text.count("\u2612") == 12
+    assert all_text.count("\u2610") == 32

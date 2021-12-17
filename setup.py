@@ -4,8 +4,8 @@ with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='docx2python',
-    version='2.0.0-alpha',
+    name="docx2python",
+    version="2.0.0-alpha",
     author="Shay Hill",
     author_email="shay_public@hotmail.com",
     description="Extract content from docx files",
@@ -19,6 +19,3 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
 )
-
-
-

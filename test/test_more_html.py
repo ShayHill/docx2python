@@ -8,30 +8,30 @@
 Paragraphs and runs can end up nested with text boxes. Docx2python
 un-nests these paragraphs.
 
-	<w:p>
-		<w:pPr>
-			<w:pStyle w:val="Header"/>
-		</w:pPr>
-		<w:r>
+    <w:p>
+        <w:pPr>
+            <w:pStyle w:val="Header"/>
+        </w:pPr>
+        <w:r>
                 <w:t>EHS Manual</w:t>
-		</w:r>
-		<w:r>
-			<w:p>
-				<w:r>
-					<w:t>EHS Manual</w:t>
-				</w:r>
-			</w:p>
-			<w:p w14:paraId="37B5F1EE" w14:textId="1E56D065" w:rsidR="003A2388"
+        </w:r>
+        <w:r>
+            <w:p>
+                <w:r>
+                    <w:t>EHS Manual</w:t>
+                </w:r>
+            </w:p>
+            <w:p w14:paraId="37B5F1EE" w14:textId="1E56D065" w:rsidR="003A2388"
                 w:rsidRPr="00815EC1" w:rsidRDefault="003A2388" w:rsidP="00CA47BD">
-				<w:r>
-					<w:t>EHS Manual</w:t>
-				</w:r>
-			</w:p>
-		</w:r>
-		<w:r>
-			<w:t>EHS Manual</w:t>
-		</w:r>
-	</w:p>
+                <w:r>
+                    <w:t>EHS Manual</w:t>
+                </w:r>
+            </w:p>
+        </w:r>
+        <w:r>
+            <w:t>EHS Manual</w:t>
+        </w:r>
+    </w:p>
 ```
     <open par 1>
         par 1 text
@@ -52,30 +52,30 @@ gets flattened to
 Paragraphs are returned in by the order in which they *close*.
 
 <w:p>
-	<w:pPr>
-		<w:pStyle w:val="Header"/>
-	</w:pPr>
-	<w:r w:rsidRPr="00210F67">
-		<w:rPr>
-			<w:sz w:val="17"/>
-			<w:szCs w:val="17"/>
-		</w:rPr>
-		<w:p>
-			<w:r>
-				<w:rPr>
-					<w:smallCaps/>
-					<w:sz w:val="72"/>
-					<w:szCs w:val="72"/>
-				</w:rPr>
-				<w:t>EHS Manual </w:t>
-			</w:r>
-		</w:p>
-	</w:r>
-	<w:r>
-		<w:rPr>
-			<w:noProof/>
-		</w:rPr>
-	</w:r>
+    <w:pPr>
+        <w:pStyle w:val="Header"/>
+    </w:pPr>
+    <w:r w:rsidRPr="00210F67">
+        <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:p>
+            <w:r>
+                <w:rPr>
+                    <w:smallCaps/>
+                    <w:sz w:val="72"/>
+                    <w:szCs w:val="72"/>
+                </w:rPr>
+                <w:t>EHS Manual </w:t>
+            </w:r>
+        </w:p>
+    </w:r>
+    <w:r>
+        <w:rPr>
+            <w:noProof/>
+        </w:rPr>
+    </w:r>
 </w:p>
 
 """

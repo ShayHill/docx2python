@@ -65,7 +65,7 @@ class TestDocPropsFound:
         Return docProps as a dictionary
         """
         result = docx2python(FILE_WITH_DOCPROPS)
-        assert result.properties == {
+        assert result.core_properties == {
             "created": "2019-07-05T21:51:00Z",
             "creator": "Shay Hill",
             "description": None,
