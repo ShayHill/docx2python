@@ -3,12 +3,15 @@
 """Test that most characters in string.printable can are represented (some are
 altered) in Docx2Python output. """
 
-from docx2python.main import docx2python
 import string
+
+from docx2python.main import docx2python
+
+from .conftest import RESOURCES
 
 
 class TestAsciiPrintable:
-    """ Confirming this works with v1.25 """
+    """Confirming this works with v1.25"""
 
     def test_exact_representation(self) -> None:
         """Most characters are represented exactly
@@ -18,7 +21,7 @@ class TestAsciiPrintable:
         END is there (added by hand to docx file) to let me know I'm past any
         trailing characters
         """
-        pars = docx2python("resources/ascii_printable.docx")
+        pars = docx2python(RESOURCES / "ascii_printable.docx")
         assert pars.text[:-7] == string.printable[:-4]
 
     def test_html_true(self) -> None:
@@ -30,8 +33,8 @@ class TestAsciiPrintable:
         END is there (added by hand to docx file) to let me know I'm past any
         trailing characters
         """
-        pars = docx2python("resources/ascii_printable.docx", html=True)
+        pars = docx2python(RESOURCES / "ascii_printable.docx", html=True)
         assert pars.text[:-7] == (
             '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&amp'
-            ';\'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~ \t'
+            ";'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~ \t"
         )

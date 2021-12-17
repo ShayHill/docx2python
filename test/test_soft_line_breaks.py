@@ -16,14 +16,15 @@ from pathlib import Path
 
 from docx2python import docx2python
 from docx2python.iterators import iter_paragraphs
+from .conftest import RESOURCES
 
-TEST_DOCX = Path(__file__, "../resources/soft_line_breaks.docx")
+
 class TestSoftLineBreaks:
     def test_separate_pars(self):
         """
         Start a new paragraph when a <w:br/> element is found.
         """
-        body = docx2python(TEST_DOCX).body
+        body = docx2python(RESOURCES / "soft_line_breaks.docx").body
         pars = [x for x in iter_paragraphs(body) if x]
         assert pars == ['Line1\nLine2\nLine3', 'Line4']
 

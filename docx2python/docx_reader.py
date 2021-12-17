@@ -15,9 +15,9 @@ formats, font information, rId-lookup tables, and other. ``File`` instances will
 these as well, though they will not have ``rels`` or ``content`` attributes. Will
 return an empty dictionary or empty list if asked.
 
-Some of these non-content files are shared between between . The substance of these files is accessible
-through the ``DocxContent`` class. This class holds file instances and decodes shared
-non-content in a docx file structure.
+Some of these non-content files are shared between between . The substance of these
+files is accessible through the ``DocxContent`` class. This class holds file
+instances and decodes shared non-content in a docx file structure.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ from functools import cached_property
 from operator import attrgetter
 from typing import Dict, List, Optional, Set, Union
 from warnings import warn
+from pathlib import Path
 
 from lxml import etree
 
@@ -161,7 +162,7 @@ class File:
             "rId1": "styles.xml",
             "rId6": "theme/theme1.xml",
             "rId5": "fontTable.xml",
-            "rId4": "http://www.shayallenhill.com/",
+            "rId4": "https://www.shayallenhill.com/",
         }
 
         Not every xml file with have a rels file. Return an empty dictionary if the
@@ -223,7 +224,10 @@ class DocxReader:
     """
 
     def __init__(
-        self, docx_filename: str, html: bool = False, paragraph_styles: bool = False
+        self,
+        docx_filename: Union[Path, str],
+        html: bool = False,
+        paragraph_styles: bool = False,
     ):
         self.docx_filename = docx_filename
         self.do_pStyle = paragraph_styles

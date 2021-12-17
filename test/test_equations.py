@@ -13,11 +13,10 @@ Equations in Word's Professional format will return garbage.
 Equations in Word's Inline format will return a nice string.
 """
 
-from pathlib import Path
 
 from docx2python import docx2python
 
-TEST_DOCX = Path(__file__, "../resources/equations.docx")
+from .conftest import RESOURCES
 
 
 class TestEquations:
@@ -25,7 +24,7 @@ class TestEquations:
         """
         Start a new paragraph when a <w:br/> element is found.
         """
-        body = docx2python(TEST_DOCX, html=True).body
+        body = docx2python(RESOURCES / "equations.docx", html=True).body
         assert body == [
             [[["Professional Format", "01x", "Linear Format", "\\int_{0}^{1}x"]]]
         ]

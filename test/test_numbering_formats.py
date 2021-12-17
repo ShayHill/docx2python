@@ -10,7 +10,7 @@ from random import randint
 
 import pytest
 # noinspection PyUnresolvedReferences
-from helpers.utils import ARABIC_2_ROMAN
+from .helpers.utils import ARABIC_2_ROMAN
 
 from docx2python.numbering_formats import (
     bullet,

@@ -73,6 +73,7 @@ Then finally to (by merging text)
 
 from docx2python.main import docx2python
 import os
+from .conftest import RESOURCES
 
 
 def test_merge_runs():
@@ -83,7 +84,7 @@ def test_merge_runs():
     This test only verifies that hyperlink elements have been merged, else the output
     text would contain something closer to ``<a>hy</a><a>per</a><a>link</a>``
     """
-    extraction = docx2python(os.path.join("resources", "merged_links.docx"))
+    extraction = docx2python(RESOURCES / "merged_links.docx")
     assert extraction.body_runs == [
         [
             [

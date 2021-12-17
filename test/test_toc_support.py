@@ -28,11 +28,13 @@ an href.
 
 from docx2python.main import docx2python
 
+from .conftest import RESOURCES
+
 
 class TestTocText:
     def test_get_toc_text(self) -> None:
         """Extract header text from table-of-contents header."""
-        extraction = docx2python("resources/zen_of_python.docx")
+        extraction = docx2python(RESOURCES / 'zen_of_python.docx')
         assert extraction.document_runs == [
             [
                 [[["Contents"], ["\t", "Beautiful is better than ugly.\t1"], []]],

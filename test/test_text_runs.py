@@ -20,7 +20,7 @@ from docx2python.text_runs import (
 )
 
 # noinspection PyUnresolvedReferences
-from helpers.utils import valid_xml
+from .helpers.utils import valid_xml
 
 ONE_TEXT_RUN = valid_xml(
     '<w:r w:rsidRPr="000E1B98">'

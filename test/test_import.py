@@ -9,7 +9,9 @@
 
 from docx2python import docx2python
 
+from .conftest import RESOURCES
+
 
 def test() -> None:
     """Just making sure the import works."""
-    docx2python("resources/example.docx")
+    docx2python(RESOURCES / "example.docx")

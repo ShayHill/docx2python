@@ -9,35 +9,39 @@ import os
 import zipfile
 from tempfile import TemporaryDirectory
 
-from lxml import etree
-
 from docx2python.attribute_register import Tags
-from docx2python.docx_reader import DocxReader
 from docx2python.docx_context import collect_numFmts
+from docx2python.docx_reader import DocxReader
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
+from lxml import etree
+
+from .conftest import RESOURCES
+
+example_docx = RESOURCES / 'example.docx'
+example_copy_docx = RESOURCES / 'example_copy.docx'
 
 
 class TestSaveDocx:
     def test_save_unchanged(self) -> None:
         """Creates a valid docx"""
-        input_context = DocxReader("resources/example.docx")
+        input_context = DocxReader(example_docx)
         input_xml = input_context.file_of_type("officeDocument").root_element
-        input_context.save("resources/example_copy.docx")
-        output_context = DocxReader("resources/example_copy.docx")
+        input_context.save(example_copy_docx)
+        output_context = DocxReader(example_copy_docx)
         output_xml = output_context.file_of_type("officeDocument").root_element
         assert etree.tostring(input_xml) == etree.tostring(output_xml)
 
     def test_save_changed(self) -> None:
         """Creates a valid docx and updates text"""
-        input_context = DocxReader("resources/example.docx")
+        input_context = DocxReader(example_docx)
         input_xml = input_context.file_of_type("officeDocument").root_element
         for elem in (x for x in input_xml.iter() if x.tag == Tags.TEXT):
             if not elem.text:
                 continue
             elem.text = elem.text.replace("bullet", "BULLET")
-        input_context.save("resources/example_edit.docx")
-        output_content = DocxReader("resources/example_edit.docx")
+        input_context.save(RESOURCES / "example_edit.docx")
+        output_content = DocxReader(RESOURCES / "example_edit.docx")
         output_runs = output_content.file_of_type("officeDocument").content
         output_text = "".join(iter_at_depth(output_runs, 5))
         assert "bullet" not in output_text
@@ -57,7 +61,7 @@ class TestCollectNumFmts:
         comparing to something I don't know to be accurate. This just tests that all
         numbering formats are represented.
         """
-        zipf = zipfile.ZipFile("resources/example.docx")
+        zipf = zipfile.ZipFile(example_docx)
         numId2numFmts = collect_numFmts(
             etree.fromstring(zipf.read("word/numbering.xml"))
         )
@@ -77,7 +81,7 @@ class TestCollectDocProps:
 
     def test_gets_properties(self) -> None:
         """Retrieves properties from docProps"""
-        core_properties = docx2python("resources/example.docx").core_properties
+        core_properties = docx2python(example_docx).core_properties
         expected = {
             "title": None,
             "subject": None,
@@ -96,14 +100,14 @@ class TestGetContext:
 
     def test_numId2numFmts(self) -> None:
         """All targets mapped"""
-        docx_context = DocxReader("resources/example.docx")
+        docx_context = DocxReader(example_docx)
         assert docx_context.numId2numFmts == collect_numFmts(
             etree.fromstring(docx_context.zipf.read("word/numbering.xml"))
         )
 
     def test_lists(self) -> None:
         """Pass silently when no numbered or bulleted lists."""
-        docx_context = DocxReader("resources/basic.docx")
+        docx_context = DocxReader(RESOURCES / "basic.docx")
         assert docx_context.numId2numFmts == {}
 
 
@@ -112,7 +116,7 @@ class TestPullImageFiles:
 
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
-        docx_context = DocxReader("resources/example.docx")
+        docx_context = DocxReader(example_docx)
         with TemporaryDirectory() as image_folder:
             docx_context.pull_image_files(image_folder)
             assert os.listdir(image_folder) == ["image1.png", "image2.jpg"]
@@ -120,7 +124,7 @@ class TestPullImageFiles:
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
 
-        docx_context = DocxReader("resources/basic.docx")
+        docx_context = DocxReader(RESOURCES / "basic.docx")
         with TemporaryDirectory() as image_folder:
             docx_context.pull_image_files(image_folder)
             assert os.listdir(image_folder) == []

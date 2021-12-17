@@ -11,13 +11,12 @@ from a doc that raises a CaretDepthError.
 
 
 from docx2python.main import docx2python
-import os
+
+from .conftest import RESOURCES
 
 
 class TestLibreofficeConversion:
     def test_libreoffice_conversion(self) -> None:
         """Extracts text without a CaretDepthError"""
-        extraction = docx2python(
-            os.path.join("resources", "libreoffice_conversion.docx")
-        )
+        extraction = docx2python(RESOURCES / "libreoffice_conversion.docx")
         _ = extraction.document

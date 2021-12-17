@@ -5,15 +5,17 @@
 :author: Shay Hill
 :created: 7/2/2019
 """
-from typing import Optional
+from typing import Optional, TYPE_CHECKING, Union
 
 from .docx_output import DocxContent
 from .docx_reader import DocxReader
 from warnings import warn
 
+from pathlib import Path
+
 
 def docx2python(
-    docx_filename: str,
+    docx_filename: Union[str, Path],
     image_folder: Optional[str] = None,
     html: bool = False,
     paragraph_styles: bool = False,

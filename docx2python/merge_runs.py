@@ -7,16 +7,21 @@
 
 Join consecutive xml runs with identical formatting. See docstring for ``merge_elems``.
 """
+from __future__ import annotations
+
 import functools
 from itertools import groupby
-from typing import List, Tuple
+from typing import List, TYPE_CHECKING, Tuple
 
 from lxml import etree
 
 from .attribute_register import RELS_ID, Tags, has_content
-from .docx_reader import File
 from .text_runs import get_html_formatting
 
+if TYPE_CHECKING:
+    from .docx_reader import File
+
+# identify tags that will be merged together (if formatting is equivalent)
 _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
 
 

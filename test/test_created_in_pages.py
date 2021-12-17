@@ -32,13 +32,15 @@ User Raiyan provided two docx files created in pages:
 
 from docx2python.main import docx2python
 
+from .conftest import RESOURCES
+
 
 class TestParagraphsOnly:
     """ Confirming this works with v1.25 """
 
     def test_paragraphs_only(self) -> None:
         """Run without issue"""
-        pars = docx2python("resources/created-in-pages-paragraphs-only.docx")
+        pars = docx2python(RESOURCES / "created-in-pages-paragraphs-only.docx")
         assert pars.text == (
             "\n\nThis is a document for testing docx2python module.\n\n\n\nThis "
             "document contains paragraphs.\n\n\n\nThis document does not contain any "
@@ -50,7 +52,7 @@ class TestBulletedLists:
     """Replace numbering format with bullet (--) when format cannot be determined"""
 
     def test_bulleted_lists(self) -> None:
-        pars = docx2python("resources/created-in-pages-bulleted-lists.docx")
+        pars = docx2python(RESOURCES / "created-in-pages-bulleted-lists.docx")
         assert pars.text == (
             "\n\nThis is a document for testing docx2python module.\n\n\n\n"
             "--\tWhy did the chicken cross the road?\n\n"

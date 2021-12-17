@@ -9,7 +9,9 @@
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
-INST = docx2python("resources/example.docx")
+from .conftest import RESOURCES
+
+INST = docx2python(RESOURCES / "example.docx")
 
 
 class TestDocument:

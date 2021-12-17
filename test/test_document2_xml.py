@@ -12,13 +12,15 @@ always the case.
 from docx2python.main import docx2python
 import os
 
+from .conftest import RESOURCES
+
 
 class TestHyperlink:
     def test_prints(self) -> None:
         """
         Open a docx with ``word/document.xml`` renamed to ``word/blah_blah.xml``
         and all references updated. Test that text extracts as expected."""
-        extraction = docx2python(os.path.join("resources", "renamed_document_xml.docx"))
+        extraction = docx2python(RESOURCES / "renamed_document_xml.docx")
         assert (
             '<a href="http://www.shayallenhill.com/">my website</a>.' in extraction.text
         )

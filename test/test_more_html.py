@@ -82,12 +82,13 @@ Paragraphs are returned in by the order in which they *close*.
 
 from docx2python.main import docx2python
 
+from .conftest import RESOURCES
+
 
 def test_paragraphs_only() -> None:
     """Html tags inserted into text"""
     pars = docx2python(
-        # "resources/nested_paragraphs_in_header3b.docx",
-        "resources/nested_paragraphs.docx",
+        RESOURCES / "nested_paragraphs.docx",
         html=True,
         paragraph_styles=True,
     )
@@ -180,8 +181,7 @@ def test_paragraphs_only() -> None:
 def test_par_styles_not_in_text() -> None:
     """Par styles skipped in pure text export"""
     pars = docx2python(
-        # "resources/nested_paragraphs_in_header3b.docx",
-        "resources/nested_paragraphs.docx",
+        RESOURCES / "nested_paragraphs.docx",
         html=True,
         paragraph_styles=True,
     )
@@ -235,7 +235,7 @@ class TestBulletedLists:
     """Replace numbering format with bullet (--) when format cannot be determined"""
 
     def test_bulleted_lists(self) -> None:
-        pars = docx2python("resources/created-in-pages-bulleted-lists.docx")
+        pars = docx2python(RESOURCES / "created-in-pages-bulleted-lists.docx")
         assert pars.text == (
             "\n\nThis is a document for testing docx2python module.\n\n\n\n--\tWhy "
             "did the chicken cross the road?\n\n\t--\tJust because\n\n\t--\tDon't "

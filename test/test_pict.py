@@ -19,13 +19,16 @@ document.html as
 docx2text 1.19 would get the image, but not mark the image location in the output text.
 """
 
-from docx2python.main import docx2python
 import os
+
+from docx2python.main import docx2python
+
+from .conftest import RESOURCES
 
 
 class TestPictElement:
     def test_extraction(self) -> None:
         """Image placeholder inserted into extracted text."""
-        extraction = docx2python(os.path.join("resources", "has_pict.docx"))
+        extraction = docx2python(RESOURCES / "has_pict.docx")
         assert "image1.png" in extraction.images
         assert "----media/image1.png----" in extraction.text

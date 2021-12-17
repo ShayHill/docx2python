@@ -9,7 +9,9 @@
 
 from docx2python.main import docx2python
 
-OUTPUT = docx2python("resources/example.docx", paragraph_styles=True)
+from .conftest import RESOURCES
+
+OUTPUT = docx2python(RESOURCES / "example.docx", paragraph_styles=True)
 
 
 class TestParStyles:

@@ -55,13 +55,14 @@ This module tests the final result.
 """
 
 from docx2python.main import docx2python
-import os
+
+from .conftest import RESOURCES
 
 
 class TestHyperlink:
     def test_prints(self) -> None:
         """Consecutive hyperlinks referencing same target are joined"""
-        extraction = docx2python(os.path.join("resources", "hyperlink.docx"))
+        extraction = docx2python(RESOURCES / "hyperlink.docx")
         assert extraction.body_runs == [
             [
                 [

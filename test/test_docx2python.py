@@ -12,8 +12,10 @@ import shutil
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
-OUTPUT = docx2python("resources/example.docx")
-HTML_OUTPUT = docx2python("resources/example.docx", html=True)
+from .conftest import RESOURCES
+
+OUTPUT = docx2python(RESOURCES / "example.docx")
+HTML_OUTPUT = docx2python(RESOURCES / "example.docx", html=True)
 
 
 class TestFormatting:
@@ -169,7 +171,7 @@ class TestImageDir:
 
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
-        docx2python("resources/example.docx", "delete_this/path/to/images")
+        docx2python(RESOURCES / "example.docx", "delete_this/path/to/images")
         assert os.listdir("delete_this/path/to/images") == ["image1.png", "image2.jpg"]
         # clean up
         shutil.rmtree("delete_this")
@@ -178,7 +180,7 @@ class TestImageDir:
 def test_header_runs() -> None:
     """Runs returned as separate strings. Paragraphs not joined"""
     assert docx2python(
-        "resources/multiple_runs_per_paragraph.docx", html=True
+         RESOURCES / "multiple_runs_per_paragraph.docx", html=True
     ).document_runs == [
         [[[["Multiple ", "<b>Runs in the</b>", " Header"]]]],
         [

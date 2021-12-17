@@ -39,16 +39,14 @@ KeyError: "There is no item named 'docProps/core.xml' in the archive"
 
 """
 
-from pathlib import Path
 import pytest
-
 from docx2python import docx2python
 
-FILE_WITH_DOCPROPS = Path(__file__, "..", "resources", "example.docx")
+from .conftest import RESOURCES
 
-FILE_WITHOUT_DOCPROPS = Path(
-    __file__, "..", "resources", "test-docx2python-conversion-google_docs.docx"
-)
+FILE_WITH_DOCPROPS = RESOURCES / "example.docx"
+
+FILE_WITHOUT_DOCPROPS = RESOURCES / "test-docx2python-conversion-google_docs.docx"
 
 
 class TestDeprecatedPropertiesProperty:

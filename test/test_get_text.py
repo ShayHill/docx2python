@@ -21,7 +21,8 @@ from docx2python.bullets_and_numbering import (
 )
 
 # noinspection PyUnresolvedReferences
-from helpers.utils import valid_xml
+from .helpers.utils import valid_xml
+
 
 
 class TestIncrementListCounter:

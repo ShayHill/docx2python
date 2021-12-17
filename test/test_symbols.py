@@ -20,14 +20,14 @@ Symbols are captured in the docx content files as ``<sym>`` elements.
 ```
 """
 
+
+from .conftest import RESOURCES
 from docx2python.main import docx2python
 
 
 def test_symbols() -> None:
     """Export symbols as span elements."""
-    pars = docx2python(
-        "resources/symbols.docx",
-    )
+    pars = docx2python(RESOURCES / "symbols.docx")
     assert pars.text == (
         '<span style=font-family:Webdings>&#x0068;</span>'
         '≠'
@@ -42,7 +42,7 @@ def test_symbols() -> None:
 
 def test_symbols_with_html_true() -> None:
     """Export symbols as span elements."""
-    pars = docx2python("resources/symbols.docx", html=True)
+    pars = docx2python(RESOURCES / "symbols.docx", html=True)
     assert pars.text == (
         '<span style=font-family:Webdings>&#x0068;</span>'
         '≠'
