@@ -28,7 +28,6 @@ import pathlib
 import zipfile
 from contextlib import suppress
 from dataclasses import dataclass
-from functools import cached_property
 from operator import attrgetter
 from typing import Dict, List, Optional, Set, Union
 from warnings import warn
@@ -81,13 +80,19 @@ class File:
         self.Target = attribute_dict["Target"]
         self.dir = attribute_dict["dir"]
 
+        # old-style cached_property for Python 3.6 and 3.7 support
+        self.__path: Union[None, str] = None
+        self.__rels_path: Union[None, str] = None
+        self.__rels: Union[None, Dict[str, Dict[str, str]]] = None
+        self.__root_element: Union[None, etree.Element] = None
+
     def __repr__(self) -> str:
         """
         File with self.path
         """
         return f"File({self.path})"
 
-    @cached_property
+    @property
     def path(self) -> str:
         """
         Infer path/to/xml/file from instance attributes
@@ -110,12 +115,16 @@ class File:
                                         +       filename =   'header1.xml'
         return `word/header1.xml`
         """
+        if self.__path is not None:
+            return self.__path
+
         dirs = [os.path.dirname(x) for x in (self.dir, self.Target)]
         dirname = "/".join([x for x in dirs if x])
         filename = os.path.basename(self.Target)
-        return "/".join([dirname, filename])
+        self.__path = "/".join([dirname, filename])
+        return self.__path
 
-    @cached_property
+    @property
     def _rels_path(self) -> str:
         """
         Infer path/to/rels from instance attributes.
@@ -139,10 +148,13 @@ class File:
                                         +       filename =   'header1.xml'
         return `word/_rels/header1.xml.rels`
         """
+        if self.__rels_path is not None:
+            return self.__rels_path
         dirname, filename = os.path.split(self.path)
-        return "/".join([dirname, "_rels", filename + ".rels"])
+        self.__rels_path = "/".join([dirname, "_rels", filename + ".rels"])
+        return self.__rels_path
 
-    @cached_property
+    @property
     def rels(self) -> Dict[str, Dict[str, str]]:
         """
         rIds mapped to values
@@ -168,14 +180,18 @@ class File:
         Not every xml file with have a rels file. Return an empty dictionary if the
         rels file is not found.
         """
+        if self.__rels is not None:
+            return self.__rels
+
         try:
             unzipped = self.context.zipf.read(self._rels_path)
             tree = etree.fromstring(unzipped)
-            return {x.attrib["Id"]: x.attrib["Target"] for x in tree}
+            self.__rels = {x.attrib["Id"]: x.attrib["Target"] for x in tree}
         except KeyError:
-            return {}
+            self.__rels = {}
+        return self.__rels
 
-    @cached_property
+    @property
     def root_element(self) -> etree.Element:
         """
         Root element of the file.
@@ -184,6 +200,9 @@ class File:
         See documentation for ``merge_elems``. Warn if ``merge_elems`` fails.
         (I don't think it will fail).
         """
+        if self.__root_element is not None:
+            return self.__root_element
+
         root = etree.fromstring(self.context.zipf.read(self.path))
         if self.Type in CONTENT_FILE_TYPES:
             root_ = copy.copy(root)
@@ -195,11 +214,12 @@ class File:
                     f"{self.context.docx_filename} {self.path} resulted in "
                     f"{repr(ex)}. Moving on."
                 )
-                return root_
-        return root
+                self.__root_element = root_
+        self.__root_element = root
+        return self.__root_element
 
     @property
-    def content(self) -> List[Union[List, str]]:
+    def content(self) -> List[List[List[List[str]]]]:
         """
         Text extracted into a 5-layer-deep nested list of strings.
         """
@@ -207,7 +227,7 @@ class File:
 
     def get_content(
         self, root: Optional[etree.Element] = None
-    ) -> List[Union[List, str]]:
+    ) -> List[List[List[List[str]]]]:
         """
         The same content as property 'content' with optional given root.
 
@@ -237,25 +257,38 @@ class DocxReader:
         else:
             self.xml2html_format = {}
 
-    @cached_property
+        # old-style cached_propery for Python 3.6 and 3.7 support
+        self.__zipf: Union[None, zipfile.ZipFile] = None
+        self.__files: Union[None, List[File]] = None
+        self.__numId2NumFmts: Union[None, Dict[str, List[str]]] = None
+
+    @property
     def zipf(self) -> zipfile.ZipFile:
         """
         Entire docx unzipped into bytes.
         """
-        return zipfile.ZipFile(self.docx_filename)
+        if self.__zipf is not None:
+            return self.__zipf
 
-    @cached_property
+        self.__zipf = zipfile.ZipFile(self.docx_filename)
+        return self.__zipf
+
+    @property
     def files(self) -> List[File]:
         """
         Instantiate a File instance for every content file.
         """
+        if self.__files is not None:
+            return self.__files
+
         files = []
         for k, v in collect_rels(self.zipf).items():
             files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
-        return files
+        self.__files = files
+        return self.__files
 
     # noinspection PyPep8Naming
-    @cached_property
+    @property
     def numId2numFmts(self) -> Dict[str, List[str]]:
         """
         numId referenced in xml to list of numFmt per indentation level
@@ -266,11 +299,15 @@ class DocxReader:
         Ultimately, this will result in any lists (there should NOT be any lists if
         there is no word/numbering.xml) being "numbered" with "--".
         """
+        if self.__numId2NumFmts is not None:
+            return self.__numId2NumFmts
+
         try:
             numFmts_root = etree.fromstring(self.zipf.read("word/numbering.xml"))
-            return collect_numFmts(numFmts_root)
+            self.__numId2NumFmts = collect_numFmts(numFmts_root)
         except KeyError:
-            return {}
+            self.__numId2NumFmts = {}
+        return self.__numId2NumFmts
 
     def file_of_type(self, type_: str) -> File:
         """
