@@ -192,6 +192,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
                 # tables.queue_rPr(['a href="{}"'.format(link)])
             except KeyError:
                 tables.insert_text_as_new_run(text)
+                # breakpoint()
 
         if tree.tag == Tags.FORM_CHECKBOX:
             tables.insert_text_as_new_run(get_checkBox_entry(tree))

@@ -33,7 +33,7 @@ Pass out of package with depth_collector_instance.tree.
 
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from .text_runs import html_close, html_open
 
@@ -77,10 +77,11 @@ class DepthCollector:
         # TODO: factor out item_depth
         self.item_depth = item_depth
         self._par_depth = 4
-        self._rightmost_branches = [[]]
 
-        self._open_pars = []
-        self._orphan_runs = []
+        self._rightmost_branches: List[Any] = [[]]
+
+        self._open_pars: List[Par] = []
+        self._orphan_runs: List[Run] = []
 
     @staticmethod
     def _get_run_strings(runs: List[Run]) -> List[str]:
@@ -98,11 +99,11 @@ class DepthCollector:
 
     def conclude_paragraph(self) -> None:
         old_par = self._open_pars.pop()
-        old_par.runs.append(Run("", html_close(old_par.html_style)))
+        old_par.runs.append(Run([], html_close(old_par.html_style)))
         self.insert(old_par.strings)
 
-    def commence_run(self, html_style: str = "") -> None:
-        self._open_runs.append(Run(html_style))
+    def commence_run(self, html_style: Optional[List[str]] = None) -> None:
+        self._open_runs.append(Run(html_style or []))
 
     def conclude_run(self) -> None:
         self.commence_run()
@@ -204,5 +205,5 @@ class DepthCollector:
         if styled:
             self._open_runs.append(Run(open_style, item))
         else:
-            self._open_runs.append(Run("", item))
+            self._open_runs.append(Run([], item))
         self._open_runs.append(Run(open_style))
