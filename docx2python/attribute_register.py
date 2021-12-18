@@ -44,7 +44,7 @@ class HtmlFormatter(NamedTuple):
 
     formatter: Callable[[str, str], str] = lambda tag, val: tag
     container: Optional[str] = None  # e.g., 'span'
-    property: Optional[str] = None  # e.g., 'style'
+    property_: Optional[str] = None  # e.g., 'style'
 
 
 # An HtmlFormatter instance for every xml format Docx2Python recognizes.

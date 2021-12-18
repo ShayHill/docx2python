@@ -10,18 +10,12 @@ those elements to extract formatting information.
 """
 import re
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from lxml import etree
 
-from .attribute_register import Tags
+from .attribute_register import Tags, HtmlFormatter
 from .namespace import qn
-
-StyleConverter = Union[
-    Tuple[Callable[[str, str], str]],
-    Tuple[Callable[[str, str], str], str],
-    Tuple[Callable[[str, str], str], str, str],
-]
 
 
 def _elem_tag_str(elem: etree.Element) -> str:
@@ -134,12 +128,12 @@ def get_pStyle(paragraph_element: etree.Element) -> str:
 
     Also see docstring for ``gather_pPr``
     """
-    return _gather_Pr(paragraph_element).get("pStyle", "")
+    return _gather_Pr(paragraph_element).get("pStyle", "") or ""
 
 
 # noinspection PyPep8Naming
 def get_run_formatting(
-    run_element: etree.Element, xml2html: Dict[str, StyleConverter]
+    run_element: etree.Element, xml2html: Dict[str, HtmlFormatter]
 ) -> List[str]:
     """
     Get run-element formatting converted into html.
@@ -169,7 +163,7 @@ def get_run_formatting(
 
 # noinspection PyPep8Naming
 def get_paragraph_formatting(
-    paragraph_element: etree.Element, xml2html: Dict[str, StyleConverter]
+    paragraph_element: etree.Element, xml2html: Dict[str, HtmlFormatter]
 ) -> List[str]:
     """
     Get paragraph-element formatting converted into html.
@@ -199,7 +193,7 @@ def get_paragraph_formatting(
 
 # noinspection PyPep8Naming
 def _format_Pr_into_html(
-    Pr2val: Dict[str, Union[str, None]], xml2html: Dict[str, StyleConverter]
+    Pr2val: Dict[str, Union[str, None]], xml2html: Dict[str, HtmlFormatter]
 ) -> List[str]:
     """
     Format tags and values into html strings.
@@ -212,38 +206,46 @@ def _format_Pr_into_html(
             'smallCaps': (<function <lambda> at 0x0000026BC7896DC0>, 'span', 'style')
         }
     :return: the interior part of html opening tags, eg, ['span style="..."', 'b', 'i']
+
+    Types of styles supported:
+    (None, None, formatter -> tag, None)
+        -> outside any containers, no value set, e.g., `<b>`
+    ('span', 'style', formatter -> tag, val)
+        -> inside a span, inside a style property, e.g., `<span style="tag: val">`
+
+    Other formats would probably work, but they aren't necessary to support the tags
+    supported (see README).
     """
     style = []
-    groups = defaultdict(list)
 
-    # run the formatter function to get an element tag.
-    # from (formatter, 'elem', 'style') ->
-    #     ('elem', 'style') : [formatter(v[0]), formatter(v[1]), ...]
+    # group together supported formats with the same container and property_
+    # e.g., group together everything that goes into `<span style="$HERE$">`
+    # con_pro2for[(con, pro)] = string created from for
+    cp2f_keytype = Tuple[Union[None, str], Union[None, str]]
+    con_pro2for: defaultdict[cp2f_keytype, List[str]] = defaultdict(list)
     for tag, val in ((k, v) for k, v in Pr2val.items() if k in xml2html):
-        groups[xml2html[tag][1:]].append(xml2html[tag][0](tag, val))
+        formatter, container, property_ = xml2html[tag]
+        con_pro2for[(container, property_)].append(formatter(tag, val or ""))
 
-    # When key is a tuple (span, style) and value is a list of style attributes,
-    # collect style elements into group 'span'
-    # E.g., key = ('span', 'style')
-    #       value = ['background-color': green', 'font-size: 40pt']
-    #       -> groups[('span',)] = 'style="background-color: green; font-size: 40"}'
-    for k, v in sorted((k, v) for k, v in groups.items() if k[1] is not None):
-        groups[(k[0],)].append(f'{k[1]}="{";".join(sorted(v))}"')
+    # group together supported formats with the same container
+    # e.g., group together everything that goes into `<span $HERE$>`
+    # con2pro_for[(con,)] = string created from pro and for
+    con2pro_for: defaultdict[str, List[str]] = defaultdict(list)
+    for k, v in sorted((k, v) for k, v in con_pro2for.items() if k[1] is not None):
+        con2pro_for[k[0] or ""].append(f'{k[1]}="{";".join(sorted(v))}"')
 
-    # When key is an element (span, block, b, etc.) and value is a list of attributes,
-    # append '[element] [attributes]' to style.
-    # E.g., key = ('span',)
-    #       value = ['style="background-color: green; font-size: 40"']
-    #       -> 'span style=style="background-color: green; font-size: 40"'
-    for k, v in sorted((k, v) for k, v in groups.items() if len(k) == 1):
-        style.append(f"{k[0]} {' '.join(v)}")
+    # incorporate container type into string
+    # style.append(string created from con, pro, and for)
+    for k_, v_ in sorted((k, v) for k, v in con2pro_for.items() if k):
+        style.append(f"{k_} {' '.join(v_)}")
 
-    style += sorted(groups[(None, None)])
+    # add back in formats with no container or property_
+    style += sorted(con_pro2for[(None, None)])
     return style
 
 
 def get_html_formatting(
-    elem: etree.Element, xml2html: Dict[str, StyleConverter]
+    elem: etree.Element, xml2html: Dict[str, HtmlFormatter]
 ) -> List[str]:
     """
     Get style for an element (if available)

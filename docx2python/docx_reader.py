@@ -395,9 +395,9 @@ class DocxReader:
                 images[os.path.basename(image.Target)] = self.zipf.read(image.path)
         if image_directory is not None:
             pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
-            for file, image in images.items():
+            for file, image_bytes in images.items():
                 with open(os.path.join(image_directory, file), "wb") as image_copy:
-                    image_copy.write(image)
+                    image_copy.write(image_bytes)
         return images
 
 

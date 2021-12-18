@@ -33,14 +33,14 @@ Pass out of package with depth_collector_instance.tree.
 
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional, Union
 
 from .text_runs import html_close, html_open
 
 
 @dataclass
 class Run:
-    html_style: str = field(default="")
+    html_style: List[str] = field(default_factory=list)
     text: str = field(default="")
 
     def __str__(self):
@@ -51,7 +51,7 @@ class Run:
 
 @dataclass
 class Par:
-    html_style: str
+    html_style: List[str]
     runs: List[Run] = field(default_factory=list)
 
     @property
@@ -89,8 +89,9 @@ class DepthCollector:
         """
         return [x for x in (str(x) for x in runs) if x]
 
-    def commence_paragraph(self, html_style: str = "") -> Par:
-        new_par = Par(html_style, self._orphan_runs + [Run("", html_open(html_style))])
+    def commence_paragraph(self, html_style: Optional[List[str]] = None) -> Par:
+        html_style = html_style or []
+        new_par = Par(html_style, self._orphan_runs + [Run([], html_open(html_style))])
         self._orphan_runs = []
         self._open_pars.append(new_par)
         return new_par
@@ -145,7 +146,7 @@ class DepthCollector:
             raise CaretDepthError("will not raise caret above root")
         self._rightmost_branches = self._rightmost_branches[:-1]
 
-    def set_caret(self, depth: int) -> None:
+    def set_caret(self, depth: Union[None, int]) -> None:
         """
         Set caret at given depth.
 
@@ -155,7 +156,6 @@ class DepthCollector:
         text runs. :depth: == None means the element (perhaps ``body``) does not
         effect depth (see details in docx_text._get_elem_depth).
         """
-        """Set caret at given depth."""
         if depth is None:
             return
         while self.caret_depth < depth:

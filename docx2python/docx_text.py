@@ -75,7 +75,7 @@ def _get_elem_depth(tree: etree.Element) -> Optional[int]:
     """
 
     if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
-        return
+        return None
 
     def search_at_depth(tree_: Sequence[etree.Element], _depth=0):
         """Width-first recursive search for Tags.PARAGRAPH"""
@@ -192,7 +192,6 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
                 # tables.queue_rPr(['a href="{}"'.format(link)])
             except KeyError:
                 tables.insert_text_as_new_run(text)
-                # breakpoint()
 
         if tree.tag == Tags.FORM_CHECKBOX:
             tables.insert_text_as_new_run(get_checkBox_entry(tree))

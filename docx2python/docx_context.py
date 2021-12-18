@@ -62,7 +62,7 @@ def collect_numFmts(numFmts_root: etree.Element) -> Dict[str, List[str]]:
             "2": ...
         }
     """
-    abstractNumId2numFmts = {}
+    abstractNumId2numFmts: Dict[str, List[str]] = {}
 
     for abstractNum in numFmts_root.findall(qn("w:abstractNum")):
         id_ = abstractNum.attrib[qn("w:abstractNumId")]
