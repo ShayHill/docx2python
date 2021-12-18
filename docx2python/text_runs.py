@@ -10,7 +10,7 @@ those elements to extract formatting information.
 """
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union, Type
 
 from lxml import etree
 
@@ -18,9 +18,8 @@ from .attribute_register import Tags, HtmlFormatter
 from .namespace import qn
 
 
-def _elem_tag_str(elem: etree.Element) -> str:
-    """
-    The text part of an elem.tag (the portion right of the colon)
+def _elem_tag_str(elem: Type[etree._Element]) -> str:
+    """The text part of an elem.tag (the portion right of the colon)
 
     :param elem: an xml element
 
@@ -47,10 +46,9 @@ def _elem_tag_str(elem: etree.Element) -> str:
 
 # noinspection PyPep8Naming
 def _gather_sub_vals(
-    element: etree.Element, qname: str = None
+    element: etree._Element, qname: str = None
 ) -> Dict[str, Optional[str]]:
-    """
-    Gather formatting elements for a paragraph or text run.
+    """Gather formatting elements for a paragraph or text run.
 
     :param element: a ``<w:r>`` or ``<w:p>`` xml element. Maybe others
     :param qname: qualified name for child element.
@@ -102,7 +100,7 @@ def _gather_sub_vals(
         return {}
 
 
-def _gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
+def _gather_Pr(element: etree._Element) -> Dict[str, Optional[str]]:
     """
     Gather style values for a <w:r> or <w:p> element (maybe others)
 
@@ -118,7 +116,7 @@ def _gather_Pr(element: etree.Element) -> Dict[str, Optional[str]]:
 
 
 # noinspection PyPep8Naming
-def get_pStyle(paragraph_element: etree.Element) -> str:
+def get_pStyle(paragraph_element: etree._Element) -> str:
     """
     Collect and format paragraph -> pPr -> pStyle value.
 
@@ -133,7 +131,7 @@ def get_pStyle(paragraph_element: etree.Element) -> str:
 
 # noinspection PyPep8Naming
 def get_run_formatting(
-    run_element: etree.Element, xml2html: Dict[str, HtmlFormatter]
+    run_element: etree._Element, xml2html: Dict[str, HtmlFormatter]
 ) -> List[str]:
     """
     Get run-element formatting converted into html.
@@ -163,7 +161,7 @@ def get_run_formatting(
 
 # noinspection PyPep8Naming
 def get_paragraph_formatting(
-    paragraph_element: etree.Element, xml2html: Dict[str, HtmlFormatter]
+    paragraph_element: etree._Element, xml2html: Dict[str, HtmlFormatter]
 ) -> List[str]:
     """
     Get paragraph-element formatting converted into html.
@@ -245,7 +243,7 @@ def _format_Pr_into_html(
 
 
 def get_html_formatting(
-    elem: etree.Element, xml2html: Dict[str, HtmlFormatter]
+    elem: etree._Element, xml2html: Dict[str, HtmlFormatter]
 ) -> List[str]:
     """
     Get style for an element (if available)

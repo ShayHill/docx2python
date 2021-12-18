@@ -32,7 +32,7 @@ def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
     """
     Select a bullet or numbering type from xml numFmt.
     """
-    numFmt2bullet_function = {
+    numFmt2bullet_function: Dict[str, Callable[[int], str]] = {
         "decimal": nums.decimal,
         "lowerLetter": nums.lower_letter,
         "upperLetter": nums.upper_letter,
@@ -41,7 +41,8 @@ def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
         "bullet": nums.bullet,
     }
     try:
-        return numFmt2bullet_function[numFmt]
+        retval_: Callable[[int], str] = numFmt2bullet_function[numFmt]
+        return retval_
     except KeyError:
         warnings.warn(
             "{} numbering format not implemented, substituting '{}'".format(
@@ -51,7 +52,7 @@ def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
         return nums.bullet
 
 
-def _new_list_counter() -> defaultdict[Any, defaultdict[Any, 0]]:
+def _new_list_counter() -> defaultdict[Any, defaultdict[Any, int]]:
     """
     A counter, starting at zero, for each numId
 

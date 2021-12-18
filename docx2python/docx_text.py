@@ -31,7 +31,7 @@ from .text_runs import get_paragraph_formatting, get_pStyle, get_run_formatting
 TablesList = List[List[List[List[str]]]]
 
 
-def _get_elem_depth(tree: etree.Element) -> Optional[int]:
+def _get_elem_depth(tree: etree._Element) -> Optional[int]:
     """What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
     :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
@@ -77,7 +77,7 @@ def _get_elem_depth(tree: etree.Element) -> Optional[int]:
     if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
         return None
 
-    def search_at_depth(tree_: Sequence[etree.Element], _depth=0):
+    def search_at_depth(tree_: Sequence[etree._Element], _depth=0):
         """Width-first recursive search for Tags.PARAGRAPH"""
         if not tree_:
             return
@@ -100,7 +100,7 @@ def merged_text_tree(file, root):
 
 
 # noinspection PyPep8Naming
-def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
+def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
     """Xml as a string to a list of cell strings.
 
     :param file: File instance from which text will be extracted.
@@ -127,7 +127,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
     xml2html = file.context.xml2html_format
 
     # noinspection PyPep8Naming
-    def branches(tree: etree.Element) -> None:
+    def branches(tree: etree._Element) -> None:
         """
         Recursively iterate over tree. Add text when found.
 
@@ -143,7 +143,7 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
         if tree.tag == Tags.PARAGRAPH:
             par = tables.commence_paragraph(get_paragraph_formatting(tree, xml2html))
             if file.context.do_pStyle:
-                par.runs.insert(0, Run("", get_pStyle(tree) or "None"))
+                par.runs.insert(0, Run([], get_pStyle(tree) or "None"))
             tables.insert_text_as_new_run(bullets.get_bullet(tree))
 
         elif tree.tag == Tags.RUN:
@@ -189,10 +189,8 @@ def get_text(file: File, root: Optional[etree.Element] = None) -> TablesList:
                 rId = tree.attrib[qn("r:id")]
                 link = file.rels[rId]
                 tables.insert_text_as_new_run('<a href="{}">{}</a>'.format(link, text))
-                # tables.queue_rPr(['a href="{}"'.format(link)])
             except KeyError:
                 tables.insert_text_as_new_run(text)
-                # breakpoint()
 
         if tree.tag == Tags.FORM_CHECKBOX:
             tables.insert_text_as_new_run(get_checkBox_entry(tree))

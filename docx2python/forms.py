@@ -13,7 +13,6 @@ crossed-out checkboxes. Pypi doesn't like them in my file, so I have to referenc
 them by their escape sequences.
 """
 
-from contextlib import suppress
 from typing import Union
 
 from lxml import etree
@@ -22,7 +21,7 @@ from .namespace import qn
 
 
 # noinspection PyPep8Naming
-def get_checkBox_entry(checkBox: etree.Element) -> str:
+def get_checkBox_entry(checkBox: etree._Element) -> str:
     """Create text representation for a checkBox element.
 
     :param checkBox: a checkBox xml element
@@ -52,16 +51,19 @@ def get_checkBox_entry(checkBox: etree.Element) -> str:
     """
 
     def get_wval() -> Union[str, None]:
-        with suppress(AttributeError, KeyError):
-            return checkBox.find(qn("w:checked")).attrib.get(qn("w:val"), "1")
-        with suppress(AttributeError, KeyError):
-            return checkBox.find(qn("w:default")).attrib[qn("w:val")]
+        checked = checkBox.find(qn("w:checked"))
+        if checked is not None:
+            return str(checked.attrib.get(qn("w:val"), "1"))
+        default = checkBox.find(qn("w:default"))
+        if default is not None:
+            return str(default.attrib.get(qn("w:val"), "1"))
+        return None
 
     return {"0": "\u2610", "1": "\u2612", None: "----checkbox failed----"}[get_wval()]
 
 
 # noinspection PyPep8Naming
-def get_ddList_entry(ddList: etree.Element) -> str:
+def get_ddList_entry(ddList: etree._Element) -> str:
     """Get only the selected string of a dropdown list.
 
     <w:ddList>
@@ -75,8 +77,13 @@ def get_ddList_entry(ddList: etree.Element) -> str:
     list_entries = [
         x.attrib.get(qn("w:val")) for x in ddList.findall(qn("w:listEntry"))
     ]
-    try:
-        list_index = int(ddList.find(qn("w:result")).attrib.get(qn("w:val"), 0))
-    except AttributeError:
+
+    result = ddList.find(qn("w:result"))
+    if result is None:
         list_index = 0
-    return list_entries[list_index]
+    else:
+        try:
+            list_index = int(str(result.attrib[qn("w:val")]))
+        except (AttributeError, KeyError):
+            list_index = 0
+    return str(list_entries[list_index])

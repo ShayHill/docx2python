@@ -20,7 +20,7 @@ from .namespace import qn
 
 
 # noinspection PyPep8Naming
-def collect_numFmts(numFmts_root: etree.Element) -> Dict[str, List[str]]:
+def collect_numFmts(numFmts_root: etree._Element) -> Dict[str, List[str]]:
     """
     Collect abstractNum bullet formats into a dictionary
 
@@ -152,7 +152,7 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
 
 
 # noinspection PyPep8Naming
-def collect_docProps(root: etree.Element) -> Dict[str, str]:
+def collect_docProps(root: etree._Element) -> Dict[str, str]:
     # noinspection SpellCheckingInspection
     """
     Get author, modified, etc. from core-properties (should be docProps/core.xml)

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
 
 
-def _elem_key(file: File, elem: etree.Element) -> Tuple[str, str, List[str]]:
+def _elem_key(file: File, elem: etree._Element) -> Tuple[str, str, List[str]]:
     # noinspection SpellCheckingInspection
     """
     Enough information to tell if two elements are more-or-less identically formatted.
@@ -56,12 +56,12 @@ def _elem_key(file: File, elem: etree.Element) -> Tuple[str, str, List[str]]:
     # always join links pointing to the same address
     rels_id = elem.attrib.get(RELS_ID)
     if rels_id:
-        return tag, str(file.rels[rels_id]), []
+        return tag, str(file.rels[str(rels_id)]), []
 
     return tag, "", get_html_formatting(elem, file.context.xml2html_format)
 
 
-def merge_elems(file: File, tree: etree.Element) -> None:
+def merge_elems(file: File, tree: etree._Element) -> None:
     # noinspection SpellCheckingInspection
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
@@ -145,13 +145,14 @@ def merge_elems(file: File, tree: etree.Element) -> None:
     file_elem_key = functools.partial(_elem_key, file)
 
     elems = [x for x in tree if has_content(x)]
-    runs = [list(y) for x, y in groupby(elems, key=file_elem_key)]
+    runs = [list(y) for _, y in groupby(elems, key=file_elem_key)]
 
     for run in (x for x in runs if len(x) > 1 and x[0].tag in _MERGEABLE_TAGS):
         if run[0].tag in {Tags.TEXT, Tags.TEXT_MATH}:
-            run[0].text = "".join(x.text for x in run)
+            run[0].text = "".join(x.text or "" for x in run)
         for elem in run[1:]:
-            run[0].extend(elem)
+            for e in elem:
+                run[0].append(e)
             tree.remove(elem)
 
     for branch in tree:
