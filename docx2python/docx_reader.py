@@ -75,7 +75,7 @@ class File:
         described above.
         """
         self.context = context
-        self.Id = attribute_dict["Id"]
+        self.Id = str(attribute_dict["Id"])
         self.Type = os.path.basename(attribute_dict["Type"])
         self.Target = attribute_dict["Target"]
         self.dir = attribute_dict["dir"]
@@ -83,7 +83,7 @@ class File:
         # old-style cached_property for Python 3.6 and 3.7 support
         self.__path: Union[None, str] = None
         self.__rels_path: Union[None, str] = None
-        self.__rels: Union[None, Dict[str, Dict[str, str]]] = None
+        self.__rels: Union[None, Dict[str, str]] = None
         self.__root_element: Union[None, etree._Element] = None
 
     def __repr__(self) -> str:
@@ -155,7 +155,7 @@ class File:
         return self.__rels_path
 
     @property
-    def rels(self) -> Dict[str, Dict[str, str]]:
+    def rels(self) -> Dict[str, str]:
         """
         rIds mapped to values
 
@@ -186,7 +186,7 @@ class File:
         try:
             unzipped = self.context.zipf.read(self._rels_path)
             tree = etree.fromstring(unzipped)
-            self.__rels = {x.attrib["Id"]: x.attrib["Target"] for x in tree}
+            self.__rels = {str(x.attrib["Id"]): str(x.attrib["Target"]) for x in tree}
         except KeyError:
             self.__rels = {}
         return self.__rels

@@ -10,15 +10,16 @@ those elements to extract formatting information.
 """
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional, Sequence, Tuple, Union, Type
+from contextlib import suppress
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from lxml import etree
 
-from .attribute_register import Tags, HtmlFormatter
+from .attribute_register import HtmlFormatter, Tags
 from .namespace import qn
 
 
-def _elem_tag_str(elem: Type[etree._Element]) -> str:
+def _elem_tag_str(elem: etree._Element) -> str:
     """The text part of an elem.tag (the portion right of the colon)
 
     :param elem: an xml element
@@ -45,9 +46,7 @@ def _elem_tag_str(elem: Type[etree._Element]) -> str:
 
 
 # noinspection PyPep8Naming
-def _gather_sub_vals(
-    element: etree._Element, qname: str = None
-) -> Dict[str, Optional[str]]:
+def _gather_sub_vals(element: etree._Element, qname: str) -> Dict[str, Optional[str]]:
     """Gather formatting elements for a paragraph or text run.
 
     :param element: a ``<w:r>`` or ``<w:p>`` xml element. Maybe others
@@ -92,12 +91,16 @@ def _gather_sub_vals(
             "szCs": "32",
         }
     """
-    try:
-        sub_element = element.find(qname)
-        return {_elem_tag_str(x): x.attrib.get(qn("w:val"), None) for x in sub_element}
-    except TypeError:
-        # no formatting for element
-        return {}
+
+    sub_vals: Dict[str, Optional[str]] = {}
+    with suppress(StopIteration):
+        for sub_element in next(element.iterfind(qname)):
+            sub_val = sub_element.attrib.get(qn("w:val"))
+            if sub_val:
+                sub_vals[_elem_tag_str(sub_element)] = str(sub_val)
+            else:
+                sub_vals[_elem_tag_str(sub_element)] = None
+    return sub_vals
 
 
 def _gather_Pr(element: etree._Element) -> Dict[str, Optional[str]]:

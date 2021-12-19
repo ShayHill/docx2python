@@ -109,7 +109,7 @@ class BulletGenerator:
         self.numId2count = _new_list_counter()
 
     # noinspection PyPep8Naming
-    def get_bullet(self, paragraph: etree.Element) -> str:
+    def get_bullet(self, paragraph: etree._Element) -> str:
         """
         Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
@@ -132,16 +132,16 @@ class BulletGenerator:
         bullet preceded by one tab for every indentation level.
         """
         try:
-            pPr = paragraph.find(qn("w:pPr"))
-            numPr = pPr.find(qn("w:numPr"))
-            numId = numPr.find(qn("w:numId")).attrib[qn("w:val")]
-            ilvl = numPr.find(qn("w:ilvl")).attrib[qn("w:val")]
+            pPr = next(paragraph.iterfind(qn("w:pPr")))
+            numPr = next(pPr.iterfind(qn("w:numPr")))
+            numId = next(numPr.iterfind(qn("w:numId"))).attrib[qn("w:val")]
+            ilvl = next(numPr.iterfind(qn("w:ilvl"))).attrib[qn("w:val")]
             try:
-                numFmt = self.numId2numFmts[numId][int(ilvl)]
+                numFmt = self.numId2numFmts[str(numId)][int(ilvl)]
             except IndexError:
                 # give up and put a bullet
                 numFmt = "bullet"
-        except (AttributeError, KeyError):
+        except (StopIteration, KeyError):
             # not a numbered paragraph
             return ""
 
@@ -151,6 +151,6 @@ class BulletGenerator:
                 bullet += ")"
             return "\t" * int(ilvl) + bullet + "\t"
 
-        number = _increment_list_counter(self.numId2count[numId], ilvl)
+        number = _increment_list_counter(self.numId2count[numId], str(ilvl))
         get_unformatted_bullet_str = _get_bullet_function(numFmt)
         return format_bullet(get_unformatted_bullet_str(number))

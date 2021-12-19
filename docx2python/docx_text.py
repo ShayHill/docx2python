@@ -20,11 +20,11 @@ from lxml import etree
 if TYPE_CHECKING:
     from docx_reader import File
 
-from .iterators import iter_at_depth
 from .attribute_register import Tags
 from .bullets_and_numbering import BulletGenerator
 from .depth_collector import DepthCollector, Run
 from .forms import get_checkBox_entry, get_ddList_entry
+from .iterators import iter_at_depth
 from .namespace import qn
 from .text_runs import get_paragraph_formatting, get_pStyle, get_run_formatting
 
@@ -162,23 +162,25 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
             tables.add_text_into_open_run("\n")
 
         elif tree.tag == Tags.SYM:
-            font = tree.attrib.get(qn("w:font"))
-            char = tree.attrib.get(qn("w:char"))
+            font = str(tree.attrib.get(qn("w:font")))
+            char = str(tree.attrib.get(qn("w:char")))
             if char:
                 tables.add_text_into_open_run(
                     "<span style=font-family:{}>&#x0{};</span>".format(font, char[1:])
                 )
 
         elif tree.tag == Tags.FOOTNOTE:
-            if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
+            footnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
+            if "separator" not in footnote_type:
                 tables.insert_text_as_new_run(
-                    "footnote{})\t".format(tree.attrib[qn("w:id")])
+                    "footnote{})\t".format(str(tree.attrib[qn("w:id")]))
                 )
 
         elif tree.tag == Tags.ENDNOTE:
-            if "separator" not in tree.attrib.get(qn("w:type"), "").lower():
+            endnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
+            if "separator" not in endnote_type:
                 tables.insert_text_as_new_run(
-                    "endnote{})\t".format(tree.attrib[qn("w:id")])
+                    "endnote{})\t".format(str(tree.attrib[qn("w:id")]))
                 )
 
         elif tree.tag == Tags.HYPERLINK:
@@ -200,12 +202,12 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
 
         elif tree.tag == Tags.FOOTNOTE_REFERENCE:
             tables.insert_text_as_new_run(
-                "----footnote{}----".format(tree.attrib[qn("w:id")])
+                "----footnote{}----".format(str(tree.attrib[qn("w:id")]))
             )
 
         elif tree.tag == Tags.ENDNOTE_REFERENCE:
             tables.insert_text_as_new_run(
-                "----endnote{}----".format(tree.attrib[qn("w:id")])
+                "----endnote{}----".format(str(tree.attrib[qn("w:id")]))
             )
 
         elif tree.tag == Tags.IMAGE:

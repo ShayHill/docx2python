@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 import zipfile
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from lxml import etree
 
@@ -65,17 +65,24 @@ def collect_numFmts(numFmts_root: etree._Element) -> Dict[str, List[str]]:
     abstractNumId2numFmts: Dict[str, List[str]] = {}
 
     for abstractNum in numFmts_root.findall(qn("w:abstractNum")):
-        id_ = abstractNum.attrib[qn("w:abstractNumId")]
+        id_ = str(abstractNum.attrib[qn("w:abstractNumId")])
         abstractNumId2numFmts[id_] = []
         for lvl in abstractNum.findall(qn("w:lvl")):
             numFmt = lvl.find(qn("w:numFmt"))
-            abstractNumId2numFmts[id_].append(numFmt.attrib[qn("w:val")])
+            if numFmt is not None:
+                abstractNumId2numFmts[id_].append(str(numFmt.attrib[qn("w:val")]))
 
     numId2numFmts = {}
-    for num in numFmts_root.findall(qn("w:num")):
+    num: etree._Element
+    for num in (x for x in numFmts_root.findall(qn("w:num")) if x is not None):
         numId = num.attrib[qn("w:numId")]
-        abstractNumId = num.find(qn("w:abstractNumId")).attrib[qn("w:val")]
-        numId2numFmts[numId] = abstractNumId2numFmts[abstractNumId]
+        if numId is None:
+            continue
+        abstractNumId = num.find(qn("w:abstractNumId"))
+        if abstractNumId is None:
+            continue
+        abstractNumIdval = abstractNumId.attrib.get(qn("w:val"))
+        numId2numFmts[str(numId)] = abstractNumId2numFmts[str(abstractNumIdval)]
 
     return numId2numFmts
 
@@ -147,12 +154,15 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
     """
     path2rels = {}
     for rels in (x for x in zipf.namelist() if x[-5:] == ".rels"):
-        path2rels[rels] = [x.attrib for x in etree.fromstring(zipf.read(rels))]
+        path2rels[rels] = [
+            {str(y): str(z) for y, z in x.attrib.items()}
+            for x in etree.fromstring(zipf.read(rels))
+        ]
     return path2rels
 
 
 # noinspection PyPep8Naming
-def collect_docProps(root: etree._Element) -> Dict[str, str]:
+def collect_docProps(root: etree._Element) -> Dict[str, Optional[str]]:
     # noinspection SpellCheckingInspection
     """
     Get author, modified, etc. from core-properties (should be docProps/core.xml)
@@ -188,7 +198,7 @@ def collect_docProps(root: etree._Element) -> Dict[str, str]:
             ...
         }
     """
-    docProp2text = {}
+    docProp2text: Dict[str, Optional[str]] = {}
     capture_tag_name = re.compile(r"{.+}(?P<tag_name>\w+)")
     for dc in root:
         tag_match = re.match(capture_tag_name, dc.tag)

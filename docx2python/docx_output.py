@@ -40,7 +40,7 @@ This is the format for default (no trailing "_runs", e.g ``header``) properties.
 """
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from warnings import warn
 
 from .docx_context import collect_docProps
@@ -141,11 +141,12 @@ class DocxContent:
         return get_html_map(self.document)
 
     @property
-    def properties(self) -> Dict[str, str]:
+    def properties(self) -> Dict[str, Optional[str]]:
         """Document core-properties as a dictionary.
 
         Docx files created with Google docs won't have core-properties. If the file
-        `core-properties` is missing, return an empty dict."""
+        `core-properties` is missing, return an empty dict.
+        """
         warn(
             "DocxContent.properties is deprecated and will be removed in some future "
             "version. Use DocxContent.core_properties.",
@@ -155,11 +156,12 @@ class DocxContent:
 
     # noinspection PyPep8Naming
     @property
-    def core_properties(self) -> Dict[str, str]:
+    def core_properties(self) -> Dict[str, Optional[str]]:
         """Document core-properties as a dictionary.
 
         Docx files created with Google docs won't have core-properties. If the file
-        `core-properties` is missing, return an empty dict."""
+        `core-properties` is missing, return an empty dict.
+        """
         try:
             docProps = next(iter(self.docx_reader.files_of_type("core-properties")))
             return collect_docProps(docProps.root_element)

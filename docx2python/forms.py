@@ -13,6 +13,7 @@ crossed-out checkboxes. Pypi doesn't like them in my file, so I have to referenc
 them by their escape sequences.
 """
 
+from contextlib import suppress
 from typing import Union
 
 from lxml import etree
@@ -51,12 +52,12 @@ def get_checkBox_entry(checkBox: etree._Element) -> str:
     """
 
     def get_wval() -> Union[str, None]:
-        checked = checkBox.find(qn("w:checked"))
-        if checked is not None:
-            return str(checked.attrib.get(qn("w:val"), "1"))
-        default = checkBox.find(qn("w:default"))
-        if default is not None:
-            return str(default.attrib.get(qn("w:val"), "1"))
+        with suppress(StopIteration):
+            checked = next(checkBox.iterfind(qn("w:checked")))
+            return str(checked.attrib.get(qn("w:val")) or "1")
+        with suppress(StopIteration, KeyError):
+            default = next(checkBox.iterfind(qn("w:default")))
+            return str(default.attrib[qn("w:val")])
         return None
 
     return {"0": "\u2610", "1": "\u2612", None: "----checkbox failed----"}[get_wval()]
@@ -77,13 +78,9 @@ def get_ddList_entry(ddList: etree._Element) -> str:
     list_entries = [
         x.attrib.get(qn("w:val")) for x in ddList.findall(qn("w:listEntry"))
     ]
-
-    result = ddList.find(qn("w:result"))
-    if result is None:
+    try:
+        result = next(ddList.iterfind(qn("w:result")))
+        list_index = int(result.attrib[qn("w:val")])
+    except (StopIteration, KeyError):
         list_index = 0
-    else:
-        try:
-            list_index = int(str(result.attrib[qn("w:val")]))
-        except (AttributeError, KeyError):
-            list_index = 0
     return str(list_entries[list_index])
