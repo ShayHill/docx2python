@@ -24,7 +24,7 @@ __additions:__
   
 __subtractions:__
 * no command-line interface
-* will only work with Python 3.6+
+* will only work with Python 3.7+
 
 
 ## Installation
