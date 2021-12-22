@@ -45,8 +45,7 @@ CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnot
 
 @dataclass
 class File:
-    """
-    The attribute dict of a file in the docx, plus cached data
+    """The attribute dict of a file in the docx, plus cached data
 
     The docx lists internal files in various _rels files. Each will be specified with a
     dict of, e.g.::
@@ -87,15 +86,12 @@ class File:
         self.__root_element: Union[None, etree._Element] = None
 
     def __repr__(self) -> str:
-        """
-        File with self.path
-        """
+        """File with self.path"""
         return f"File({self.path})"
 
     @property
     def path(self) -> str:
-        """
-        Infer path/to/xml/file from instance attributes
+        """Infer path/to/xml/file from instance attributes
 
         :returns: path to xml file
 
@@ -126,8 +122,7 @@ class File:
 
     @property
     def _rels_path(self) -> str:
-        """
-        Infer path/to/rels from instance attributes.
+        """Infer path/to/rels from instance attributes.
 
         :returns: path to rels (which may not exist)
 
@@ -156,8 +151,7 @@ class File:
 
     @property
     def rels(self) -> Dict[str, str]:
-        """
-        rIds mapped to values
+        """rIds mapped to values
 
         Each content file.xml will have a file.xml.rels file--if relationships are
         defined. Inside file.xml, values defined in the file.xml.rels file may be
@@ -193,8 +187,7 @@ class File:
 
     @property
     def root_element(self) -> etree._Element:
-        """
-        Root element of the file.
+        """Root element of the file.
 
         Try to merge consecutive, duplicate (except text) elements in content files.
         See documentation for ``merge_elems``. Warn if ``merge_elems`` fails.
@@ -220,9 +213,7 @@ class File:
 
     @property
     def content(self) -> List[List[List[List[str]]]]:
-        """
-        Text extracted into a 5-layer-deep nested list of strings.
-        """
+        """Text extracted into a 5-layer-deep nested list of strings."""
         return get_text(self)
 
     def get_content(
@@ -356,7 +347,7 @@ class DocxReader:
         """
         return self.files_of_type()
 
-    def save(self, filename: str) -> None:
+    def save(self, filename: Union[Path, str]) -> None:
         """
         Save the (presumably altered) xml.
 
