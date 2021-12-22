@@ -2,7 +2,17 @@
 
 Extract docx headers, footers, text, footnotes, endnotes, properties, and images to a Python object.
 
-[full documentation](https://docx2python.readthedocs.io/en/latest/index.html)
+## Note to Users / Contributors
+
+I will be doing very little coding in 2022. I will address "show stopper" bugs in docx2python, and I will accept pull requests *if* they are complete with
+* an example `*.docx` file showing the problem addressed or missing feature
+* a new test file with (Pytest) tests for the new fix or feature
+
+`README_DOCX_FILE_STRUCTURE.md` may help if you'd like to extend docx2python.
+
+## Back to docx2python
+
+For a summary of what's new in docx2python 2, scroll down to **New in docx2python Version 2**
 
 The code is an expansion/contraction of [python-docx2txt](https://github.com/ankushshah89/python-docx2txt) (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.
 
@@ -203,3 +213,112 @@ The previous print as. ``\u2610`` (open checkbox) or ``\u2612`` (crossed checkbo
 too. I gave checkboxes a bailout value of ``----checkbox failed----`` if the xml doesn't look like I expect it to,
 because I don't have several-thousand test files with checkboxes (as I did with most of the other form elements).
 Checkboxes *should* work, but please let me know if you encounter any that do not.
+
+# New in docx2python Version 2
+
+## merge consecutive runs with identical formatting
+
+MS Word will break up text runs arbitrarily, often in the middle of a word.
+
+
+    <w:r>
+        <w:t>work to im</w:t>
+    </w:r>
+    <w:r>
+        <w:t>prove docx2python</w:t>
+    </w:r>
+
+This makes things like algorithmic search-and-replace problematic. Docx2python does not currently write docx files,
+but I often use docx templates with placeholders (e.g., `#CATEGORY_NAME#`) then replace those placeholders with data.
+This won't work if your placeholders are broken up (e.g, `#CAT`, `E`, `GORY_NAME#`).
+
+Docx2python v1 merges such runs together when exporting text. Docx2python v2 will merge such runs in the XML as a
+pre-processing step. This will allow saving such "repaired" XML later on.
+
+## merge consecutive links with identical hrefs
+
+MS Word will break up links, giving each link a different `rId`, even when these `rIds` point to the same address.
+
+    <w:hyperlink r:id="rId13">  # rID13 points to https://github.com/ShayHill/docx2python
+        <w:r>
+            <w:t>docx2py</w:t>
+        </w:r>
+    </w:hyperlink>
+    <w:hyperlink r:id="rId14">  # rID14 ALSO points to https://github.com/ShayHill/docx2python
+        <w:r>
+            <w:t>thon</w:t>
+        </w:r>
+    </w:hyperlink>
+
+This is similar to the broken-up runs, but the cause is a little deeper in. Docx2python v1 makes a mess of these.
+
+    <a href="https://github.com/ShayHill/docx2python">docx2py</a>
+    <a href="https://github.com/ShayHill/docx2python">thon</a>
+
+Docx2python v2 will merge such links together in the XML as a pre-processing step. As above, this will allow saving
+such "repaired" XML later on.
+
+## correctly handle nested paragraphs
+
+MS Word will nest paragraphs
+
+	<w:p>
+		<w:r>
+			<w:t>text</w:t>
+		</w:r>
+		<w:p>  # paragraph inside a paragraph
+			<w:r>
+				<w:t>text</w:t>
+			</w:r>
+		</w:p>
+		<w:r>
+			<w:t>text</w:t>
+		</w:r>
+	</w:p>
+
+I haven't been able to create such a paragraph, but I've found a few files that have them. Docx2pyhon v1 will omit
+closing htms tags when a new paragraph is opened before the old paragraph is closed.
+
+    <b>outer par bold text
+
+    <i>This text is in nested par (not bold)</i>
+
+    outer par bold text</b>
+
+Docx2python v2 will correctly handle such cases, but this will require substantial internal changes to the way
+docx2python opens and closes paragraphs.
+
+    <b>outer par bold text</b>
+
+    <i>This text is in nested par (not bold)</i>
+
+    </b>outer par bold text</b>
+
+## paragraph styles
+
+The internal changes allow for easy access to paragraph styles (e.g., `Heading 1`). Docx2python v1 ignores these, even
+with `html=True`. Docx2python v2 will capture paragraph styles.
+
+    <h1>h1 is a paragraph style<b>bold is a run style</b></h1>
+
+## export xml
+
+To allow above-described light editing (e.g., search and replace), docx2python v2 will give the user access to
+
+    1. extracted xml files
+    2. the functions used to write these files to a docx
+
+The user can only go so far with this. A docx file is built from folders full of xml files. None of these xml
+files are self contained. But search and replace is enough to make document templates (documents with placeholders for
+data), and that's pretty useful in itself.
+
+## expose some intermediate functionality
+
+Navigating through XML is straightforward with `lxml`. It is a separate step to take whatever you find and bring it
+*out* of the XML. For instance, you may want to iterate over a document, looking for paragraphs with a particular
+format, then pull the text out of those paragraphs. Docx2python v1 did not separate or expose "iter the document" and
+"pull the content". Docx2python v2 separates and exposes these steps. This will allow easier extension.
+
+See the `docx_reader.py` module and simple examples in the `utilities.py` module.
+
+## see utilities.py for examples of major new features.

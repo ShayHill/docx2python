@@ -10,13 +10,14 @@ paragraph_styles argument. These functions use these new features as utilities /
 examples.
 """
 
-from typing import Union, Tuple, List, Iterator
+import re
 from pathlib import Path
-from .main import docx2python
+from typing import Iterator, List, Tuple, Union
+
+from lxml import etree
 
 from .iterators import iter_at_depth
-from lxml import etree
-import re
+from .main import docx2python
 
 
 def replace_root_text(root: etree._Element, old: str, new: str) -> None:

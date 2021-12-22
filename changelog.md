@@ -56,15 +56,45 @@ Docx2Python v1 assumed a document was a series of tables and formatted output th
 
 Simple docx files *are* structured this way, but there are elements (e.g., ``<w:footnotes>``, ``<w:footnote>``) that act like tables without being exactly tables. Docx2Python v2 treats any element 1-level above a paragraph as a table cell, any element 2-levels above a paragraph as a table row, etc. The upshot of this is that there will be more whitespace in your exports. This whitespace is potentially useful information, but you can easily filter it out if you don't need it.
 
---  No longer supports Python 3.4 or 3.5
+--  No longer supports Python 3.4, 3.5, or 3.6
 
-Now only supports Python 3.6+
+Now only supports Python 3.7+
 
 --  XML and other information from an unzipped docx file now available as a DocxReader instance.
 
-Docx2Python v1 extracted xml from a zip file and passed it straight to formatting functions. Docx2Python v2 takes an intermediate step: hold the xml and inferred attributes of the input docx in DocxContext and File instances. These allow a view into the xml for users who are comfortable working that way. A user can now execute search&replace and other simple operations before extracting the text.
+Docx2Python v1 extracted xml from a zip file and passed it straight to formatting functions. Docx2Python v2 takes an intermediate step: hold the xml and inferred attributes of the input docx in DocxContext and File instances. These allow a view into the xml for users who are comfortable working that way. A user can now execute search&replace and other simple operations before extracting the text. Here's an example:
 
-TODO: add some example code here
+    def replace_root_text(root: etree._Element, old: str, new: str) -> None:
+    """Replace :old: with :new: in all descendants of :root:
+
+        :param root: an etree element presumably containing descendant text elements
+        :param old: text to be replaced
+        :param new: replacement text
+        """
+        for text_elem in (x for x in root.iter() if x.text):
+            text_elem.text = (text_elem.text or "").replace(old, new)
+
+
+    def replace_docx_text(
+        path_in: Union[Path, str],
+        path_out: Union[Path, str],
+        *replacements: Tuple[str, str],
+        html: bool = False
+    ) -> None:
+    """Replace text in a docx file.
+
+        :param path_in: path to input docx
+        :param path_out: path to output docx with text replaced
+        :param replacements: tuples of strings (a, b) replace a with b for each in docx.
+        :param html: respect formatting (as far as docx2python can see formatting)
+        """
+        reader = docx2python(path_in, html=html).docx_reader
+        for file in reader.content_files():
+            root = file.root_element
+            for replacement in replacements:
+                replace_root_text(root, *replacement)
+        reader.save(path_out)
+        return
 
 --  Save altered xml
 
@@ -93,7 +123,7 @@ Equations in Word's Inline format will return valid LaTeX (e.g., ``'\\int_{0}^{1
 
 User shadowmimosa reported that docx files converted by LibreOffice from docx raised a CaretDepthError. This files now extract without error.
 
--- New option `paragraph_styles=True` will append a paragraph style as the first run of each paragraph. These will often be "None", but may be a "Header", "Footnote" or similar. These can be used for factoring extracted paragraphs.
+-- New option `paragraph_styles=True` will append a paragraph style as the first run of each paragraph. These will often be "None", but may be a "Header", "Footnote" or similar. These can be used for factoring extracted paragraphs. See `utilities.py` for example usage.
 
 -- Replace `&` with `&amp` when exporting html styles
 
