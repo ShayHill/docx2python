@@ -94,6 +94,7 @@ class Tags(str, Enum):
     HYPERLINK = qn("w:hyperlink")
     IMAGE = qn("a:blip")
     IMAGEDATA = qn("v:imagedata")
+    MATH = qn("m:oMath")
     PARAGRAPH = qn("w:p")
     PAR_PROPERTIES = qn("w:pPr")
     RUN = qn("w:r")

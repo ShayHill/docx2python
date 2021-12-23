@@ -148,7 +148,7 @@ def merge_elems(file: File, tree: etree._Element) -> None:
     runs = [list(y) for _, y in groupby(elems, key=file_elem_key)]
 
     for run in (x for x in runs if len(x) > 1 and x[0].tag in _MERGEABLE_TAGS):
-        if run[0].tag in {Tags.TEXT, Tags.TEXT_MATH}:
+        if run[0].tag == Tags.TEXT:
             run[0].text = "".join(x.text or "" for x in run)
         for elem in run[1:]:
             for e in elem:
