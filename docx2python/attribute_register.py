@@ -14,7 +14,7 @@ from typing import Callable, Iterator, NamedTuple, Optional
 
 from lxml import etree
 
-from docx2python.namespace import qn
+from .namespace import qn
 
 
 class HtmlFormatter(NamedTuple):
