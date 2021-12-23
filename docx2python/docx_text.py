@@ -149,7 +149,7 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
         elif tree.tag == Tags.RUN:
             tables.commence_run(get_run_formatting(tree, xml2html))
 
-        elif tree.tag == Tags.TEXT:
+        elif tree.tag in {Tags.TEXT, Tags.TEXT_MATH}:
             # oddly enough, these don't all contain text
             text = tree.text if tree.text is not None else ""
             if xml2html:
@@ -157,10 +157,12 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
                 text = text.replace("<", "&lt;")
                 text = text.replace(">", "&gt;")
             tables.add_text_into_open_run(text)
-        
+
         elif tree.tag == Tags.MATH:
-            # Read equations
-            tables.add_text_into_open_run("<latex>{}</latex>".format(''.join(tree.itertext())))
+            # read equations
+            text = merged_text_tree(file, tree)
+            do_descend = False
+            tables.insert_text_as_new_run("<latex>{}</latex>".format(text))
 
         elif tree.tag == Tags.BR:
             tables.add_text_into_open_run("\n")

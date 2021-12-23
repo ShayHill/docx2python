@@ -128,3 +128,7 @@ User shadowmimosa reported that docx files converted by LibreOffice from docx ra
 -- Replace `&` with `&amp` when exporting html styles
 
 Docx2Python v1 did not replace `&`
+
+---- version 2.0.1 - small import bug fix
+
+---- version 2.0.2 - math equations now wrapped in `<latex></latex>`. Thank you, usr3

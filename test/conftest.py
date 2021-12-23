@@ -21,4 +21,4 @@ def pytest_assertrepr_compare(config, op, left, right):
         return ["{0} {1} {2}".format(left, op, right)]
 
 
-RESOURCES = Path("test", "resources")
+RESOURCES = Path(project, "test", "resources")
