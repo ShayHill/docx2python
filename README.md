@@ -62,7 +62,7 @@ docx2python('path/to/file.docx', html=True)
 
 Note on html feature:
 * supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript, ``<span style="font-variant: small-caps">``small caps, ``<span style="text-transform:uppercase">``all caps, ``<span style="background-color: yellow">``highlighted, ``<span style="font-size:32">``font size, ``<span style="color:#ff0000">``colored text.
-* hyperlinks will always be exported as html (``<a href="http:/...">link text</a>``), even if ``html=False``, because I couldn't think of a more cononical representation.
+* hyperlinks will always be exported as html (``<a href="http:/...">link text</a>``), even if ``html=False``, because I couldn't think of a more canonical representation.
 * every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph a</b>`, `<b>paragraph b</b>`. This is intentional to make  each paragraph its own entity. 
 * if you specify `html=True`, `&`, `>` and `<` in your docx text will be encoded as `&amp`, `&gt;` and `&lt;`
 
@@ -277,7 +277,7 @@ MS Word will nest paragraphs
 	</w:p>
 
 I haven't been able to create such a paragraph, but I've found a few files that have them. Docx2pyhon v1 will omit
-closing htms tags when a new paragraph is opened before the old paragraph is closed.
+closing html tags when a new paragraph is opened before the old paragraph is closed.
 
     <b>outer par bold text
 
