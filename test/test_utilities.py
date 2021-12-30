@@ -40,6 +40,28 @@ class TestSearchReplace:
             "Pears and Apples\n\nApples and Pears"
         )
 
+    def test_ampersand(self) -> None:
+        """Apples -> Pears, Pears -> Apples
+
+        Replace text with an ampersand"""
+        html = False
+        input_filename = RESOURCES / "apples_and_pears.docx"
+        output_filename = RESOURCES / "pears_and_apples.docx"
+        assert docx2python(input_filename, html=html).text == (
+            "Apples and Pears\n\nPears and Apples\n\n"
+            "Apples and Pears\n\nPears and Apples"
+        )
+        replace_docx_text(
+            input_filename,
+            output_filename,
+            ("Apples", "Apples & Pears <>"),
+            html=html,
+        )
+        assert docx2python(output_filename, html=html).text == (
+            "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>\n\n"
+            "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>"
+        )
+
     def test_search_and_replace_html(self) -> None:
         """Apples -> Pears, Pears -> Apples
 

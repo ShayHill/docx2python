@@ -160,7 +160,7 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
 
         elif tree.tag == Tags.MATH:
             # read equations
-            text = merged_text_tree(file, tree)
+            text = "".join((str(x) for x in tree.itertext()))
             do_descend = False
             tables.insert_text_as_new_run("<latex>{}</latex>".format(text))
 

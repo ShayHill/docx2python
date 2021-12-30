@@ -26,5 +26,16 @@ class TestEquations:
         """
         body = docx2python(RESOURCES / "equations.docx", html=True).body
         assert body == [
-            [[["Professional Format", "<latex>01x</latex>", "Linear Format", "<latex>\\int_{0}^{1}x</latex>"]]]
+            [
+                [
+                    [
+                        "Professional Format",
+                        "<latex>01x</latex>",
+                        "Linear Format",
+                        "<latex>\\int_{0}^{1}x</latex>",
+                        "Linear Format with lt",
+                        "<latex>\\int0<1x<5</latex>",
+                    ]
+                ]
+            ]
         ]
