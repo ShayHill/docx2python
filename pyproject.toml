@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "docx2python"
+version = "2.0.3"
+description = "\"Extract content from docx files\""
+authors = ["Shay Hill <shay_public@hotmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+lxml = "^4.9.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+types-lxml = "^2022.11.8"
+commitizen = "^2.39.1"
+
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "2.0.3"
+tag_format = "$version"
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
