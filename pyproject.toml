@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "docx2python"
-version = "2.0.3"
-description = "\"Extract content from docx files\""
+version = "2.1.0"
+description = "Extract content from docx files"
 authors = ["Shay Hill <shay_public@hotmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -9,6 +9,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 lxml = "^4.9.2"
+pre-commit = "^2.21.0"
+tox-poetry-installer = {extras = ["poetry"], version = "^0.10.0"}
+conventional-with-data = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
@@ -18,8 +21,40 @@ commitizen = "^2.39.1"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "2.0.3"
+version = "2.1.0"
 tag_format = "$version"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# [tox]
+# isolated_build = true
+# envlist = py36
+
+# [testenv]
+# whitelist_externals = poetry
+# commands =
+#     poetry install -v
+#     poetry run pytest tests/
+
+[tool.pyright]
+include = ["src"]
+exclude = ["**/__pycache__.py", "**/tests/**"]
+
+pythonVersion = "3.10"
+pythonPlatform = "Any"
+
+typeCheckingMode = "strict"
+reportShadowedImports = true
+reportCallInDefaultInitializer = true
+reportImplicitStringConcatenation = true
+reportPropertyTypeMismatch = true
+reportUninitializedInstanceVariable = true
+reportUnnecessaryTypeIgnoreComment = true
+reportUnusedCallResult = true
+reportImportCycles = false
+reportIncompatibleMethodOverride = false
+
+venvPath = "C:\\Users\\shaya\\AppData\\Local\\pypoetry\\Cache\\virtualenvs"
+venv = "C:\\Users\\shaya\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\docx2python-fuFHBYOz-py3.11"
