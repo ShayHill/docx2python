@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Testing Table of Contents support as requested by user leboni
 
 :author: Shay Hill
@@ -34,7 +32,7 @@ from .conftest import RESOURCES
 class TestTocText:
     def test_get_toc_text(self) -> None:
         """Extract header text from table-of-contents header."""
-        extraction = docx2python(RESOURCES / 'zen_of_python.docx')
+        extraction = docx2python(RESOURCES / "zen_of_python.docx")
         assert extraction.document_runs == [
             [
                 [[["Contents"], ["\t", "Beautiful is better than ugly.\t1"], []]],

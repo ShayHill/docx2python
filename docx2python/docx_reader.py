@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Hold and decode docx internal xml files.
 
 :author: Shay Hill
@@ -29,11 +27,11 @@ import zipfile
 from contextlib import suppress
 from dataclasses import dataclass
 from operator import attrgetter
-from typing import Dict, List, Optional, Set, Union
-from warnings import warn
 from pathlib import Path
+from warnings import warn
 
 from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .attribute_register import XML2HTML_FORMATTER
 from .docx_context import collect_numFmts, collect_rels
@@ -65,13 +63,13 @@ class File:
     created at runtime.
     """
 
-    def __init__(self, context: DocxReader, attribute_dict: Dict[str, str]) -> None:
+    def __init__(self, context: DocxReader, attribute_dict: dict[str, str]) -> None:
         """
         Point to container DocxContext instance and store attributes as properties.
 
         :param context: The DocxContent object holding this instance
         :param attribute_dict: Attributes of this file found in the rels, plus 'dir' as
-        described above.
+            described above.
         """
         self.context = context
         self.Id = str(attribute_dict["Id"])
@@ -80,20 +78,23 @@ class File:
         self.dir = attribute_dict["dir"]
 
         # old-style cached_property for Python 3.6 and 3.7 support
-        self.__path: Union[None, str] = None
-        self.__rels_path: Union[None, str] = None
-        self.__rels: Union[None, Dict[str, str]] = None
-        self.__root_element: Union[None, etree._Element] = None
+        self.__path: None | str = None
+        self.__rels_path: None | str = None
+        self.__rels: None | dict[str, str] = None
+        self.__root_element: None | EtreeElement = None
 
     def __repr__(self) -> str:
-        """File with self.path"""
+        """File with self.path
+
+        :return: String representation
+        """
         return f"File({self.path})"
 
     @property
     def path(self) -> str:
         """Infer path/to/xml/file from instance attributes
 
-        :returns: path to xml file
+        :return: path to xml file
 
         This will take the information in a file specification (from one of the rels
         files, e.g., {Id:'  ', Type:'  ' Target:'  ', dir:'  '}) and infer a path to
@@ -124,7 +125,7 @@ class File:
     def _rels_path(self) -> str:
         """Infer path/to/rels from instance attributes.
 
-        :returns: path to rels (which may not exist)
+        :return: path to rels (which may not exist)
 
         Every content file (``document.xml``, ``header1.xml``, ...) will have its own
         ``.rels`` file--if any relationships are defined.
@@ -150,14 +151,16 @@ class File:
         return self.__rels_path
 
     @property
-    def rels(self) -> Dict[str, str]:
+    def rels(self) -> dict[str, str]:
         """rIds mapped to values
+
+        :return: dict of rIds mapped to values
 
         Each content file.xml will have a file.xml.rels file--if relationships are
         defined. Inside file.xml, values defined in the file.xml.rels file may be
         referenced by their rId numbers.
 
-        :returns: Contents of the file.xml.rels file with reference rId numbers. These
+        :return: Contents of the file.xml.rels file with reference rId numbers. These
         refer to values defined in the file.xml.rels file:
 
         E.g.::
@@ -186,8 +189,10 @@ class File:
         return self.__rels
 
     @property
-    def root_element(self) -> etree._Element:
+    def root_element(self) -> EtreeElement:
         """Root element of the file.
+
+        :return: Root element of the file.
 
         Try to merge consecutive, duplicate (except text) elements in content files.
         See documentation for ``merge_elems``. Warn if ``merge_elems`` fails.
@@ -203,27 +208,31 @@ class File:
                 merge_elems(self, root)
             except Exception as ex:
                 warn(
-                    f"Attempt to merge consecutive elements in "
-                    f"{self.context.docx_filename} {self.path} resulted in "
-                    f"{repr(ex)}. Moving on."
+                    "Attempt to merge consecutive elements in "
+                    + f"{self.context.docx_filename} {self.path} resulted in "
+                    + f"{repr(ex)}. Moving on."
                 )
                 self.__root_element = root_
         self.__root_element = root
         return self.__root_element
 
     @property
-    def content(self) -> List[List[List[List[str]]]]:
-        """Text extracted into a 5-layer-deep nested list of strings."""
+    def content(self) -> list[list[list[list[str]]]]:
+        """Text extracted into a 5-layer-deep nested list of strings.
+
+        :return: Text extracted into a 5-layer-deep nested list of strings.
+        """
         return get_text(self)
 
     def get_content(
-        self, root: Optional[etree._Element] = None
-    ) -> List[List[List[List[str]]]]:
+        self, root: EtreeElement | None = None
+    ) -> list[list[list[list[str]]]]:
         """
         The same content as property 'content' with optional given root.
 
         :param root: Extract content of file from root down.
             If root is not given, return full content of file.
+        :return: Text extracted into a 5-layer-deep nested list of strings.
         """
         return get_text(self, root)
 
@@ -236,7 +245,7 @@ class DocxReader:
 
     def __init__(
         self,
-        docx_filename: Union[Path, str],
+        docx_filename: Path | str,
         html: bool = False,
         paragraph_styles: bool = False,
     ):
@@ -248,15 +257,17 @@ class DocxReader:
         else:
             self.xml2html_format = {}
 
-        # old-style cached_propery for Python 3.6 and 3.7 support
-        self.__zipf: Union[None, zipfile.ZipFile] = None
-        self.__files: Union[None, List[File]] = None
-        self.__numId2NumFmts: Union[None, Dict[str, List[str]]] = None
+        # cached properties
+        self.__zipf: None | zipfile.ZipFile = None
+        self.__files: None | list[File] = None
+        self.__numId2NumFmts: None | dict[str, list[str]] = None
 
     @property
     def zipf(self) -> zipfile.ZipFile:
         """
         Entire docx unzipped into bytes.
+
+        :return: Entire docx unzipped into bytes.
         """
         if self.__zipf is not None:
             return self.__zipf
@@ -265,24 +276,27 @@ class DocxReader:
         return self.__zipf
 
     @property
-    def files(self) -> List[File]:
+    def files(self) -> list[File]:
         """
         Instantiate a File instance for every content file.
+
+        :return: List of File instances, one per content file.
         """
         if self.__files is not None:
             return self.__files
 
-        files = []
+        files: list[File] = []
         for k, v in collect_rels(self.zipf).items():
             files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
         self.__files = files
         return self.__files
 
-    # noinspection PyPep8Naming
     @property
-    def numId2numFmts(self) -> Dict[str, List[str]]:
+    def numId2numFmts(self) -> dict[str, list[str]]:
         """
         numId referenced in xml to list of numFmt per indentation level
+
+        :return: numId referenced in xml to list of numFmt per indentation level
 
         See docstring for collect_numFmts
 
@@ -308,19 +322,20 @@ class DocxReader:
             ("header", "officeDocument", "footer", "footnotes", "endnotes")
             You can try others.
         :return: File instance of the requested type
+        :raise KeyError: if no file of the requested type is found
         """
         files_of_type = self.files_of_type(type_)
         if len(files_of_type) > 1:
             warn("Multiple files of type '{type_}' found. Returning first.")
         try:
             return files_of_type[0]
-        except IndexError:
+        except IndexError as exc:
             raise KeyError(
                 f"There is no item of type '{type_}' "
-                "in the {self.docx_filename} archive"
-            )
+                + "in the {self.docx_filename} archive"
+            ) from exc
 
-    def files_of_type(self, type_: Optional[str] = None) -> List[File]:
+    def files_of_type(self, type_: str | None = None) -> list[File]:
         """
         File instances with attrib Type='http://.../type_'
 
@@ -339,7 +354,7 @@ class DocxReader:
             (x for x in self.files if x.Type in types), key=attrgetter("path")
         )
 
-    def content_files(self) -> List[File]:
+    def content_files(self) -> list[File]:
         """
         Content files (contain displayed text) inside the docx.
 
@@ -347,7 +362,7 @@ class DocxReader:
         """
         return self.files_of_type()
 
-    def save(self, filename: Union[Path, str]) -> None:
+    def save(self, filename: Path | str) -> None:
         """
         Save the (presumably altered) xml.
 
@@ -363,9 +378,7 @@ class DocxReader:
             for file in content_files:
                 zout.writestr(file.path, etree.tostring(file.root_element))
 
-    def pull_image_files(
-        self, image_directory: Optional[str] = None
-    ) -> Dict[str, bytes]:
+    def pull_image_files(self, image_directory: str | None = None) -> dict[str, bytes]:
         """
         Copy images from zip file.
 
@@ -380,7 +393,7 @@ class DocxReader:
         :side effects: Given an optional image_directory, will write the images out
         to file.
         """
-        images = {}
+        images: dict[str, bytes] = {}
         for image in self.files_of_type("image"):
             with suppress(KeyError):
                 images[os.path.basename(image.Target)] = self.zipf.read(image.path)
@@ -388,12 +401,14 @@ class DocxReader:
             pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
             for file, image_bytes in images.items():
                 with open(os.path.join(image_directory, file), "wb") as image_copy:
-                    image_copy.write(image_bytes)
+                    _ = image_copy.write(image_bytes)
         return images
 
 
 def _copy_but(
-    in_zip: zipfile.ZipFile, out_zip: zipfile.ZipFile, exclusions: Optional[Set] = None
+    in_zip: zipfile.ZipFile,
+    out_zip: zipfile.ZipFile,
+    exclusions: set[str] | None = None,
 ) -> None:
     """
     Copy every file in a docx except those listed in exclusions.

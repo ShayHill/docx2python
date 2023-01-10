@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Generate bullet and numbered-list strings.
 
 :author: Shay Hill
@@ -19,20 +17,22 @@ from __future__ import annotations
 
 import warnings
 from collections import defaultdict
-from typing import Any, Dict, List, Callable
+from typing import Callable
 
-from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from docx2python import numbering_formats as nums
 from docx2python.namespace import qn
 
 
-# noinspection PyPep8Naming
 def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
+    """Select a bullet or numbering format function from xml numFmt.
+
+    :param numFmt: xml numFmt (e.g., decimal, lowerLetter)
+    :return: a function that takes an int and returns a string. If numFmt is not
+        recognized, treat numbers as bullets.
     """
-    Select a bullet or numbering type from xml numFmt.
-    """
-    numFmt2bullet_function: Dict[str, Callable[[int], str]] = {
+    numFmt2bullet_function: dict[str, Callable[[int], str]] = {
         "decimal": nums.decimal,
         "lowerLetter": nums.lower_letter,
         "upperLetter": nums.upper_letter,
@@ -45,14 +45,13 @@ def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
         return retval_
     except KeyError:
         warnings.warn(
-            "{} numbering format not implemented, substituting '{}'".format(
-                numFmt, nums.bullet()
-            )
+            f"{numFmt} numbering format not implemented, "
+            + f"substituting '{nums.bullet()}'"
         )
         return nums.bullet
 
 
-def _new_list_counter() -> defaultdict[Any, defaultdict[Any, int]]:
+def _new_list_counter() -> defaultdict[str, defaultdict[str, int]]:
     """
     A counter, starting at zero, for each numId
 
@@ -66,8 +65,7 @@ def _new_list_counter() -> defaultdict[Any, defaultdict[Any, int]]:
     return defaultdict(lambda: defaultdict(lambda: 0))
 
 
-def _increment_list_counter(ilvl2count, ilvl: str) -> int:
-    # noinspection SpellCheckingInspection
+def _increment_list_counter(ilvl2count: defaultdict[str, int], ilvl: str) -> int:
     """
     Increase counter at ilvl, reset counter at deeper levels.
 
@@ -100,16 +98,14 @@ class BulletGenerator:
     Keep track of list counters and generate bullet strings.
     """
 
-    # noinspection PyPep8Naming
-    def __init__(self, numId2numFmts: Dict[str, List[str]]) -> None:
+    def __init__(self, numId2numFmts: dict[str, list[str]]) -> None:
         """
         Set numId2numFmts. Initiate counters.
         """
         self.numId2numFmts = numId2numFmts
         self.numId2count = _new_list_counter()
 
-    # noinspection PyPep8Naming
-    def get_bullet(self, paragraph: etree._Element) -> str:
+    def get_bullet(self, paragraph: EtreeElement) -> str:
         """
         Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
@@ -146,7 +142,11 @@ class BulletGenerator:
             return ""
 
         def format_bullet(bullet: str) -> str:
-            """Indent, format and pad the bullet or number string."""
+            """Indent, format and pad the bullet or number string.
+
+            :param bullet: any kind of list-item string (bullet, number, Roman, ...)
+            :return: formatted bullet string
+            """
             if bullet != nums.bullet():
                 bullet += ")"
             return "\t" * int(ilvl) + bullet + "\t"

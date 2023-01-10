@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test functions in docx2python.numbering_formats.py
 
 :author: Shay Hill
@@ -9,8 +7,6 @@
 from random import randint
 
 import pytest
-# noinspection PyUnresolvedReferences
-from .helpers.utils import ARABIC_2_ROMAN
 
 from docx2python.numbering_formats import (
     bullet,
@@ -21,9 +17,11 @@ from docx2python.numbering_formats import (
     upper_roman,
 )
 
+from .helpers.utils import ARABIC_2_ROMAN
+
 
 class TestLowerLetter:
-    """Test numbering_formats.lower_letter """
+    """Test numbering_formats.lower_letter"""
 
     def test_convert_positive_int(self) -> None:
         """Convert a positive integer to a string of letters"""
@@ -52,7 +50,7 @@ def test_upper_letter() -> None:
 
 
 class TestLowerRoman:
-    """Test numbering_formats.lower_roman """
+    """Test numbering_formats.lower_roman"""
 
     def test_convert_positive_int(self) -> None:
         """Convert a positive integer to a string of letters"""

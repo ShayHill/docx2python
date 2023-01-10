@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Test that passing `more_html = True` collects paragraph styles
 
 :author: Shay Hill

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Libreoffice conversions from doc to docx raise CaretDepthError
 
 :author: Shay Hill
@@ -10,11 +8,11 @@ from a doc that raises a CaretDepthError.
 """
 
 
+import pytest
+
 from docx2python.main import docx2python
 
 from .conftest import RESOURCES
-
-import pytest
 
 
 class TestLibreofficeConversion:

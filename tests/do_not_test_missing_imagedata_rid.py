@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Skip image element when imagedata r:id cannot be found.
 
 :author: Shay Hill

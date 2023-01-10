@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Register namespace entries in xml ``document`` elements.
 
 :author: Shay Hill
@@ -64,6 +62,10 @@ NSMAP = {
 def qn(tag: str) -> str:
     """
     Turn a namespace-prefixed tag into a Clark-notation qualified tag.
+
+    :param tag: namespace-prefixed tag, e.g. ``w:p``
+    :return: Clark-notation qualified tag,
+        e.g. ``{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p``
 
     Stands for 'qualified name', a utility function to turn a namespace prefixed tag
     name into a Clark-notation qualified tag name for lxml.

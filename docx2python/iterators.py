@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Iterate over extracted docx content.
 
 :author: Shay Hill
@@ -21,12 +19,18 @@ These functions help manipulate that deep nest without deep indentation.
 
 """
 
-from typing import Any, Iterable, Iterator, List, NamedTuple, Sequence, Tuple, cast
+from __future__ import annotations
+
+from typing import Any, Iterable, Iterator, List, NamedTuple, Sequence, cast
 
 TablesList = List[List[List[List[Any]]]]
 
 
-IndexedItem = NamedTuple("IndexedItem", [("index", Tuple[int, ...]), ("value", Any)])
+class IndexedItem(NamedTuple):
+    """The address (indices in a nested list) of an item and the item itself."""
+
+    index: tuple[int, ...]
+    value: Any
 
 
 def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
@@ -40,7 +44,8 @@ def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
         * ``3`` => ``((i, j, k), nested[:][:][k])``
         * ...
 
-    :returns: tuples (tuple "address", item)
+    :return: tuples (tuple "address", item)
+    :raise ValueError: if depth is less than 1
 
     >>> sequence = [
     ...     [[["a", "b"], ["c"]], [["d", "e"]]],
@@ -94,16 +99,19 @@ def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
 
         :param enumd: tuples (tuple of indices, sequences)
         :return: updated index tuples with items from each sequence.
+        :raises TypeError: if the sequence is not of the same type as the ``nested``.
+            This will happen if you try to iterate into a string in a list of
+            strings.
         """
         for index_tuple, sequence in enumd:
-            if type(sequence) != argument_type:
+            if not isinstance(sequence, argument_type):
                 raise TypeError("will not iterate over sequence item")
             for i, item in enumerate(sequence):
                 yield IndexedItem(index_tuple + (i,), item)
 
     depth_n: Iterator[IndexedItem]
     depth_n = (IndexedItem((i,), x) for i, x in enumerate(nested))
-    for depth in range(1, depth):
+    for _ in range(1, depth):
         depth_n = enumerate_next_depth(depth_n)
     return (x for x in depth_n)
 
@@ -120,7 +128,7 @@ def iter_at_depth(nested: Sequence[Any], depth: int) -> Iterator[Any]:
         * ``3`` => ``nested[:][:][k]``
         * ...
 
-    :returns: sub-sequences or items in nested
+    :return: sub-sequences or items in nested
 
     >>> sequence = [
     ...     [[["a", "b"], ["c"]], [["d", "e"]]],
@@ -149,7 +157,7 @@ def iter_at_depth(nested: Sequence[Any], depth: int) -> Iterator[Any]:
     return (value for _, value in enum_at_depth(nested, depth))
 
 
-def iter_tables(tables: TablesList) -> Iterator[List[List[List[Any]]]]:
+def iter_tables(tables: TablesList) -> Iterator[list[list[list[Any]]]]:
     """
     Iterate over ``tables[i]``
 
@@ -161,7 +169,7 @@ def iter_tables(tables: TablesList) -> Iterator[List[List[List[Any]]]]:
     return iter_at_depth(tables, 1)
 
 
-def iter_rows(tables: TablesList) -> Iterator[List[List[Any]]]:
+def iter_rows(tables: TablesList) -> Iterator[list[list[Any]]]:
     """
     Iterate over ``tables[:][j]``
 
@@ -173,7 +181,7 @@ def iter_rows(tables: TablesList) -> Iterator[List[List[Any]]]:
     return iter_at_depth(tables, 2)
 
 
-def iter_cells(tables: TablesList) -> Iterator[List[Any]]:
+def iter_cells(tables: TablesList) -> Iterator[list[Any]]:
     """
     Iterate over ``tables[:][:][k]``
 
@@ -283,19 +291,19 @@ def get_html_map(tables: TablesList) -> str:
     tables_3deep = cast(List[List[List[str]]], tables_4deep)
     for (i, j, k), cell in enum_at_depth(tables_4deep, 3):
         cell = (str(x) for x in cell)
-        tables_3deep[i][j][k] = "".join(["<pre>{}</pre>".format(x) for x in cell])
+        tables_3deep[i][j][k] = "".join([f"<pre>{x}</pre>" for x in cell])
 
     # wrap each cell in <td> tags
     tables_2deep = cast(List[List[str]], tables_3deep)
     for (i, j), row in enum_at_depth(tables_3deep, 2):
-        tables_2deep[i][j] = "".join(["<td>{}</td>".format(x) for x in row])
+        tables_2deep[i][j] = "".join([f"<td>{x}</td>" for x in row])
 
     # wrap each row in <tr> tags
     tables_1deep = cast(List[str], tables_2deep)
     for (i,), table in enum_at_depth(tables_2deep, 1):
-        tables_1deep[i] = "".join("<tr>{}</tr>".format(x) for x in table)
+        tables_1deep[i] = "".join(f"<tr>{x}</tr>" for x in table)
 
     # wrap each table in <table> tags
-    tables_ = "".join(['<table border="1">{}</table>'.format(x) for x in tables_1deep])
+    tables_ = "".join([f'<table border="1">{x}</table>' for x in tables_1deep])
 
     return "<html><body>" + tables_ + "</body></html>"

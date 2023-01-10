@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Test methods of File object that are not tested elsewhere.
 
 :author: Shay Hill

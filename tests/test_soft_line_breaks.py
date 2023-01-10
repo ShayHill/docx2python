@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Start a new paragraph at a soft line break ``<w:br>``
 
 :author: Shay Hill

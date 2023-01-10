@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Merge runs with identical formatting.
 
 :author: Shay Hill
@@ -11,9 +9,9 @@ from __future__ import annotations
 
 import functools
 from itertools import groupby
-from typing import List, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
-from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .attribute_register import RELS_ID, Tags, has_content
 from .text_runs import get_html_formatting
@@ -25,8 +23,7 @@ if TYPE_CHECKING:
 _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
 
 
-def _elem_key(file: File, elem: etree._Element) -> Tuple[str, str, List[str]]:
-    # noinspection SpellCheckingInspection
+def _elem_key(file: File, elem: EtreeElement) -> tuple[str, str, list[str]]:
     """
     Enough information to tell if two elements are more-or-less identically formatted.
 
@@ -61,14 +58,12 @@ def _elem_key(file: File, elem: etree._Element) -> Tuple[str, str, List[str]]:
     return tag, "", get_html_formatting(elem, file.context.xml2html_format)
 
 
-def merge_elems(file: File, tree: etree._Element) -> None:
-    # noinspection SpellCheckingInspection
+def merge_elems(file: File, tree: EtreeElement) -> None:
     """
     Recursively merge duplicate (as far as docx2python is concerned) elements.
 
     :param file: File instancce
     :param tree: root_element from an xml in File instance
-    :return: None
     :effects: Merges consecutive elements if tag, attrib, and style are the same
 
     There are a few ways consecutive elements can be "identical":

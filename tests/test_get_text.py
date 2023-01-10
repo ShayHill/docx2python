@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test functions in docx2python.get_text.py
 
 author: Shay Hill
@@ -14,13 +12,8 @@ from typing import Dict
 import pytest
 from lxml import etree
 
-# noinspection PyProtectedMember
-from docx2python.bullets_and_numbering import (
-    BulletGenerator,
-    _increment_list_counter,
-)
+from docx2python.bullets_and_numbering import BulletGenerator, _increment_list_counter
 
-# noinspection PyUnresolvedReferences
 from .helpers.utils import valid_xml
 
 
@@ -49,7 +42,6 @@ def numbered_paragraphs():
     return [valid_xml(x) for x in paragraphs]
 
 
-# noinspection PyPep8Naming
 @pytest.fixture()
 def numbering_context() -> Dict[str, Dict]:
     """

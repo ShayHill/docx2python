@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Numbering formats for converted XML lists.
 
 :author: Shay Hill
@@ -21,10 +19,8 @@ covered::
 
 from string import ascii_lowercase
 
-
-"""Subs to convert any number of i's to a proper Roman numeral"""
+# Subs to convert any number of i's to a proper Roman numeral
 # fmt=off
-# noinspection SpellCheckingInspection
 ROMAN_SUBS = [
     ("iiiii", "v"),  # 1+1+1+1+1 -> 5
     ("vv", "x"),  # 5+5 -> 10
@@ -49,6 +45,7 @@ def lower_letter(n: int) -> str:
     :param n: any positive integer
     :return: the kind of "numbering" used for numbered lists and excel columns.
         (a, b, c ... aa, ab ...) Zero is undefined.
+    :raise ValueError: if n is not a positive integer
 
         >>> lower_letter(1)
         'a'
@@ -67,37 +64,41 @@ def lower_letter(n: int) -> str:
 
 
 def upper_letter(n: int) -> str:
+    """Get int as an upprecase letter.
+
+    :param n: any positive integer
+    :return: the kind of "numbering" used for numbered lists and excel columns.
+    """
     return lower_letter(n).upper()
 
 
-# noinspection SpellCheckingInspection
 def lower_roman(n: int) -> str:
-    # noinspection SpellCheckingInspection
     """
-        Convert a positive integer to a lowercase Roman numeral
+    Convert a positive integer to a lowercase Roman numeral
 
-        :param n: any positive integer
-        :return: Roman number equivalent of n
+    :param n: any positive integer
+    :return: Roman number equivalent of n
+    :raise ValueError: if n is not a positive integer
 
-            >>> lower_roman(1)
-            'i'
-            >>> lower_roman(9)
-            'ix'
-            >>> lower_roman(44)
-            'xliv'
+        >>> lower_roman(1)
+        'i'
+        >>> lower_roman(9)
+        'ix'
+        >>> lower_roman(44)
+        'xliv'
 
-        Numbers greater than 3999 can be expressed with a bar over the number. The bar
-        means "times 1000" (e.g., iv with a bar over it would be 4000).
+    Numbers greater than 3999 can be expressed with a bar over the number. The bar
+    means "times 1000" (e.g., iv with a bar over it would be 4000).
 
-        It'll never happen in this project, and I don't want to add non-ascii to what
-        might be a pure ascii file, so this function will keep adding 'm' to as many
-        thousand as you'd like.
+    It'll never happen in this project, and I don't want to add non-ascii to what
+    might be a pure ascii file, so this function will keep adding 'm' to as many
+    thousand as you'd like.
 
-            >>> lower_roman(10000)
-            'mmmmmmmmmm'
-        """
+        >>> lower_roman(10000)
+        'mmmmmmmmmm'
+    """
     if n < 1:
-        raise ValueError("the Romans hadn't figured out {}".format(n))
+        raise ValueError(f"the Romans hadn't figured out {n}")
     result = "i" * n
     for pattern, replacement in ROMAN_SUBS:
         result = result.replace(pattern, replacement)
@@ -105,12 +106,26 @@ def lower_roman(n: int) -> str:
 
 
 def upper_roman(n: int) -> str:
+    """Get int as an uppercase Roman numeral.
+
+    :param n: any positive integer
+    :return: Roman number equivalent of n
+    """
     return lower_roman(n).upper()
 
 
 def decimal(n: int) -> str:
+    """Get int as a decimal number string
+
+    :param n: any integer
+    :return: string such that int(decimal(n)) == n
+    """
     return str(n)
 
 
 def bullet(_: int = 0) -> str:
+    """Get the string we're using to replace bullets.
+
+    :return: the string we're using to replace bullets.
+    """
     return "--"

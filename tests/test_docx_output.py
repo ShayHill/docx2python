@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test features of DocxContent that weren't tested in test_docx2python.
 
 :author: Shay Hill
@@ -16,7 +14,7 @@ INST = docx2python(RESOURCES / "example.docx")
 
 class TestDocument:
     def test_combine_of_header_body_footer(self) -> None:
-        """Return all content combined as instance.document """
+        """Return all content combined as instance.document"""
         assert (
             INST.document
             == INST.header + INST.body + INST.footer + INST.footnotes + INST.endnotes
@@ -35,7 +33,7 @@ class TestDocument:
 
 class TestText:
     def test_function(self) -> None:
-        """Return '\n\n'-delimited paragraphs as instance.text. """
+        """Return '\n\n'-delimited paragraphs as instance.text."""
         assert INST.text == "\n\n".join(iter_at_depth(INST.document, 4))
 
 

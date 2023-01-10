@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Form checkboxes, dropdowns, and other non-text elements visible in Word.
 
 :author: Shay Hill
@@ -16,17 +14,16 @@ them by their escape sequences.
 from contextlib import suppress
 from typing import Union
 
-from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .namespace import qn
 
 
-# noinspection PyPep8Naming
-def get_checkBox_entry(checkBox: etree._Element) -> str:
+def get_checkBox_entry(checkBox: EtreeElement) -> str:
     """Create text representation for a checkBox element.
 
     :param checkBox: a checkBox xml element
-    :returns:
+    :return:
         1. attempt to get ``checked.w:val`` and return "\u2610" or "\u2612"
         2. attempt to get ``default.w:val`` and return "\u2610" or "\u2612"
         3. return ``--checkbox failed--``
@@ -52,6 +49,10 @@ def get_checkBox_entry(checkBox: etree._Element) -> str:
     """
 
     def get_wval() -> Union[str, None]:
+        """Get the value of the ``w:val`` attribute of the ``checked`` element.
+
+        :return: the value of the ``w:val`` attribute of the ``checked`` element
+        """
         with suppress(StopIteration):
             checked = next(checkBox.iterfind(qn("w:checked")))
             return str(checked.attrib.get(qn("w:val")) or "1")
@@ -63,9 +64,11 @@ def get_checkBox_entry(checkBox: etree._Element) -> str:
     return {"0": "\u2610", "1": "\u2612", None: "----checkbox failed----"}[get_wval()]
 
 
-# noinspection PyPep8Naming
-def get_ddList_entry(ddList: etree._Element) -> str:
+def get_ddList_entry(ddList: EtreeElement) -> str:
     """Get only the selected string of a dropdown list.
+
+    :param ddList: a dropdown-list element
+    :return: w:listEntry value of input element.
 
     <w:ddList>
         <w:result w:val="1"/>

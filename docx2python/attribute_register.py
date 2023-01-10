@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ The tags and attributes docx2python knows how to handle.
 
 :author: Shay Hill
@@ -12,7 +10,7 @@ much of this.
 from enum import Enum
 from typing import Callable, Iterator, NamedTuple, Optional
 
-from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .namespace import qn
 
@@ -112,10 +110,10 @@ class Tags(str, Enum):
 # ``file_instance.rels[elem.attrib[RELS_ID]]``
 RELS_ID = qn("r:id")
 
-_CONTENT_TAGS = {x for x in Tags} - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
+_CONTENT_TAGS = set(Tags) - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
 
 
-def has_content(tree: etree._Element) -> Optional[str]:
+def has_content(tree: EtreeElement) -> Optional[str]:
     """
     Does the element have any descendent content elements?
 
@@ -131,8 +129,13 @@ def has_content(tree: etree._Element) -> Optional[str]:
     If no content is found, the element can be safely ignored going forward.
     """
 
-    def iter_content(tree_: etree._Element) -> Iterator[str]:
-        """Yield all content elements in tree"""
+    def iter_content(tree_: EtreeElement) -> Iterator[str]:
+        """Yield all content elements in tree
+
+        :param tree_: xml element
+        :yield: child content elements
+        :return: None
+        """
         if tree_.tag in _CONTENT_TAGS:
             yield tree_.tag
         for branch in tree_:

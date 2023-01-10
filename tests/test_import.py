@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Make sure from docx2python import ... works
 
 :author: Shay Hill

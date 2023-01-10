@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test docx2python.table_object
 
 :author: Shay Hill
@@ -12,7 +10,7 @@ from docx2python.depth_collector import CaretDepthError, DepthCollector
 
 
 class TestDepthCollector:
-    """Test tables_object.DepthCollector """
+    """Test tables_object.DepthCollector"""
 
     def test_init(self) -> None:
         """Init containers"""
@@ -21,7 +19,7 @@ class TestDepthCollector:
         assert inst._rightmost_branches == [[]]
 
     def test_last_caret(self) -> None:
-        """Add empty list to caret[-1]. Append pointer to new list to caret. """
+        """Add empty list to caret[-1]. Append pointer to new list to caret."""
         inst = DepthCollector(3)
         inst._drop_caret()
         assert inst._rightmost_branches == [[[]], []]

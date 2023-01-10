@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test docx2python.docx_context.py
 
 author: Shay Hill
@@ -9,17 +7,18 @@ import os
 import zipfile
 from tempfile import TemporaryDirectory
 
+from lxml import etree
+
 from docx2python.attribute_register import Tags
 from docx2python.docx_context import collect_numFmts
 from docx2python.docx_reader import DocxReader
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
-from lxml import etree
 
 from .conftest import RESOURCES
 
-example_docx = RESOURCES / 'example.docx'
-example_copy_docx = RESOURCES / 'example_copy.docx'
+example_docx = RESOURCES / "example.docx"
+example_copy_docx = RESOURCES / "example_copy.docx"
 
 
 class TestSaveDocx:
@@ -51,7 +50,6 @@ class TestSaveDocx:
 class TestCollectNumFmts:
     """Test strip_text.collect_numFmts"""
 
-    # noinspection PyPep8Naming
     def test_gets_formats(self) -> None:
         """Retrieves formats from example.docx
 
@@ -94,7 +92,6 @@ class TestCollectDocProps:
             assert core_properties[prop] == value
 
 
-# noinspection PyPep8Naming
 class TestGetContext:
     """Text strip_text.get_context"""
 

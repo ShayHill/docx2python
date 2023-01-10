@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# last modified: 211221 19:20:29
 """Utility / example functions using new (as of 2.0.0 Docx2Python features)
 
 :author: Shay Hill
@@ -10,17 +8,19 @@ paragraph_styles argument. These functions use these new features as utilities /
 examples.
 """
 
+from __future__ import annotations
+
 import re
 from pathlib import Path
-from typing import Iterator, List, Tuple, Union
+from typing import Iterator
 
-from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .iterators import iter_at_depth
 from .main import docx2python
 
 
-def replace_root_text(root: etree._Element, old: str, new: str) -> None:
+def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
     """Replace :old: with :new: in all descendants of :root:
 
     :param root: an etree element presumably containing descendant text elements
@@ -32,10 +32,10 @@ def replace_root_text(root: etree._Element, old: str, new: str) -> None:
 
 
 def replace_docx_text(
-    path_in: Union[Path, str],
-    path_out: Union[Path, str],
-    *replacements: Tuple[str, str],
-    html: bool = False
+    path_in: Path | str,
+    path_out: Path | str,
+    *replacements: tuple[str, str],
+    html: bool = False,
 ) -> None:
     """Replace text in a docx file.
 
@@ -50,14 +50,14 @@ def replace_docx_text(
         for replacement in replacements:
             replace_root_text(root, *replacement)
     reader.save(path_out)
-    return
 
 
-def get_links(path_in: Union[Path, str]) -> Iterator[Tuple[str, str]]:
+def get_links(path_in: Path | str) -> Iterator[tuple[str, str]]:
     """Iter links inside a docx file as (href, text)
 
     :param path_in: path to input docx
-    :yields: every link in the file as a tuple of (href, text)
+    :yield: every link in the file as a tuple of (href, text)
+    :return: None
     """
     link_pattern = re.compile('<a href="(?P<href>[^"]+)">(?P<text>[^<]+)</a>')
     extraction = docx2python(path_in)
@@ -68,10 +68,12 @@ def get_links(path_in: Union[Path, str]) -> Iterator[Tuple[str, str]]:
             yield href, text
 
 
-def get_headings(path_in: Union[Path, str]) -> Iterator[List[str]]:
+def get_headings(path_in: Path | str) -> Iterator[list[str]]:
     """Iter paragraphs with 'Heading' patagraph_style
 
     :param path_in: path to input docx
+    :yield: every paragraph with 'Heading' paragraph_style as a list of strings
+    :return: None
 
     When docx2python paragraph_styles parameter is set to True, the first run in
     every paragraph will be a paragraph style extracted from the xml, if present.

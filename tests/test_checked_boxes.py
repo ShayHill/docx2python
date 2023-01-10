@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# last modified: 211217 11:34:10
 """ Identify checked boxes in user-submitted file
 
 :author: Shay Hill
@@ -23,9 +21,10 @@ parsing through forms that have all of their stuff in tables.
 '''
 """
 
-from .conftest import RESOURCES
 from docx2python import docx2python
 from docx2python.iterators import iter_at_depth
+
+from .conftest import RESOURCES
 
 
 def test_checked_boxes() -> None:

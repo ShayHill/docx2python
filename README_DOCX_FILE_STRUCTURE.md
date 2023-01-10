@@ -60,5 +60,3 @@ There are four basic types of files:
         - webSettings.xml  # ignored by docx2python
 
 A ``*.docx`` file is just a zipped up file structure (the structure defined above). You can unzip a docx file, make changes, then zip it back up and everything will work (provided your changes are valid xml).
-    
-

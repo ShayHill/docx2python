@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Get text run formatting.
 
 :author: Shay Hill
@@ -8,23 +6,27 @@
 Text runs are formatted inline in the ``trash/document.xml`` or header files. Read
 those elements to extract formatting information.
 """
+from __future__ import annotations
+
 import re
 from collections import defaultdict
 from contextlib import suppress
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import Sequence, Tuple, Union
 
-from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .attribute_register import HtmlFormatter, Tags
 from .namespace import qn
 
 
-def _elem_tag_str(elem: etree._Element) -> str:
+def _elem_tag_str(elem: EtreeElement) -> str:
     """The text part of an elem.tag (the portion right of the colon)
 
     :param elem: an xml element
+    :return: the text part of an elem.tag (the portion right of the colon)
+    :raise RuntimeError: if the tag is not qualified
 
-    create with::
+    create with:
 
         document = etree.fromstring('bytes string')
         # recursively search document elements.
@@ -45,8 +47,7 @@ def _elem_tag_str(elem: etree._Element) -> str:
     raise RuntimeError("could not get tag from elem")
 
 
-# noinspection PyPep8Naming
-def _gather_sub_vals(element: etree._Element, qname: str) -> Dict[str, Optional[str]]:
+def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]:
     """Gather formatting elements for a paragraph or text run.
 
     :param element: a ``<w:r>`` or ``<w:p>`` xml element. Maybe others
@@ -92,7 +93,7 @@ def _gather_sub_vals(element: etree._Element, qname: str) -> Dict[str, Optional[
         }
     """
 
-    sub_vals: Dict[str, Optional[str]] = {}
+    sub_vals: dict[str, str | None] = {}
     with suppress(StopIteration):
         for sub_element in next(element.iterfind(qname)):
             sub_val = sub_element.attrib.get(qn("w:val"))
@@ -103,7 +104,7 @@ def _gather_sub_vals(element: etree._Element, qname: str) -> Dict[str, Optional[
     return sub_vals
 
 
-def _gather_Pr(element: etree._Element) -> Dict[str, Optional[str]]:
+def _gather_Pr(element: EtreeElement) -> dict[str, str | None]:
     """
     Gather style values for a <w:r> or <w:p> element (maybe others)
 
@@ -118,8 +119,7 @@ def _gather_Pr(element: etree._Element) -> Dict[str, Optional[str]]:
     return _gather_sub_vals(element, element.tag + "Pr")
 
 
-# noinspection PyPep8Naming
-def get_pStyle(paragraph_element: etree._Element) -> str:
+def get_pStyle(paragraph_element: EtreeElement) -> str:
     """
     Collect and format paragraph -> pPr -> pStyle value.
 
@@ -132,10 +132,9 @@ def get_pStyle(paragraph_element: etree._Element) -> str:
     return _gather_Pr(paragraph_element).get("pStyle", "") or ""
 
 
-# noinspection PyPep8Naming
 def get_run_formatting(
-    run_element: etree._Element, xml2html: Dict[str, HtmlFormatter]
-) -> List[str]:
+    run_element: EtreeElement, xml2html: dict[str, HtmlFormatter]
+) -> list[str]:
     """
     Get run-element formatting converted into html.
 
@@ -162,10 +161,9 @@ def get_run_formatting(
     return _format_Pr_into_html(_gather_Pr(run_element), xml2html)
 
 
-# noinspection PyPep8Naming
 def get_paragraph_formatting(
-    paragraph_element: etree._Element, xml2html: Dict[str, HtmlFormatter]
-) -> List[str]:
+    paragraph_element: EtreeElement, xml2html: dict[str, HtmlFormatter]
+) -> list[str]:
     """
     Get paragraph-element formatting converted into html.
 
@@ -192,10 +190,9 @@ def get_paragraph_formatting(
     return _format_Pr_into_html({get_pStyle(paragraph_element): None}, xml2html)
 
 
-# noinspection PyPep8Naming
 def _format_Pr_into_html(
-    Pr2val: Dict[str, Union[str, None]], xml2html: Dict[str, HtmlFormatter]
-) -> List[str]:
+    Pr2val: dict[str, str | None], xml2html: dict[str, HtmlFormatter]
+) -> list[str]:
     """
     Format tags and values into html strings.
 
@@ -217,13 +214,13 @@ def _format_Pr_into_html(
     Other formats would probably work, but they aren't necessary to support the tags
     supported (see README).
     """
-    style = []
+    style: list[str] = []
 
     # group together supported formats with the same container and property_
     # e.g., group together everything that goes into `<span style="$HERE$">`
     # con_pro2for[(con, pro)] = string created from for
     cp2f_keytype = Tuple[Union[None, str], Union[None, str]]
-    con_pro2for: defaultdict[cp2f_keytype, List[str]] = defaultdict(list)
+    con_pro2for: defaultdict[cp2f_keytype, list[str]] = defaultdict(list)
     for tag, val in ((k, v) for k, v in Pr2val.items() if k in xml2html):
         formatter, container, property_ = xml2html[tag]
         con_pro2for[(container, property_)].append(formatter(tag, val or ""))
@@ -231,7 +228,7 @@ def _format_Pr_into_html(
     # group together supported formats with the same container
     # e.g., group together everything that goes into `<span $HERE$>`
     # con2pro_for[(con,)] = string created from pro and for
-    con2pro_for: defaultdict[str, List[str]] = defaultdict(list)
+    con2pro_for: defaultdict[str, list[str]] = defaultdict(list)
     for k, v in sorted((k, v) for k, v in con_pro2for.items() if k[1] is not None):
         con2pro_for[k[0] or ""].append(f'{k[1]}="{";".join(sorted(v))}"')
 
@@ -246,8 +243,8 @@ def _format_Pr_into_html(
 
 
 def get_html_formatting(
-    elem: etree._Element, xml2html: Dict[str, HtmlFormatter]
-) -> List[str]:
+    elem: EtreeElement, xml2html: dict[str, HtmlFormatter]
+) -> list[str]:
     """
     Get style for an element (if available)
 
@@ -277,10 +274,10 @@ def html_open(style: Sequence[str]) -> str:
     >>> html_open(style)
     '<font color="red" size="32"><b><i><u>'
     """
-    return "".join((f"<{x}>" for x in style))
+    return "".join(f"<{x}>" for x in style)
 
 
-def html_close(style: List[str]) -> str:
+def html_close(style: list[str]) -> str:
     """
     HTML tags to close a style.
 
@@ -295,4 +292,4 @@ def html_close(style: List[str]) -> str:
 
         <b><i><u>text</u></i></b>
     """
-    return "".join("</{}>".format(x.split()[0]) for x in reversed(style))
+    return "".join(f"</{x.split()[0]}>" for x in reversed(style))

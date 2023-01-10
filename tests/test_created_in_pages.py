@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Fix bullets in pages created in Pages
 
 :author: Shay Hill
@@ -36,7 +34,7 @@ from .conftest import RESOURCES
 
 
 class TestParagraphsOnly:
-    """ Confirming this works with v1.25 """
+    """Confirming this works with v1.25"""
 
     def test_paragraphs_only(self) -> None:
         """Run without issue"""

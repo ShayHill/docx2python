@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Test corrections for google docs docx files
 
 :author: Shay Hill
@@ -40,6 +38,7 @@ KeyError: "There is no item named 'docProps/core.xml' in the archive"
 """
 
 import pytest
+
 from docx2python import docx2python
 
 from .conftest import RESOURCES

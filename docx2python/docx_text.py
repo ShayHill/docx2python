@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Extract text from docx content files.
 
 :author: Shay Hill
@@ -13,12 +11,9 @@ Content in the extracted docx is found in the ``word`` folder:
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING, List, Optional, Sequence
+from typing import TYPE_CHECKING, List, Sequence, cast
 
-from lxml import etree
-
-if TYPE_CHECKING:
-    from docx_reader import File
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .attribute_register import Tags
 from .bullets_and_numbering import BulletGenerator
@@ -28,10 +23,13 @@ from .iterators import iter_at_depth
 from .namespace import qn
 from .text_runs import get_paragraph_formatting, get_pStyle, get_run_formatting
 
+if TYPE_CHECKING:
+    from docx_reader import File
+
 TablesList = List[List[List[List[str]]]]
 
 
-def _get_elem_depth(tree: etree._Element) -> Optional[int]:
+def _get_elem_depth(tree: EtreeElement) -> int | None:
     """What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
     :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
@@ -77,10 +75,14 @@ def _get_elem_depth(tree: etree._Element) -> Optional[int]:
     if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
         return None
 
-    def search_at_depth(tree_: Sequence[etree._Element], _depth=0):
-        """Width-first recursive search for Tags.PARAGRAPH"""
+    def search_at_depth(tree_: Sequence[EtreeElement], _depth: int = 0) -> int | None:
+        """Width-first recursive search for Tags.PARAGRAPH
+
+        :param tree_: a sequence of elements which may contain a paragraph
+        :return: depth of the first paragraph found, or None if no paragraph found
+        """
         if not tree_:
-            return
+            return None
         if any(x.tag == Tags.PARAGRAPH for x in tree_):
             return max(4 - _depth, 1)
         return search_at_depth(sum([list(x) for x in tree_], []), _depth + 1)
@@ -88,25 +90,36 @@ def _get_elem_depth(tree: etree._Element) -> Optional[int]:
     return search_at_depth([tree])
 
 
-def get_paragraphs(file, root):
-    all_paragraphs = []
+def get_paragraphs(file: File, root: EtreeElement) -> list[str]:
+    """Return a list of paragraphs from the document
+
+    :param file: an internal file element (e.g., header, footer, document))
+    :param root: the root element of the document
+    :return: a list of paragraphs
+    """
+    all_paragraphs: list[str] = []
     for branch in root:
-        all_paragraphs += [x for x in iter_at_depth(get_text(file, branch), 5)]
+        all_paragraphs += list(iter_at_depth(get_text(file, branch), 5))
     return all_paragraphs
 
 
-def merged_text_tree(file, root):
+def merged_text_tree(file: File, root: EtreeElement) -> str:
+    """Return a string of all text in the document
+
+    :param file: an internal file element (e.g., header, footer, document))
+    :param root: the root element of the document
+    :return: a string of all text in the document
+    """
     return "".join(get_paragraphs(file, root))
 
 
-# noinspection PyPep8Naming
-def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
+def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
     """Xml as a string to a list of cell strings.
 
     :param file: File instance from which text will be extracted.
     :param root: Optionally extract content from a single element.
         If None, root_element of file will be used.
-    :returns: A 5-deep nested list of strings.
+    :return: A 5-deep nested list of strings.
 
     Sorts the text into the DepthCollector instance, five-levels deep
 
@@ -126,13 +139,12 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
 
     xml2html = file.context.xml2html_format
 
-    # noinspection PyPep8Naming
-    def branches(tree: etree._Element) -> None:
+    def branches(tree: EtreeElement) -> None:
         """
         Recursively iterate over tree. Add text when found.
 
         :param tree: An Element from an xml file (etree)
-        :return: None. Adds text cells to outer variable `tables`.
+        :effect: Adds text cells to outer variable `tables`.
         """
         do_descend = True
 
@@ -160,9 +172,9 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
 
         elif tree.tag == Tags.MATH:
             # read equations
-            text = "".join((str(x) for x in tree.itertext()))
+            text = "".join(str(x) for x in tree.itertext())
             do_descend = False
-            tables.insert_text_as_new_run("<latex>{}</latex>".format(text))
+            tables.insert_text_as_new_run(f"<latex>{text}</latex>")
 
         elif tree.tag == Tags.BR:
             tables.add_text_into_open_run("\n")
@@ -172,21 +184,21 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
             char = str(tree.attrib.get(qn("w:char")))
             if char:
                 tables.add_text_into_open_run(
-                    "<span style=font-family:{}>&#x0{};</span>".format(font, char[1:])
+                    f"<span style=font-family:{font}>&#x0{char[1:]};</span>"
                 )
 
         elif tree.tag == Tags.FOOTNOTE:
             footnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
             if "separator" not in footnote_type:
                 tables.insert_text_as_new_run(
-                    "footnote{})\t".format(str(tree.attrib[qn("w:id")]))
+                    f"footnote{str(tree.attrib[qn('w:id')])})\t"
                 )
 
         elif tree.tag == Tags.ENDNOTE:
             endnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
             if "separator" not in endnote_type:
                 tables.insert_text_as_new_run(
-                    "endnote{})\t".format(str(tree.attrib[qn("w:id")]))
+                    f"endnote{str(tree.attrib[qn('w:id')])})\t"
                 )
 
         elif tree.tag == Tags.HYPERLINK:
@@ -196,7 +208,7 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
             try:
                 rId = tree.attrib[qn("r:id")]
                 link = file.rels[rId]
-                tables.insert_text_as_new_run('<a href="{}">{}</a>'.format(link, text))
+                tables.insert_text_as_new_run(f'<a href="{link}">{text}</a>')
             except KeyError:
                 tables.insert_text_as_new_run(text)
 
@@ -208,25 +220,25 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
 
         elif tree.tag == Tags.FOOTNOTE_REFERENCE:
             tables.insert_text_as_new_run(
-                "----footnote{}----".format(str(tree.attrib[qn("w:id")]))
+                f"----footnote{str(tree.attrib[qn('w:id')])}----"
             )
 
         elif tree.tag == Tags.ENDNOTE_REFERENCE:
             tables.insert_text_as_new_run(
-                "----endnote{}----".format(str(tree.attrib[qn("w:id")]))
+                f"----endnote{str(tree.attrib[qn('w:id')])}----"
             )
 
         elif tree.tag == Tags.IMAGE:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:embed")]
                 image = file.rels[rId]
-                tables.insert_text_as_new_run("----{}----".format(image))
+                tables.insert_text_as_new_run(f"----{image}----")
 
         elif tree.tag == Tags.IMAGEDATA:
             with suppress(KeyError):
                 rId = tree.attrib[qn("r:id")]
                 image = file.rels[rId]
-                tables.insert_text_as_new_run("----{}----".format(image))
+                tables.insert_text_as_new_run(f"----{image}----")
 
         elif tree.tag == Tags.TAB:
             tables.insert_text_as_new_run("\t")
@@ -245,9 +257,9 @@ def get_text(file: File, root: Optional[etree._Element] = None) -> TablesList:
 
     branches(root)
 
-    if tables._orphan_runs:
-        tables.commence_paragraph()
-    if tables._open_pars:
+    if tables.orphan_runs:
+        _ = tables.commence_paragraph()
+    if tables.open_pars:
         tables.conclude_paragraph()
 
-    return tables.tree
+    return cast(TablesList, tables.tree)

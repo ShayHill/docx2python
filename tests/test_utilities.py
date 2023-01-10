@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# last modified: 211221 19:13:25
 """DocxReader object is able to open a docx file, search and replace text, then save.
 
 :author: Shay Hill
@@ -10,7 +8,7 @@ This test opens a file on your hd, edits it, then saves it with the filename
 """
 
 from docx2python.main import docx2python
-from docx2python.utilities import get_links, replace_docx_text, get_headings
+from docx2python.utilities import get_headings, get_links, replace_docx_text
 
 from .conftest import RESOURCES
 

@@ -31,7 +31,7 @@ __additions:__
 * (optionally) retains font size, font color, bold, italics, and underscore as html
 * extract math equations
 * extract user selections from checkboxes and dropdown menus
-  
+
 __subtractions:__
 * no command-line interface
 * will only work with Python 3.7+
@@ -63,7 +63,7 @@ docx2python('path/to/file.docx', html=True)
 Note on html feature:
 * supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript, ``<span style="font-variant: small-caps">``small caps, ``<span style="text-transform:uppercase">``all caps, ``<span style="background-color: yellow">``highlighted, ``<span style="font-size:32">``font size, ``<span style="color:#ff0000">``colored text.
 * hyperlinks will always be exported as html (``<a href="http:/...">link text</a>``), even if ``html=False``, because I couldn't think of a more canonical representation.
-* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph a</b>`, `<b>paragraph b</b>`. This is intentional to make  each paragraph its own entity. 
+* every tag open in a paragraph will be closed in that paragraph (and, where appropriate, reopened in the next paragraph). If two subsequenct paragraphs are bold, they will be returned as `<b>paragraph a</b>`, `<b>paragraph b</b>`. This is intentional to make  each paragraph its own entity.
 * if you specify `html=True`, `&`, `>` and `<` in your docx text will be encoded as `&amp`, `&gt;` and `&lt;`
 
 ## Return Value
@@ -128,8 +128,8 @@ Table cells will appear as table cells. Text outside tables will appear as table
 
 
 A docx document can be tables within tables within tables. Docx2Python flattens most of this to more easily navigate
-within the content. 
-    
+within the content.
+
 ## Working with output
 
 This package provides several documented helper functions in [the ``docx2python.iterators`` module](https://docx2python.readthedocs.io/en/latest/docx2python.html#module-iterators). Here are a few recipes possible with these functions:
@@ -155,7 +155,7 @@ def html_map(tables) -> str:
     """Create an HTML map of document contents.
 
     Render this in a browser to visually search for data.
-    
+
     :tables: value could come from, e.g.,
         * docx_to_text_output.document
         * docx_to_text_output.body
@@ -262,19 +262,19 @@ such "repaired" XML later on.
 
 MS Word will nest paragraphs
 
-	<w:p>
-		<w:r>
-			<w:t>text</w:t>
-		</w:r>
-		<w:p>  # paragraph inside a paragraph
-			<w:r>
-				<w:t>text</w:t>
-			</w:r>
-		</w:p>
-		<w:r>
-			<w:t>text</w:t>
-		</w:r>
-	</w:p>
+    <w:p>
+        <w:r>
+            <w:t>text</w:t>
+        </w:r>
+        <w:p>  # paragraph inside a paragraph
+            <w:r>
+                <w:t>text</w:t>
+            </w:r>
+        </w:p>
+        <w:r>
+            <w:t>text</w:t>
+        </w:r>
+    </w:p>
 
 I haven't been able to create such a paragraph, but I've found a few files that have them. Docx2pyhon v1 will omit
 closing html tags when a new paragraph is opened before the old paragraph is closed.

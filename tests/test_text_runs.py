@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test functions in docx2python.text_runs.py
 
 :author: Shay Hill
@@ -9,8 +7,6 @@
 from xml.etree import ElementTree
 
 from docx2python.attribute_register import XML2HTML_FORMATTER
-
-# noinspection PyProtectedMember
 from docx2python.text_runs import (
     _elem_tag_str,
     _gather_Pr,
@@ -19,7 +15,6 @@ from docx2python.text_runs import (
     html_open,
 )
 
-# noinspection PyUnresolvedReferences
 from .helpers.utils import valid_xml
 
 ONE_TEXT_RUN = valid_xml(
@@ -55,7 +50,7 @@ class TestElemTagStr:
 
 
 class TestGatherRpr:
-    """Test text_runs.gather_rPr """
+    """Test text_runs.gather_rPr"""
 
     def test_get_styles(self):
         """Map styles to values."""
@@ -77,7 +72,7 @@ class TestGatherRpr:
 
 
 class TestGetRunStyle:
-    """Test text_runs.get_run_style """
+    """Test text_runs.get_run_style"""
 
     def test_font_and_others(self) -> None:
         """Return font first, then other styles."""
@@ -91,7 +86,7 @@ class TestGetRunStyle:
 
 
 class TestStyleStrings:
-    """Test text_runs.style_open and text_runs.style_close """
+    """Test text_runs.style_open and text_runs.style_close"""
 
     def test_style_open(self) -> None:
         """Produce valid html for all defined styles."""

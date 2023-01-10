@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """
 
 :author: Shay Hill
@@ -18,7 +16,7 @@ sys.path.append(project)
 def pytest_assertrepr_compare(config, op, left, right):
     """See full error diffs"""
     if op in ("==", "!="):
-        return ["{0} {1} {2}".format(left, op, right)]
+        return [f"{left} {op} {right}"]
 
 
-RESOURCES = Path(project, "test", "resources")
+RESOURCES = Path(project, "tests", "resources")

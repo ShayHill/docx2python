@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test docx2python.iterators.py
 
 author: Shay Hill
@@ -152,7 +150,6 @@ class TestGetHtmlMap:
     def test_get_html_map(self) -> None:
         """Create valid html."""
         # fmt: off
-        # noinspection PyPep8
         assert get_html_map(TABLES) == (
             '<html>'
             '<body>'

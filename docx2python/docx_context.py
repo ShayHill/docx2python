@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """ Content from files that aren't ``word/document.xml``
 
 :author: Shay Hill
@@ -12,20 +10,19 @@ from __future__ import annotations
 
 import re
 import zipfile
-from typing import Dict, List, Optional
 
 from lxml import etree
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .namespace import qn
 
 
-# noinspection PyPep8Naming
-def collect_numFmts(numFmts_root: etree._Element) -> Dict[str, List[str]]:
+def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
     """
     Collect abstractNum bullet formats into a dictionary
 
     :param numFmts_root: Root element of ``word/numbering.xml``.
-    :returns: numId mapped to numFmts (by ilvl)
+    :return: numId mapped to numFmts (by ilvl)
 
     :background:
 
@@ -62,7 +59,7 @@ def collect_numFmts(numFmts_root: etree._Element) -> Dict[str, List[str]]:
             "2": ...
         }
     """
-    abstractNumId2numFmts: Dict[str, List[str]] = {}
+    abstractNumId2numFmts: dict[str, list[str]] = {}
 
     for abstractNum in numFmts_root.findall(qn("w:abstractNum")):
         id_ = str(abstractNum.attrib[qn("w:abstractNumId")])
@@ -72,8 +69,8 @@ def collect_numFmts(numFmts_root: etree._Element) -> Dict[str, List[str]]:
             if numFmt is not None:
                 abstractNumId2numFmts[id_].append(str(numFmt.attrib[qn("w:val")]))
 
-    numId2numFmts = {}
-    num: etree._Element
+    numId2numFmts: dict[str, list[str]] = {}
+    num: EtreeElement
     for num in (x for x in numFmts_root.findall(qn("w:num")) if x is not None):
         numId = num.attrib[qn("w:numId")]
         if numId is None:
@@ -87,7 +84,7 @@ def collect_numFmts(numFmts_root: etree._Element) -> Dict[str, List[str]]:
     return numId2numFmts
 
 
-def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
+def collect_rels(zipf: zipfile.ZipFile) -> dict[str, list[dict[str, str]]]:
     """
     Map file to relId to attrib
 
@@ -152,7 +149,7 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
             ]
         }
     """
-    path2rels = {}
+    path2rels: dict[str, list[dict[str, str]]] = {}
     for rels in (x for x in zipf.namelist() if x[-5:] == ".rels"):
         path2rels[rels] = [
             {str(y): str(z) for y, z in x.attrib.items()}
@@ -161,12 +158,11 @@ def collect_rels(zipf: zipfile.ZipFile) -> Dict[str, List[Dict[str, str]]]:
     return path2rels
 
 
-# noinspection PyPep8Naming
-def collect_docProps(root: etree._Element) -> Dict[str, Optional[str]]:
-    # noinspection SpellCheckingInspection
+def collect_docProps(root: EtreeElement) -> dict[str, str | None]:
     """
     Get author, modified, etc. from core-properties (should be docProps/core.xml)
 
+    :param root: root of the XML tree
     :return: document property names mapped to values
 
     **E.g., Given**::
@@ -198,7 +194,7 @@ def collect_docProps(root: etree._Element) -> Dict[str, Optional[str]]:
             ...
         }
     """
-    docProp2text: Dict[str, Optional[str]] = {}
+    docProp2text: dict[str, str | None] = {}
     capture_tag_name = re.compile(r"{.+}(?P<tag_name>\w+)")
     for dc in root:
         tag_match = re.match(capture_tag_name, dc.tag)

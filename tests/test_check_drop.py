@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test checkbox exports from a user-submitted and my own checkbox files.
 
 :author: Shay Hill
@@ -9,8 +7,9 @@ List items from the user-submitted docx were listed B then A. Confusing for the 
 but I didn't want to alter it in my version of Word.
 """
 
-from .conftest import RESOURCES
 from docx2python.main import docx2python
+
+from .conftest import RESOURCES
 
 
 class TestCheckboxToHtml:

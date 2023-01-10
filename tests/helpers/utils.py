@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Helper functions for tests.
 
 author: Shay Hill
@@ -7,7 +5,6 @@ created: 6/26/2019
 """
 
 
-# noinspection SpellCheckingInspection
 from docx2python.namespace import NSMAP
 
 
@@ -18,12 +15,11 @@ def valid_xml(elements: str) -> bytes:
     )
     return bytes(
         '<?xml version="1.0" encoding="UTF-8"?>'
-        '<w:document {}>'.format(xmlns) + elements + "</w:document>",
+        "<w:document {}>".format(xmlns) + elements + "</w:document>",
         encoding="utf-8",
     )
 
 
-# noinspection SpellCheckingInspection
 ARABIC_2_ROMAN = {
     1: "i",
     2: "ii",

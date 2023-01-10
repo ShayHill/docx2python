@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test functions in docx2python.namespace.py
 
 :author: Shay Hill
@@ -14,4 +12,4 @@ class TestQn:
 
         `qn('p:cSld')`` returns ``'{http://schemas.../main}cSld'`
         """
-        assert qn("w:p") == '{{{}}}p'.format(NSMAP["w"])
+        assert qn("w:p") == "{{{}}}p".format(NSMAP["w"])

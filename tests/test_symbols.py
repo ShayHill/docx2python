@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Test symbol extraction.
 
 :author: Shay Hill
@@ -21,8 +19,9 @@ Symbols are captured in the docx content files as ``<sym>`` elements.
 """
 
 
-from .conftest import RESOURCES
 from docx2python.main import docx2python
+
+from .conftest import RESOURCES
 
 
 def test_symbols() -> None:

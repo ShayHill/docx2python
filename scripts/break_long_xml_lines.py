@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
 """Break up long lines in an unzipped docx file
 
 :author: Shay Hill
@@ -31,4 +29,4 @@ def break_long_xml_lines(filename: str) -> None:
         lines = one_line.readlines()
     lines = [re.sub(b"><", b">\n<", x) for x in lines]
     with open(filename, "wb") as split_lines:
-        split_lines.write(b"\n".join(lines))
+        _ = split_lines.write(b"\n".join(lines))
