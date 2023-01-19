@@ -2,12 +2,6 @@
 
 Extract docx headers, footers, text, footnotes, endnotes, properties, and images to a Python object.
 
-## Note to Users / Contributors
-
-I will be doing very little coding in 2022. I will address "show stopper" bugs in docx2python, and I will accept pull requests *if* they are complete with
-* an example `*.docx` file showing the problem addressed or missing feature
-* a new test file with (Pytest) tests for the new fix or feature
-
 `README_DOCX_FILE_STRUCTURE.md` may help if you'd like to extend docx2python.
 
 ## Back to docx2python
