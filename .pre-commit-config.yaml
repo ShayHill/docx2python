@@ -102,6 +102,7 @@ repos:
     - --disable=import-error
     - --disable=too-many-arguments
     - --disable=broad-except
+    - --disable=no-name-in-module
     - --load-plugins=pylint.extensions.docparams
     - --accept-no-param-doc=n
     - --accept-no-raise-doc=n

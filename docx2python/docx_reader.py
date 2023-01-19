@@ -26,6 +26,7 @@ import pathlib
 import zipfile
 from contextlib import suppress
 from dataclasses import dataclass
+from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
 from warnings import warn
@@ -245,7 +246,7 @@ class DocxReader:
 
     def __init__(
         self,
-        docx_filename: Path | str,
+        docx_filename: Path | str | BytesIO,
         html: bool = False,
         paragraph_styles: bool = False,
     ):

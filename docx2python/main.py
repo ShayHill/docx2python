@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 from warnings import warn
 
@@ -13,7 +14,7 @@ from .docx_reader import DocxReader
 
 
 def docx2python(
-    docx_filename: str | Path,
+    docx_filename: str | Path | BytesIO,
     image_folder: str | None = None,
     html: bool = False,
     paragraph_styles: bool = False,
