@@ -5,6 +5,7 @@
 :author: Shay Hill
 :created: 7/2/2019
 """
+from io import BytesIO
 from pathlib import Path
 from typing import Optional, Union
 from warnings import warn
@@ -14,7 +15,7 @@ from .docx_reader import DocxReader
 
 
 def docx2python(
-    docx_filename: Union[str, Path],
+    docx_filename: Union[str, Path, BytesIO],
     image_folder: Optional[str] = None,
     html: bool = False,
     paragraph_styles: bool = False,
