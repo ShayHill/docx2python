@@ -18,11 +18,13 @@ pytest = "^7.2.0"
 types-lxml = "^2022.11.8"
 commitizen = "^2.39.1"
 
-
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "2.2.0"
 tag_format = "$version"
+version_files = [
+    "pyproject.toml:^version"
+]
 
 [build-system]
 requires = ["poetry-core"]
