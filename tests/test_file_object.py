@@ -26,6 +26,8 @@ class TestFileObject:
             full_extraction.body_runs
             == context.file_of_type("officeDocument").get_content()
         )
+        context.close()
+        full_extraction.close()
 
     def test_get_content_partial(self) -> None:
         """
@@ -40,3 +42,5 @@ class TestFileObject:
         assert [
             [[[full_extraction.body_runs[0][0][0][0]]]]
         ] == document_xml.get_content(first_par)
+        context.close()
+        full_extraction.close()

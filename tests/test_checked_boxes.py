@@ -68,6 +68,7 @@ def test_checked_boxes() -> None:
             [["\u2612", " Other (describe):\u2002\u2002\u2002\u2002\u2002"]],
         ],
     ]
+    pars.close()
 
 
 def test_unchecked_boxes() -> None:
@@ -96,3 +97,4 @@ def test_unchecked_boxes() -> None:
     all_text = "".join(iter_at_depth(pars.text, 5))
     assert all_text.count("\u2612") == 12
     assert all_text.count("\u2610") == 32
+    pars.close()

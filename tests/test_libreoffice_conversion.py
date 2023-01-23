@@ -22,6 +22,6 @@ class TestLibreofficeConversion:
         This test file for a user just happens to be in Chinese and contains an
         unsupported Chinese numbering format, hence the ``pytest.warns`` context.
         """
-        extraction = docx2python(RESOURCES / "libreoffice_conversion.docx")
-        with pytest.warns(UserWarning):
-            _ = extraction.document
+        with docx2python(RESOURCES / "libreoffice_conversion.docx") as content:
+            with pytest.warns(UserWarning):
+                _ = content.document

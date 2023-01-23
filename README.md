@@ -4,8 +4,6 @@ Extract docx headers, footers, text, footnotes, endnotes, properties, and images
 
 `README_DOCX_FILE_STRUCTURE.md` may help if you'd like to extend docx2python.
 
-## Back to docx2python
-
 For a summary of what's new in docx2python 2, scroll down to **New in docx2python Version 2**
 
 The code is an expansion/contraction of [python-docx2txt](https://github.com/ankushshah89/python-docx2txt) (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.
@@ -28,7 +26,7 @@ __additions:__
 
 __subtractions:__
 * no command-line interface
-* will only work with Python 3.7+
+* will only work with Python 3.8+
 
 
 ## Installation
@@ -38,21 +36,27 @@ pip install docx2python
 
 ## Use
 
-```python
+``` python
 from docx2python import docx2python
 
 # extract docx content
-docx2python('path/to/file.docx')
+with docx2python('path/to/file.docx') as docx_content:
+    print(docx_content.text)
+
+docx_content = docx2python('path/to/file.docx')
+print(docx_content.text)
+docx_content.close()
 
 # extract docx content, write images to image_directory
-docx2python('path/to/file.docx', 'path/to/image_directory')
-
-# extract docx content, ignore images
-docx2python('path/to/file.docx', extract_image=False)
+with docx2python('path/to/file.docx', 'path/to/image_directory') as docx_content:
+    print(docx_content.text)
 
 # extract docx content with basic font styles converted to html
-docx2python('path/to/file.docx', html=True)
+with docx2python('path/to/file.docx', html=True) as docx_content:
+    print(docx_content.text)
 ```
+
+`docx2python` opens a zipfile object and (lazily) reads it. Use context management (`with ... as`) to close this zipfile object or explicitly close with `docx_content.close()`.
 
 Note on html feature:
 * supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript, ``<span style="font-variant: small-caps">``small caps, ``<span style="text-transform:uppercase">``all caps, ``<span style="background-color: yellow">``highlighted, ``<span style="font-size:32">``font size, ``<span style="color:#ff0000">``colored text.
@@ -62,7 +66,7 @@ Note on html feature:
 
 ## Return Value
 
-Function `docx2python` returns an object with several attributes.
+Function `docx2python` returns a DocxContent instance with several attributes.
 
 __header__ - contents of the docx headers in the return format described herein
 
@@ -86,6 +90,17 @@ __images__ - image names mapped to images in binary format. Write to filesystem 
 for name, image in result.images.items():
     with open(name, 'wb') as image_destination:
         write(image_destination, image)
+
+# or
+
+with docx2python('path/to/file.docx', 'path/to/image/directory') as docx_content:
+    ...
+
+# or
+
+with docx2python('path/to/file.docx') as docx_content:
+    docx_content.save_images('path/to/image/directory')
+
 ```
 
 __docx_reader__ - a DocxReader (see `docx_reader.py`) instance with several methods for extracting xml portions.

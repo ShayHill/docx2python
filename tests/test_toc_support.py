@@ -71,3 +71,4 @@ class TestTocText:
                 ],
             ]
         ]
+        extraction.close()

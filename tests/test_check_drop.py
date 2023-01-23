@@ -17,11 +17,13 @@ class TestCheckboxToHtml:
         """Get checked-out box glyph and second dd entry"""
         extraction = docx2python(RESOURCES / "checked_drop1.docx")
         assert extraction.body_runs == [[[[["☒", " "], ["PIlihan A"]]]]]
+        extraction.close()
 
     def test_user_unchecked_dropdown1(self) -> None:
         """Get unchecked box glyph and first dd entry"""
         extraction = docx2python(RESOURCES / "unchecked_drop0.docx")
         assert extraction.text == "\u2610 \n\nPiihan B"
+        extraction.close()
 
     def test_my_checkbox(self) -> None:
         """A good selection of checked and unchecked boxes, and several dropdowns"""
@@ -51,3 +53,4 @@ class TestCheckboxToHtml:
                 [[["my_item_B"]]],
             ]
         ]
+        extraction.close()

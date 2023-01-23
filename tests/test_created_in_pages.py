@@ -44,6 +44,7 @@ class TestParagraphsOnly:
             "document contains paragraphs.\n\n\n\nThis document does not contain any "
             "bulleted lists.\n\n"
         )
+        pars.close()
 
 
 class TestBulletedLists:
@@ -62,3 +63,4 @@ class TestBulletedLists:
             "\t--\t0\n\n"
             "\t--\t-1\n\n"
         )
+        pars.close()

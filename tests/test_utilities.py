@@ -21,10 +21,11 @@ class TestSearchReplace:
         html = False
         input_filename = RESOURCES / "apples_and_pears.docx"
         output_filename = RESOURCES / "pears_and_apples.docx"
-        assert docx2python(input_filename, html=html).text == (
-            "Apples and Pears\n\nPears and Apples\n\n"
-            "Apples and Pears\n\nPears and Apples"
-        )
+        with docx2python(input_filename, html=html) as input_doc:
+            assert input_doc.text == (
+                "Apples and Pears\n\nPears and Apples\n\n"
+                "Apples and Pears\n\nPears and Apples"
+            )
         replace_docx_text(
             input_filename,
             output_filename,
@@ -33,10 +34,11 @@ class TestSearchReplace:
             ("Bananas", "Pears"),
             html=html,
         )
-        assert docx2python(output_filename, html=html).text == (
-            "Pears and Apples\n\nApples and Pears\n\n"
-            "Pears and Apples\n\nApples and Pears"
-        )
+        with docx2python(output_filename, html=html) as output_doc:
+            assert output_doc.text == (
+                "Pears and Apples\n\nApples and Pears\n\n"
+                "Pears and Apples\n\nApples and Pears"
+            )
 
     def test_ampersand(self) -> None:
         """Apples -> Pears, Pears -> Apples
@@ -45,20 +47,22 @@ class TestSearchReplace:
         html = False
         input_filename = RESOURCES / "apples_and_pears.docx"
         output_filename = RESOURCES / "pears_and_apples.docx"
-        assert docx2python(input_filename, html=html).text == (
-            "Apples and Pears\n\nPears and Apples\n\n"
-            "Apples and Pears\n\nPears and Apples"
-        )
+        with docx2python(input_filename, html=html) as input_doc:
+            assert input_doc.text == (
+                "Apples and Pears\n\nPears and Apples\n\n"
+                "Apples and Pears\n\nPears and Apples"
+            )
         replace_docx_text(
             input_filename,
             output_filename,
             ("Apples", "Apples & Pears <>"),
             html=html,
         )
-        assert docx2python(output_filename, html=html).text == (
-            "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>\n\n"
-            "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>"
-        )
+        with docx2python(output_filename, html=html) as output_doc:
+            assert output_doc.text == (
+                "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>\n\n"
+                "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>"
+            )
 
     def test_search_and_replace_html(self) -> None:
         """Apples -> Pears, Pears -> Apples
@@ -69,12 +73,13 @@ class TestSearchReplace:
         html = True
         input_filename = RESOURCES / "apples_and_pears.docx"
         output_filename = RESOURCES / "pears_and_apples.docx"
-        assert docx2python(input_filename, html=html).text == (
-            "Apples and Pears\n\n"
-            "Pears and Apples\n\n"
-            'Apples and <span style="background-color:green">Pears</span>\n\n'
-            "Pe<b>a</b>rs and Apples"
-        )
+        with docx2python(input_filename, html=html) as input_doc:
+            assert input_doc.text == (
+                "Apples and Pears\n\n"
+                "Pears and Apples\n\n"
+                'Apples and <span style="background-color:green">Pears</span>\n\n'
+                "Pe<b>a</b>rs and Apples"
+            )
         replace_docx_text(
             input_filename,
             output_filename,
@@ -83,12 +88,13 @@ class TestSearchReplace:
             ("Bananas", "Pears"),
             html=html,
         )
-        assert docx2python(output_filename, html=html).text == (
-            "Pears and Apples\n\n"
-            "Apples and Pears\n\n"
-            'Pears and <span style="background-color:green">Apples</span>\n\n'
-            "Pe<b>a</b>rs and Pears"
-        )
+        with docx2python(output_filename, html=html) as output_doc:
+            assert output_doc.text == (
+                "Pears and Apples\n\n"
+                "Apples and Pears\n\n"
+                'Pears and <span style="background-color:green">Apples</span>\n\n'
+                "Pe<b>a</b>rs and Pears"
+            )
 
 
 def test_get_links() -> None:

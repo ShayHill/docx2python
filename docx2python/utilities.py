@@ -50,6 +50,7 @@ def replace_docx_text(
         for replacement in replacements:
             replace_root_text(root, *replacement)
     reader.save(path_out)
+    reader.close()
 
 
 def get_links(path_in: Path | str) -> Iterator[tuple[str, str]]:
@@ -66,6 +67,7 @@ def get_links(path_in: Path | str) -> Iterator[tuple[str, str]]:
         if match:
             href, text = match.groups()
             yield href, text
+    extraction.close()
 
 
 def get_headings(path_in: Path | str) -> Iterator[list[str]]:
@@ -80,7 +82,8 @@ def get_headings(path_in: Path | str) -> Iterator[list[str]]:
     Else, paragraphs style will be "".
     """
     heading_pattern = re.compile(r"Heading\d")
-    extraction = docx2python(path_in, paragraph_styles=True).document_runs
-    for par in iter_at_depth(extraction, 4):
+    extraction = docx2python(path_in, paragraph_styles=True)
+    for par in iter_at_depth(extraction.document_runs, 4):
         if re.match(heading_pattern, par[0]):
             yield par
+    extraction.close()

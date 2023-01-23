@@ -9,8 +9,6 @@ from docx2python.main import docx2python
 
 from .conftest import RESOURCES
 
-OUTPUT = docx2python(RESOURCES / "example.docx", paragraph_styles=True)
-
 
 class TestParStyles:
     def test_par_styles(self) -> None:
@@ -21,7 +19,8 @@ class TestParStyles:
 
         :return:
         """
-        assert OUTPUT.document_runs == [
+        content = docx2python(RESOURCES / "example.docx", paragraph_styles=True)
+        assert content.document_runs == [
             [[[["Header"]]]],
             [[[["Header", "Header text", "----media/image1.png----"]]]],
             [[[["Header"]]]],
@@ -121,3 +120,4 @@ class TestParStyles:
                 ]
             ],
         ]
+        content.close()

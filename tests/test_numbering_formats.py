@@ -32,13 +32,13 @@ class TestLowerLetter:
     def test_zero(self) -> None:
         """Raise a value error for < 1"""
         with pytest.raises(ValueError) as msg:
-            lower_letter(0)
+            _ = lower_letter(0)
         assert "0 and <1 are not defined" in str(msg.value)
 
     def test_neg(self) -> None:
         """Raise a value error for < 1"""
         with pytest.raises(ValueError) as msg:
-            lower_letter(-1)
+            _ = lower_letter(-1)
         assert "0 and <1 are not defined" in str(msg.value)
 
 
@@ -60,13 +60,13 @@ class TestLowerRoman:
     def test_zero(self) -> None:
         """Raise a value error for < 1"""
         with pytest.raises(ValueError) as msg:
-            lower_roman(0)
+            _ = lower_roman(0)
         assert "Roman" in str(msg.value)
 
     def test_neg(self) -> None:
         """Raise a value error for < 1"""
         with pytest.raises(ValueError) as msg:
-            lower_roman(-1)
+            _ = lower_roman(-1)
         assert "Roman" in str(msg.value)
 
 

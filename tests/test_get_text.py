@@ -24,26 +24,28 @@ class TestIncrementListCounter:
         """Increments counter at ilvl, deletes deeper counters."""
         ilvl2count = {str(x): x for x in range(1, 6)}
         assert ilvl2count == {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5}
-        _increment_list_counter(ilvl2count, "2")
+        _ = _increment_list_counter(ilvl2count, "2")
         assert ilvl2count == {"1": 1, "2": 3}
 
 
 @pytest.fixture()
 def numbered_paragraphs():
     """Seven numbered paragraphs, indented 0-6 ilvls."""
-    paragraphs = []
+    paragraphs: list[str] = []
     for ilvl in range(7):
         paragraphs.append(
             "<w:p><w:pPr><w:numPr>"
-            '<w:ilvl w:val="' + str(ilvl) + '"/>'
-            '<w:numId w:val="1"/>'
-            "</w:numPr></w:pPr></w:p>"
+            + '<w:ilvl w:val="'
+            + str(ilvl)
+            + '"/>'
+            + '<w:numId w:val="1"/>'
+            + "</w:numPr></w:pPr></w:p>"
         )
     return [valid_xml(x) for x in paragraphs]
 
 
 @pytest.fixture()
-def numbering_context() -> Dict[str, Dict]:
+def numbering_context() -> Dict[str, Dict[str, str]]:
     """
 
     :return:

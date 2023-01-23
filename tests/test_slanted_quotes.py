@@ -10,5 +10,5 @@ class TestTiltedQuotes:
 
     def test_exact_representation(self) -> None:
         """Most characters are represented exactly"""
-        pars = docx2python(RESOURCES / "slanted_quotes.docx")
-        assert pars.text == "“double quote”\n\n‘single quote’\n\nApostrophe’s"
+        with docx2python(RESOURCES / "slanted_quotes.docx") as pars:
+            assert pars.text == "“double quote”\n\n‘single quote’\n\nApostrophe’s"

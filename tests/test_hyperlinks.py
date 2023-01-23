@@ -60,17 +60,18 @@ from .conftest import RESOURCES
 class TestHyperlink:
     def test_prints(self) -> None:
         """Consecutive hyperlinks referencing same target are joined"""
-        extraction = docx2python(RESOURCES / "hyperlink.docx")
-        assert extraction.body_runs == [
-            [
+        with docx2python(RESOURCES / "hyperlink.docx") as extraction:
+            assert extraction.body_runs == [
                 [
                     [
                         [
-                            "This is a link to ",
-                            '<a href="http://www.shayallenhill.com/">my website</a>',
-                            ".",
+                            [
+                                "This is a link to ",
+                                '<a href="http://www.shayallenhill.com/">'
+                                + "my website</a>",
+                                ".",
+                            ]
                         ]
                     ]
                 ]
             ]
-        ]

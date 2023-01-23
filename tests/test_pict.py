@@ -29,3 +29,4 @@ class TestPictElement:
         extraction = docx2python(RESOURCES / "has_pict.docx")
         assert "image1.png" in extraction.images
         assert "----media/image1.png----" in extraction.text
+        extraction.close()

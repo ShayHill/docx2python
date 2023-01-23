@@ -29,6 +29,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
+from typing import Any
 from warnings import warn
 
 from lxml import etree
@@ -78,7 +79,7 @@ class File:
         self.Target = attribute_dict["Target"]
         self.dir = attribute_dict["dir"]
 
-        # old-style cached_property for Python 3.6 and 3.7 support
+        # cached_properties
         self.__path: None | str = None
         self.__rels_path: None | str = None
         self.__rels: None | dict[str, str] = None
@@ -258,10 +259,11 @@ class DocxReader:
         else:
             self.xml2html_format = {}
 
-        # cached properties
+        # cached properties and a flag (__closed)
         self.__zipf: None | zipfile.ZipFile = None
         self.__files: None | list[File] = None
         self.__numId2NumFmts: None | dict[str, list[str]] = None
+        self.__closed = False
 
     @property
     def zipf(self) -> zipfile.ZipFile:
@@ -269,12 +271,42 @@ class DocxReader:
         Entire docx unzipped into bytes.
 
         :return: Entire docx unzipped into bytes.
+        :raise ValueError: If DocxReader instance has been closed
         """
-        if self.__zipf is not None:
+        if self.__closed:
+            raise ValueError("DocxReader instance has been closed.")
+        if self.__zipf is None:
+            self.__zipf = zipfile.ZipFile(self.docx_filename)
             return self.__zipf
-
-        self.__zipf = zipfile.ZipFile(self.docx_filename)
+        assert self.__zipf is not None
         return self.__zipf
+
+    def close(self):
+        """Close the zipfile, set __closed flag to True."""
+        if self.__zipf is not None and self.__zipf.fp:
+            self.__zipf.close()
+        self.__closed = True
+
+    def __enter__(self) -> DocxReader:
+        """Do nothing. The zipfile will open itself when needed.
+
+        :return: self
+        """
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Any,  # None | Type[Exception], but py <= 3.9 doesn't like it.
+        exc_value: Any,  # None | Exception, but py <= 3.9 doesn't like it.
+        exc_traceback: Any,  # None | TracebackType, but py <= 3.9 doesn't like it.
+    ):
+        """Close the zipfile.
+
+        :param exc_type: Python internal use
+        :param exc_value: Python internal use
+        :param exc_traceback: Python internal use
+        """
+        self.close()
 
     @property
     def files(self) -> list[File]:

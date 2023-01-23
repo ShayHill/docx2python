@@ -21,3 +21,4 @@ class TestHyperlink:
         assert (
             '<a href="http://www.shayallenhill.com/">my website</a>.' in extraction.text
         )
+        extraction.close()

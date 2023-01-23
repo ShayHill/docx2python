@@ -24,12 +24,12 @@ example_copy_docx = RESOURCES / "example_copy.docx"
 class TestSaveDocx:
     def test_save_unchanged(self) -> None:
         """Creates a valid docx"""
-        input_context = DocxReader(example_docx)
-        input_xml = input_context.file_of_type("officeDocument").root_element
-        input_context.save(example_copy_docx)
-        output_context = DocxReader(example_copy_docx)
-        output_xml = output_context.file_of_type("officeDocument").root_element
-        assert etree.tostring(input_xml) == etree.tostring(output_xml)
+        with DocxReader(example_docx) as input_context:
+            input_xml = input_context.file_of_type("officeDocument").root_element
+            input_context.save(example_copy_docx)
+        with DocxReader(example_copy_docx) as output_context:
+            output_xml = output_context.file_of_type("officeDocument").root_element
+            assert etree.tostring(input_xml) == etree.tostring(output_xml)
 
     def test_save_changed(self) -> None:
         """Creates a valid docx and updates text"""

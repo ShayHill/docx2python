@@ -19,8 +19,8 @@ class TestAsciiPrintable:
         END is there (added by hand to docx file) to let me know I'm past any
         trailing characters
         """
-        pars = docx2python(RESOURCES / "ascii_printable.docx")
-        assert pars.text[:-7] == string.printable[:-4]
+        with docx2python(RESOURCES / "ascii_printable.docx") as pars:
+            assert pars.text[:-7] == string.printable[:-4]
 
     def test_html_true(self) -> None:
         """Most characters are represented exactly. &, <, and > are escaped.
@@ -36,3 +36,4 @@ class TestAsciiPrintable:
             '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&amp'
             ";'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~ \t"
         )
+        pars.close()

@@ -89,7 +89,7 @@ def test_merge_runs():
                 [
                     [
                         "This page created by putting three links to the same address "
-                        "in three different paragraphs (as below) …"
+                        + "in three different paragraphs (as below) …"
                     ],
                     ['<a href="https://www.shayallenhill.com">hy</a>'],
                     ['<a href="https://www.shayallenhill.com">per</a>'],
@@ -98,9 +98,9 @@ def test_merge_runs():
                     ['<a href="https://www.shayallenhill.com">hyperlink</a>'],
                     [
                         "Internally, the XML records the joined paragraphs as "
-                        "three consecutive links, each with a different r:id, "
-                        "all r:ids referencing the same address. Docx2python v2+ "
-                        "should re-join these consecutive links."
+                        + "three consecutive links, each with a different r:id, "
+                        + "all r:ids referencing the same address. Docx2python v2+ "
+                        + "should re-join these consecutive links."
                     ],
                     [],
                     [],
@@ -108,3 +108,4 @@ def test_merge_runs():
             ]
         ]
     ]
+    extraction.close()

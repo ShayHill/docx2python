@@ -22,7 +22,8 @@ class TestEquations:
         """
         Start a new paragraph when a <w:br/> element is found.
         """
-        body = docx2python(RESOURCES / "equations.docx", html=True).body
+        with docx2python(RESOURCES / "equations.docx") as content:
+            body = content.body
         assert body == [
             [
                 [

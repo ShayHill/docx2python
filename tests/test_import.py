@@ -12,4 +12,5 @@ from .conftest import RESOURCES
 
 def test() -> None:
     """Just making sure the import works."""
-    docx2python(RESOURCES / "example.docx")
+    with docx2python(RESOURCES / "example.docx") as _:
+        pass

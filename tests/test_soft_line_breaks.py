@@ -22,6 +22,7 @@ class TestSoftLineBreaks:
         """
         Start a new paragraph when a <w:br/> element is found.
         """
-        body = docx2python(RESOURCES / "soft_line_breaks.docx").body
+        with docx2python(RESOURCES / "soft_line_breaks.docx") as content:
+            body = content.body
         pars = [x for x in iter_paragraphs(body) if x]
         assert pars == ["Line1\nLine2\nLine3", "Line4"]

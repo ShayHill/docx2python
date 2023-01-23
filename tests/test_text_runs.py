@@ -19,19 +19,19 @@ from .helpers.utils import valid_xml
 
 ONE_TEXT_RUN = valid_xml(
     '<w:r w:rsidRPr="000E1B98">'
-    "<w:rPr>"
-    '<w:rFonts w:ascii="Arial"/>'
-    "<w:b/>"
-    "<w:u/>"
-    "<w:i/>"
-    '<w:sz w:val="32"/>'
-    '<w:color w:val="red"/>'
-    '<w:szCs w:val="32"/>'
-    '<w:u w:val="single"/>'
-    "</w:rPr>"
-    "<w:t>text styled  with rPr"
-    "</w:t>"
-    "</w:r>"
+    + "<w:rPr>"
+    + '<w:rFonts w:ascii="Arial"/>'
+    + "<w:b/>"
+    + "<w:u/>"
+    + "<w:i/>"
+    + '<w:sz w:val="32"/>'
+    + '<w:color w:val="red"/>'
+    + '<w:szCs w:val="32"/>'
+    + '<w:u w:val="single"/>'
+    + "</w:rPr>"
+    + "<w:t>text styled  with rPr"
+    + "</w:t>"
+    + "</w:r>"
 )
 
 NO_STYLE_RUN = valid_xml(

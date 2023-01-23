@@ -174,6 +174,7 @@ def test_paragraphs_only() -> None:
             ]
         ],
     ]
+    pars.close()
 
 
 def test_par_styles_not_in_text() -> None:
@@ -227,6 +228,7 @@ def test_par_styles_not_in_text() -> None:
         "ayv ayw ayx ayy ayz aza azb azc azd aze azf azg azh azi azj azk azl azm azn "
         "azo azp azq azr azs azt azu azv azw azx azy azz</h1>"
     )
+    pars.close()
 
 
 class TestBulletedLists:
@@ -240,3 +242,4 @@ class TestBulletedLists:
             "know\n\n\t--\tTo get to the other side\n\n--\tWhat's the meaning of life, "
             "universe and everything?\n\n\t--\t42\n\n\t--\t0\n\n\t--\t-1\n\n"
         )
+        pars.close()

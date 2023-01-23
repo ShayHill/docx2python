@@ -69,7 +69,7 @@ repos:
     id: pyupgrade
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.3.1
+  rev: v1.4.1
   hooks:
   - id: remove-tabs
 
@@ -119,6 +119,6 @@ repos:
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.287
+  rev: v1.1.290
   hooks:
     - id: pyright

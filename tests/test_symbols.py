@@ -26,31 +26,31 @@ from .conftest import RESOURCES
 
 def test_symbols() -> None:
     """Export symbols as span elements."""
-    pars = docx2python(RESOURCES / "symbols.docx")
-    assert pars.text == (
-        "<span style=font-family:Webdings>&#x0068;</span>"
-        "≠"
-        "<span style=font-family:Symbol>&#x00F0;</span>"
-        "∞×÷≥≤±™®©¥£€µαβπΩ∑"
-        "<span style=font-family:Webdings>&#x004A;</span>"
-        "<span style=font-family:Webdings>&#x004B;</span>"
-        "<span style=font-family:Webdings>&#x0084;</span>"
-        "<span style=font-family:Webdings>&#x00E6;</span>"
-        "<span style=font-family:Webdings>&#x00DD;</span>"
-    )
+    with docx2python(RESOURCES / "symbols.docx") as pars:
+        assert pars.text == (
+            "<span style=font-family:Webdings>&#x0068;</span>"
+            "≠"
+            "<span style=font-family:Symbol>&#x00F0;</span>"
+            "∞×÷≥≤±™®©¥£€µαβπΩ∑"
+            "<span style=font-family:Webdings>&#x004A;</span>"
+            "<span style=font-family:Webdings>&#x004B;</span>"
+            "<span style=font-family:Webdings>&#x0084;</span>"
+            "<span style=font-family:Webdings>&#x00E6;</span>"
+            "<span style=font-family:Webdings>&#x00DD;</span>"
+        )
 
 
 def test_symbols_with_html_true() -> None:
     """Export symbols as span elements."""
-    pars = docx2python(RESOURCES / "symbols.docx", html=True)
-    assert pars.text == (
-        "<span style=font-family:Webdings>&#x0068;</span>"
-        "≠"
-        "<span style=font-family:Symbol>&#x00F0;</span>"
-        "∞×÷≥≤±™®©¥£€µαβπΩ∑"
-        "<span style=font-family:Webdings>&#x004A;</span>"
-        "<span style=font-family:Webdings>&#x004B;</span>"
-        "<span style=font-family:Webdings>&#x0084;</span>"
-        "<span style=font-family:Webdings>&#x00E6;</span>"
-        "<span style=font-family:Webdings>&#x00DD;</span>"
-    )
+    with docx2python(RESOURCES / "symbols.docx", html=True) as pars:
+        assert pars.text == (
+            "<span style=font-family:Webdings>&#x0068;</span>"
+            "≠"
+            "<span style=font-family:Symbol>&#x00F0;</span>"
+            "∞×÷≥≤±™®©¥£€µαβπΩ∑"
+            "<span style=font-family:Webdings>&#x004A;</span>"
+            "<span style=font-family:Webdings>&#x004B;</span>"
+            "<span style=font-family:Webdings>&#x0084;</span>"
+            "<span style=font-family:Webdings>&#x00E6;</span>"
+            "<span style=font-family:Webdings>&#x00DD;</span>"
+        )

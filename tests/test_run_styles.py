@@ -35,8 +35,6 @@ from docx2python.main import docx2python
 
 from .conftest import RESOURCES
 
-OUTPUT = docx2python(RESOURCES / "run_styles.docx", html=True)
-
 
 class TestParStyles:
     def test_par_styles(self) -> None:
@@ -45,7 +43,8 @@ class TestParStyles:
 
         :return:
         """
-        assert OUTPUT.document_runs == [
+        content = docx2python(RESOURCES / "run_styles.docx", html=True)
+        assert content.document_runs == [
             [
                 [
                     [
@@ -90,3 +89,4 @@ class TestParStyles:
                 ]
             ]
         ]
+        content.close()

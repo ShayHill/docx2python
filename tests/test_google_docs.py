@@ -53,9 +53,9 @@ class TestDeprecatedPropertiesProperty:
         """
         Raise a future warning when user requests ``result.properties``
         """
-        result = docx2python(FILE_WITH_DOCPROPS)
-        with pytest.warns(FutureWarning):
-            _ = result.properties
+        with docx2python(FILE_WITH_DOCPROPS) as result:
+            with pytest.warns(FutureWarning):
+                _ = result.properties
 
 
 class TestDocPropsFound:
@@ -63,18 +63,18 @@ class TestDocPropsFound:
         """
         Return docProps as a dictionary
         """
-        result = docx2python(FILE_WITH_DOCPROPS)
-        assert result.core_properties == {
-            "created": "2019-07-05T21:51:00Z",
-            "creator": "Shay Hill",
-            "description": None,
-            "keywords": None,
-            "lastModifiedBy": "Shay Hill",
-            "modified": "2021-03-26T00:30:00Z",
-            "revision": "7",
-            "subject": None,
-            "title": None,
-        }
+        with docx2python(FILE_WITH_DOCPROPS) as result:
+            assert result.core_properties == {
+                "created": "2019-07-05T21:51:00Z",
+                "creator": "Shay Hill",
+                "description": None,
+                "keywords": None,
+                "lastModifiedBy": "Shay Hill",
+                "modified": "2021-03-26T00:30:00Z",
+                "revision": "7",
+                "subject": None,
+                "title": None,
+            }
 
 
 class TestGoogleDocs:
@@ -85,6 +85,6 @@ class TestGoogleDocs:
         To correct the above error, result.properties will now return an empty
         dictionary (with a warning).
         """
-        result = docx2python(FILE_WITHOUT_DOCPROPS)
-        with pytest.warns(UserWarning):
-            assert result.core_properties == {}
+        with docx2python(FILE_WITHOUT_DOCPROPS) as result:
+            with pytest.warns(UserWarning):
+                assert result.core_properties == {}
