@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Iterable
 
 from .text_runs import html_close, html_open
 
@@ -94,6 +94,17 @@ class DepthCollector:
 
         self.open_pars: list[Par] = []
         self.orphan_runs: list[Run] = []
+
+    def view_branch(self, address: Iterable[int]) -> Any:
+        """Return the item at the given address
+
+        :param address: a tuple of indices to the item to be returned
+        :return: the item at the address
+        """
+        branch = self._rightmost_branches
+        for i in address:
+            branch = branch[i]
+        return branch
 
     @staticmethod
     def _get_run_strings(runs: list[Run]) -> list[str]:

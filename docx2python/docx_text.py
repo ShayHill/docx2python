@@ -21,7 +21,12 @@ from .depth_collector import DepthCollector, Run
 from .forms import get_checkBox_entry, get_ddList_entry
 from .iterators import iter_at_depth
 from .namespace import qn
-from .text_runs import get_paragraph_formatting, get_pStyle, get_run_formatting
+from .text_runs import (
+    gather_Pr,
+    get_paragraph_formatting,
+    get_pStyle,
+    get_run_formatting,
+)
 
 if TYPE_CHECKING:
     from docx_reader import File
@@ -249,6 +254,22 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
 
         if tree.tag == Tags.PARAGRAPH:
             tables.conclude_paragraph()
+
+        elif tree.tag == Tags.TABLE_CELL and file.context.duplicate_merged_cells:
+            pr = gather_Pr(tree)
+
+            if pr.get("vMerge", "Not None") is None:
+                tables.set_caret(tree_depth)
+                cell_idx = len(tables.caret) - 1
+                assert isinstance(tree_depth, int)
+                prev_row_cell = tables.view_branch((tree_depth - 2, -2, cell_idx))
+                tables.caret[-1] = prev_row_cell
+
+            grid_span = pr.get("gridSpan", 1)
+            assert grid_span is not None
+            for _ in range(int(grid_span) - 1):
+                tables.set_caret(tree_depth)
+                tables.caret.append(tables.caret[-1])
 
         elif tree.tag == Tags.RUN:
             tables.conclude_run()

@@ -104,12 +104,16 @@ def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]
     return sub_vals
 
 
-def _gather_Pr(element: EtreeElement) -> dict[str, str | None]:
+def gather_Pr(element: EtreeElement) -> dict[str, str | None]:
     """
-    Gather style values for a <w:r> or <w:p> element (maybe others)
+    Gather style values for a <w:r>, <w:tc>, or <w:p> element (maybe others)
 
     :param element: any xml element. r and p elems typically have Pr values.
     :return: Style names ('b/', 'sz', etc.) mapped to values.
+
+    These elements often have a subelement ``<w:pPr>`` or ``<w:rPr>`` which contains
+    formatting instructions. This includes colspan, rowspan, and other table-cell
+    properties.
 
     Will infer a style element qualified name: p -> pPr; r -> rPr
 
@@ -129,7 +133,7 @@ def get_pStyle(paragraph_element: EtreeElement) -> str:
 
     Also see docstring for ``gather_pPr``
     """
-    return _gather_Pr(paragraph_element).get("pStyle", "") or ""
+    return gather_Pr(paragraph_element).get("pStyle", "") or ""
 
 
 def get_run_formatting(
@@ -158,7 +162,7 @@ def get_run_formatting(
 
     Also see docstring for ``gather_rPr``
     """
-    return _format_Pr_into_html(_gather_Pr(run_element), xml2html)
+    return _format_Pr_into_html(gather_Pr(run_element), xml2html)
 
 
 def get_paragraph_formatting(

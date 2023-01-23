@@ -85,7 +85,7 @@ repos:
     exclude: "tests"
     name: pylint
     args:
-    - --good-names=i,j,_,e,f,k,v,_gather_Pr,get_pStyle,_format_Pr_into_html,Pr2val,k_,v_,collect_numFmts,numFmts_root,abstractNumId2numFmts,abstractNum,numFmt,numId,abstractNumIdval,collect_docProps,qn,Type,Target,numFmt2bullet_function,numId2numFmts,numId2count,pPr,numPr,n,l,abstractNumId,rId,officeDocument_runs,docProps,Id,ex,docProp2test,dc,get_checkBox_entry,checkBox,get_ddList_entry,ddList,do_pStyle,__numId2NumFmts,docProp2text
+    - --good-names=i,j,_,e,f,k,v,_gather_Pr,get_pStyle,_format_Pr_into_html,Pr2val,k_,v_,collect_numFmts,numFmts_root,abstractNumId2numFmts,abstractNum,numFmt,numId,abstractNumIdval,collect_docProps,qn,Type,Target,numFmt2bullet_function,numId2numFmts,numId2count,pPr,numPr,n,l,abstractNumId,rId,officeDocument_runs,docProps,Id,ex,docProp2test,dc,get_checkBox_entry,checkBox,get_ddList_entry,ddList,do_pStyle,__numId2NumFmts,docProp2text,gather_Pr,pr
     - --disable=fixme
     - --disable=consider-using-with
     - --disable=no-member

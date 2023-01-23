@@ -19,6 +19,7 @@ def docx2python(
     html: bool = False,
     paragraph_styles: bool = False,
     extract_image: bool | None = None,
+    duplicate_merged_cells: bool = False,
 ) -> DocxContent:
     """
     Unzip a docx file and extract contents.
@@ -30,6 +31,8 @@ def docx2python(
     :param paragraph_styles: prepend the paragraphs style (if any, else "") to each
         paragraph. This will only be useful with ``*_runs`` attributes.
     :param extract_image: bool, extract images from document (default True)
+    :param duplicate_merged_cells: bool, duplicate merged cells to return a mxn
+        nested list for each table (default False)
     :return: DocxContent object
     """
     if extract_image is not None:
@@ -40,7 +43,9 @@ def docx2python(
             + "``docx2python(filename).write_images(image_folder)``. Images files are "
             + "available as before with ``docx2text(filename).images`` attribute."
         )
-    docx_context = DocxReader(docx_filename, html, paragraph_styles)
+    docx_context = DocxReader(
+        docx_filename, html, paragraph_styles, duplicate_merged_cells
+    )
     docx_content = DocxContent(docx_context, locals())
     if image_folder:
         _ = docx_content.images

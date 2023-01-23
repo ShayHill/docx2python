@@ -106,6 +106,31 @@ with docx2python('path/to/file.docx') as docx_content:
 __docx_reader__ - a DocxReader (see `docx_reader.py`) instance with several methods for extracting xml portions.
 
 
+## Arguments
+
+    def docx2python(
+        docx_filename: str | Path | BytesIO,
+        image_folder: str | None = None,
+        html: bool = False,
+        paragraph_styles: bool = False,
+        extract_image: bool | None = None,
+        duplicate_merged_cells: bool = False
+    ) -> DocxContent:
+        """
+        Unzip a docx file and extract contents.
+
+        :param docx_filename: path to a docx file
+        :param image_folder: optionally specify an image folder
+            (images in docx will be copied to this folder)
+        :param html: bool, extract some formatting as html
+        :param paragraph_styles: prepend the paragraphs style (if any, else "") to each
+            paragraph. This will only be useful with ``*_runs`` attributes.
+        :param duplicate_merged_cells: bool, duplicate merged cells to return a mxn
+            nested list for each table (default False)
+        :return: DocxContent object
+        """
+
+
 ## Return Format
 
 Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., `output.body[i][j][k][l]` will be a paragraph).

@@ -250,9 +250,11 @@ class DocxReader:
         docx_filename: Path | str | BytesIO,
         html: bool = False,
         paragraph_styles: bool = False,
+        duplicate_merged_cells: bool = False,
     ):
         self.docx_filename = docx_filename
         self.do_pStyle = paragraph_styles
+        self.duplicate_merged_cells = duplicate_merged_cells
 
         if html:
             self.xml2html_format = XML2HTML_FORMATTER
