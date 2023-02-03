@@ -9,14 +9,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 lxml = "^4.9.2"
-pre-commit = "^2.21.0"
-tox-poetry-installer = {extras = ["poetry"], version = "^0.10.0"}
-conventional-with-data = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
 types-lxml = "^2022.11.8"
 commitizen = "^2.39.1"
+pre-commit = "^3.0.4"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
