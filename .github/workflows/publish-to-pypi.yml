@@ -48,4 +48,4 @@ jobs:
         uses: abatilo/actions-poetry@v2
       - name: deploy on pypi
         run: |
-          poetry publish --build --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }}
+          poetry publish --build --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
