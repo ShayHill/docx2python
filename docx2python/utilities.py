@@ -10,14 +10,30 @@ examples.
 
 from __future__ import annotations
 
+import copy
 import re
 from pathlib import Path
 from typing import Iterator
 
+from lxml import etree
 from lxml.etree import _Element as EtreeElement  # type: ignore
+
+from docx2python.attribute_register import Tags
 
 from .iterators import iter_at_depth
 from .main import docx2python
+
+
+def _copy_new_text(elem: EtreeElement, new_text: str) -> EtreeElement:
+    """Copy a text element and replace text.
+
+    :param elem: an etree element with tag w:t
+    :param new_text: text to replace elem.text
+    :return: a new etree element with tag w:t and text new_text
+    """
+    new_elem = copy.deepcopy(elem)
+    new_elem.text = new_text
+    return new_elem
 
 
 def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
@@ -26,9 +42,35 @@ def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
     :param root: an etree element presumably containing descendant text elements
     :param old: text to be replaced
     :param new: replacement text
+
+    Will use softbreaks <br> to preserve line breaks in replacement text.
     """
-    for text_elem in (x for x in root.iter() if x.text):
-        text_elem.text = (text_elem.text or "").replace(old, new)
+
+    def recursive_text_replace(branch: EtreeElement):
+        """Replace any text element contining old with one or more elements.
+
+        :param branch: an etree element
+        """
+        for elem in tuple(branch):
+            if not elem.text or old not in elem.text:
+                recursive_text_replace(elem)
+                continue
+
+            # create a new text element for each line in replacement text
+            text = elem.text.replace(old, new)
+            new_elems = [_copy_new_text(elem, line) for line in text.splitlines()]
+
+            # insert breakpoints where line breaks were
+            breaks = [etree.Element(Tags.BR) for _ in new_elems]
+            new_elems = [x for pair in zip(new_elems, breaks) for x in pair][:-1]
+
+            # replace the original element with the new elements
+            parent = elem.getparent()
+            assert parent is not None
+            index = parent.index(elem)
+            parent[index : index + 1] = new_elems
+
+    recursive_text_replace(root)
 
 
 def replace_docx_text(

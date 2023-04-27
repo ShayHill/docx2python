@@ -96,6 +96,30 @@ class TestSearchReplace:
                 "Pe<b>a</b>rs and Pears"
             )
 
+    def test_search_and_replace_with_linebreaks(self) -> None:
+        """Apples -> Pears, Pears -> Apples
+
+        Exchange strings when replacement has linebreaks.
+        """
+        html = True
+        input_filename = RESOURCES / "apples_and_pears.docx"
+        output_filename = RESOURCES / "pears_and_apples.docx"
+        replace_docx_text(
+            input_filename,
+            output_filename,
+            ("Apples", "Bananas"),
+            ("Pears", "Apples\nPears\nGrapes"),
+            ("Bananas", "Pears"),
+            html=html,
+        )
+        with docx2python(output_filename, html=html) as output_doc:
+            assert output_doc.text == (
+                "Pears and Apples\nPears\nGrapes\n\n"
+                "Apples\nPears\nGrapes and Pears\n\n"
+                'Pears and <span style="background-color:green">Apples\nPears\nGrapes</span>\n\n'
+                "Pe<b>a</b>rs and Pears"
+            )
+
 
 def test_get_links() -> None:
     """Return links as tuples"""

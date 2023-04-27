@@ -116,6 +116,7 @@ repos:
     exclude: "tests"
     args:
     - --max-line-length=88
+    - --ignore=E203,W503
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
