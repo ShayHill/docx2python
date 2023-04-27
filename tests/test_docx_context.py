@@ -116,7 +116,7 @@ class TestPullImageFiles:
         docx_context = DocxReader(example_docx)
         with TemporaryDirectory() as image_folder:
             docx_context.pull_image_files(image_folder)
-            assert os.listdir(image_folder) == ["image1.png", "image2.jpg"]
+            assert set(os.listdir(image_folder)) == {"image1.png", "image2.jpg"}
 
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""

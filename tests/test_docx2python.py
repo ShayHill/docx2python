@@ -193,7 +193,10 @@ class TestImageDir:
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
         pars = docx2python(RESOURCES / "example.docx", "delete_this/path/to/images")
-        assert os.listdir("delete_this/path/to/images") == ["image1.png", "image2.jpg"]
+        assert set(os.listdir("delete_this/path/to/images")) == {
+            "image1.png",
+            "image2.jpg",
+        }
         # clean up
         shutil.rmtree("delete_this")
         pars.close()

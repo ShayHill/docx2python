@@ -1,0 +1,51 @@
+name: test and deploy
+
+on:
+  push:
+    branches: [dev, master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+      - run: poetry install
+      - name: Run tests
+        run: poetry run pytest -v
+
+  deploy-on-testpypi:
+    runs-on: windows-latest
+    needs: tests
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+      - name: deploy on test.pypi
+        run: |
+          poetry config repositories.test-pypi https://test.pypi.org/legacy/
+          poetry publish -r test-pypi --build --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }}
+
+  deploy-on-pypi:
+    runs-on: windows-latest
+    needs: tests
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+      - name: deploy on pypi
+        run: |
+          poetry publish --build --username __token__ --password ${{ secrets.TEST_PYPI_API_TOKEN }}

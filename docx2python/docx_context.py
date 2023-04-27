@@ -71,10 +71,8 @@ def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
 
     numId2numFmts: dict[str, list[str]] = {}
     num: EtreeElement
-    for num in (x for x in numFmts_root.findall(qn("w:num")) if x is not None):
+    for num in (x for x in numFmts_root.findall(qn("w:num"))):
         numId = num.attrib[qn("w:numId")]
-        if numId is None:
-            continue
         abstractNumId = num.find(qn("w:abstractNumId"))
         if abstractNumId is None:
             continue
