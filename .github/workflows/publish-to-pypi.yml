@@ -25,9 +25,31 @@ jobs:
       - name: Run tests
         run: poetry run pytest -v
 
+  bump_version:
+    # if: "!startsWith(github.event.head_commit.message, 'bump:')"
+    runs-on: ubuntu-latest
+    name: "Bump version and create changelog with commitizen"
+    continue-on-error: true
+    needs: tests
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: "${{ secrets.COMMITIZEN_BUMP }}"
+      - id: cz
+        name: Create bump and changelog
+        uses: commitizen-tools/commitizen-action@master
+        with:
+          github_token: ${{ secrets.COMMITIZEN_BUMP }}
+      - name: Print Version
+        run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+
   deploy-on-testpypi:
     runs-on: windows-latest
-    needs: tests
+    continue-on-error: true
+    needs: [tests]
     if: github.ref == 'refs/heads/dev'
     steps:
       - uses: actions/checkout@v3
@@ -40,7 +62,8 @@ jobs:
 
   deploy-on-pypi:
     runs-on: windows-latest
-    needs: tests
+    continue-on-error: true
+    needs: [tests]
     if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v3
