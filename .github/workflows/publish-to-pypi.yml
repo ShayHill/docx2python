@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       # Install poetry. There are some redundant looking steps here. Windows
-      # and Linux will work without the first two, but Mac (only mac) will fail
+      # and Linux will work without the first two, but Mac (only Mac) will fail
       # unless you do this checkout, setup, checkout, install, setup sequence.
       - name: Check out repository
         uses: actions/checkout@v3
@@ -37,13 +37,26 @@ jobs:
       - name: Run tests
         run: poetry run pytest -v
 
+  # Pyright fails EVERY TIME when called through pre-commit.ci with "Temporary
+  # failure in name resolution". Bypass the pre-commit Pyright, and use a
+  # Pyright pre-commit action instead.
+  pyright:
+    runs-on: ubuntu-latest
+    name: "Run Pyright"
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+      - uses: jakebailey/pyright-action@v1
+        with:
+          project: "pyproject.toml"
+
   # If the tests pass, try to bump the version number. If no bump is warranted,
   # pass silently.
   bump_version:
     runs-on: ubuntu-latest
     name: "Bump version and create changelog with commitizen"
     continue-on-error: true
-    needs: tests
+    needs: [tests, pyright]
     if: github.ref == 'refs/heads/dev'
     steps:
       - name: Check out
