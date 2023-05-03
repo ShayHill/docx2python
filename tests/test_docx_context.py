@@ -4,8 +4,8 @@ author: Shay Hill
 created: 6/26/2019
 """
 import os
+import tempfile
 import zipfile
-from tempfile import TemporaryDirectory
 
 from lxml import etree
 
@@ -18,18 +18,19 @@ from docx2python.main import docx2python
 from .conftest import RESOURCES
 
 example_docx = RESOURCES / "example.docx"
-example_copy_docx = RESOURCES / "example_copy.docx"
 
 
 class TestSaveDocx:
     def test_save_unchanged(self) -> None:
         """Creates a valid docx"""
-        with DocxReader(example_docx) as input_context:
-            input_xml = input_context.file_of_type("officeDocument").root_element
-            input_context.save(example_copy_docx)
-        with DocxReader(example_copy_docx) as output_context:
-            output_xml = output_context.file_of_type("officeDocument").root_element
-            assert etree.tostring(input_xml) == etree.tostring(output_xml)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            example_copy_docx = os.path.join(temp_dir, "example_copy.docx")
+            with DocxReader(example_docx) as input_context:
+                input_xml = input_context.file_of_type("officeDocument").root_element
+                input_context.save(example_copy_docx)
+            with DocxReader(example_copy_docx) as output_context:
+                output_xml = output_context.file_of_type("officeDocument").root_element
+                assert etree.tostring(input_xml) == etree.tostring(output_xml)
 
     def test_save_changed(self) -> None:
         """Creates a valid docx and updates text"""
@@ -39,9 +40,11 @@ class TestSaveDocx:
             if not elem.text:
                 continue
             elem.text = elem.text.replace("bullet", "BULLET")
-        input_context.save(RESOURCES / "example_edit.docx")
-        output_content = DocxReader(RESOURCES / "example_edit.docx")
-        output_runs = output_content.file_of_type("officeDocument").content
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with_text_replaced = os.path.join(temp_dir, "with_text_replaced.docx")
+            input_context.save(with_text_replaced)
+            with DocxReader(with_text_replaced) as output_context:
+                output_runs = output_context.file_of_type("officeDocument").content
         output_text = "".join(iter_at_depth(output_runs, 5))
         assert "bullet" not in output_text
         assert "BULLET" in output_text
@@ -114,7 +117,7 @@ class TestPullImageFiles:
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
         docx_context = DocxReader(example_docx)
-        with TemporaryDirectory() as image_folder:
+        with tempfile.TemporaryDirectory() as image_folder:
             docx_context.pull_image_files(image_folder)
             assert set(os.listdir(image_folder)) == {"image1.png", "image2.jpg"}
 
@@ -122,6 +125,6 @@ class TestPullImageFiles:
         """Pass silently when no image files."""
 
         docx_context = DocxReader(RESOURCES / "basic.docx")
-        with TemporaryDirectory() as image_folder:
+        with tempfile.TemporaryDirectory() as image_folder:
             docx_context.pull_image_files(image_folder)
             assert os.listdir(image_folder) == []

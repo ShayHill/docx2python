@@ -2,10 +2,10 @@
 
 :author: Shay Hill
 :created: 2021-12-20
-
-This test opens a file on your hd, edits it, then saves it with the filename
-"pears_and_apples.docx".
 """
+
+import os
+import tempfile
 
 from docx2python.main import docx2python
 from docx2python.utilities import get_headings, get_links, replace_docx_text
@@ -20,25 +20,27 @@ class TestSearchReplace:
         Ignore html differences when html is False"""
         html = False
         input_filename = RESOURCES / "apples_and_pears.docx"
-        output_filename = RESOURCES / "pears_and_apples.docx"
         with docx2python(input_filename, html=html) as input_doc:
             assert input_doc.text == (
                 "Apples and Pears\n\nPears and Apples\n\n"
                 "Apples and Pears\n\nPears and Apples"
             )
-        replace_docx_text(
-            input_filename,
-            output_filename,
-            ("Apples", "Bananas"),
-            ("Pears", "Apples"),
-            ("Bananas", "Pears"),
-            html=html,
-        )
-        with docx2python(output_filename, html=html) as output_doc:
-            assert output_doc.text == (
-                "Pears and Apples\n\nApples and Pears\n\n"
-                "Pears and Apples\n\nApples and Pears"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            replace_docx_text(
+                input_filename,
+                output_filename,
+                ("Apples", "Bananas"),
+                ("Pears", "Apples"),
+                ("Bananas", "Pears"),
+                html=html,
             )
+            with docx2python(output_filename, html=html) as output_doc:
+                assert output_doc.text == (
+                    "Pears and Apples\n\nApples and Pears\n\n"
+                    "Pears and Apples\n\nApples and Pears"
+                )
 
     def test_ampersand(self) -> None:
         """Apples -> Pears, Pears -> Apples
@@ -46,23 +48,20 @@ class TestSearchReplace:
         Replace text with an ampersand"""
         html = False
         input_filename = RESOURCES / "apples_and_pears.docx"
-        output_filename = RESOURCES / "pears_and_apples.docx"
-        with docx2python(input_filename, html=html) as input_doc:
-            assert input_doc.text == (
-                "Apples and Pears\n\nPears and Apples\n\n"
-                "Apples and Pears\n\nPears and Apples"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            replace_docx_text(
+                input_filename,
+                output_filename,
+                ("Apples", "Apples & Pears <>"),
+                html=html,
             )
-        replace_docx_text(
-            input_filename,
-            output_filename,
-            ("Apples", "Apples & Pears <>"),
-            html=html,
-        )
-        with docx2python(output_filename, html=html) as output_doc:
-            assert output_doc.text == (
-                "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>\n\n"
-                "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>"
-            )
+            with docx2python(output_filename, html=html) as output_doc:
+                assert output_doc.text == (
+                    "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>\n\n"
+                    "Apples & Pears <> and Pears\n\nPears and Apples & Pears <>"
+                )
 
     def test_search_and_replace_html(self) -> None:
         """Apples -> Pears, Pears -> Apples
@@ -72,29 +71,24 @@ class TestSearchReplace:
         """
         html = True
         input_filename = RESOURCES / "apples_and_pears.docx"
-        output_filename = RESOURCES / "pears_and_apples.docx"
-        with docx2python(input_filename, html=html) as input_doc:
-            assert input_doc.text == (
-                "Apples and Pears\n\n"
-                "Pears and Apples\n\n"
-                'Apples and <span style="background-color:green">Pears</span>\n\n'
-                "Pe<b>a</b>rs and Apples"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            replace_docx_text(
+                input_filename,
+                output_filename,
+                ("Apples", "Bananas"),
+                ("Pears", "Apples"),
+                ("Bananas", "Pears"),
+                html=html,
             )
-        replace_docx_text(
-            input_filename,
-            output_filename,
-            ("Apples", "Bananas"),
-            ("Pears", "Apples"),
-            ("Bananas", "Pears"),
-            html=html,
-        )
-        with docx2python(output_filename, html=html) as output_doc:
-            assert output_doc.text == (
-                "Pears and Apples\n\n"
-                "Apples and Pears\n\n"
-                'Pears and <span style="background-color:green">Apples</span>\n\n'
-                "Pe<b>a</b>rs and Pears"
-            )
+            with docx2python(output_filename, html=html) as output_doc:
+                assert output_doc.text == (
+                    "Pears and Apples\n\n"
+                    "Apples and Pears\n\n"
+                    'Pears and <span style="background-color:green">Apples</span>\n\n'
+                    "Pe<b>a</b>rs and Pears"
+                )
 
     def test_search_and_replace_with_linebreaks(self) -> None:
         """Apples -> Pears, Pears -> Apples
@@ -103,22 +97,23 @@ class TestSearchReplace:
         """
         html = True
         input_filename = RESOURCES / "apples_and_pears.docx"
-        output_filename = RESOURCES / "pears_and_apples.docx"
-        replace_docx_text(
-            input_filename,
-            output_filename,
-            ("Apples", "Bananas"),
-            ("Pears", "Apples\nPears\nGrapes"),
-            ("Bananas", "Pears"),
-            html=html,
-        )
-        with docx2python(output_filename, html=html) as output_doc:
-            assert output_doc.text == (
-                "Pears and Apples\nPears\nGrapes\n\n"
-                "Apples\nPears\nGrapes and Pears\n\n"
-                'Pears and <span style="background-color:green">Apples\nPears\nGrapes</span>\n\n'
-                "Pe<b>a</b>rs and Pears"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            replace_docx_text(
+                input_filename,
+                output_filename,
+                ("Apples", "Bananas"),
+                ("Pears", "Apples\nPears\nGrapes"),
+                ("Bananas", "Pears"),
+                html=html,
             )
+            with docx2python(output_filename, html=html) as output_doc:
+                assert output_doc.text == (
+                    "Pears and Apples\nPears\nGrapes\n\n"
+                    "Apples\nPears\nGrapes and Pears\n\n"
+                    'Pears and <span style="background-color:green">Apples\nPears\nGrapes</span>\n\n'
+                    "Pe<b>a</b>rs and Pears"
+                )
 
 
 def test_get_links() -> None:
