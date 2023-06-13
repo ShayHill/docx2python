@@ -30,3 +30,12 @@ class TestPictElement:
         assert "image1.png" in extraction.images
         assert "----media/image1.png----" in extraction.text
         extraction.close()
+
+
+class TestPictWithAltText:
+    def test_extraction(self) -> None:
+        """Image placeholder inserted into extracted text."""
+        extraction = docx2python(RESOURCES / "pic_alt_text.docx")
+        text = extraction.text
+        assert "Alt description" in text
+        extraction.close()
