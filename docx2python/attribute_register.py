@@ -91,6 +91,7 @@ class Tags(str, Enum):
     FORM_DDLIST = qn("w:ddList")  # drop-down form
     HYPERLINK = qn("w:hyperlink")
     IMAGE = qn("a:blip")
+    IMAGE_ALT = qn("wp:docPr")
     IMAGEDATA = qn("v:imagedata")
     MATH = qn("m:oMath")
     PARAGRAPH = qn("w:p")

@@ -22,7 +22,10 @@ class TestParStyles:
         content = docx2python(RESOURCES / "example.docx", paragraph_styles=True)
         assert content.document_runs == [
             [[[["Header"]]]],
-            [[[["Header", "Header text", "----media/image1.png----"]]]],
+            [[[["Header",
+                "Header text",
+                "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
+                "----media/image1.png----"]]]],
             [[[["Header"]]]],
             [
                 [
@@ -82,12 +85,17 @@ class TestParStyles:
                         ["Heading1", "Heading 1"],
                         ["Heading2", "Heading 2"],
                         ["None"],
-                        ["None", "----media/image2.jpg----"],
+                        ["None",
+                         "----Image alt text---->A jellyfish in water\n\nDescription automatically generated<",
+                         "----media/image2.jpg----"],
                     ]
                 ]
             ],
             [[[["Footer"]]]],
-            [[[["Footer", "Footer text", "----media/image1.png----"]]]],
+            [[[["Footer",
+                "Footer text",
+                "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
+                "----media/image1.png----"]]]],
             [[[["Footer"]]]],
             [
                 [
@@ -99,6 +107,7 @@ class TestParStyles:
                             "FootnoteText",
                             "footnote2)\t",
                             " Second footnote",
+                            "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
                             "----media/image1.png----",
                         ]
                     ],
@@ -114,6 +123,7 @@ class TestParStyles:
                             "EndnoteText",
                             "endnote2)\t",
                             " Second endnote",
+                            "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
                             "----media/image1.png----",
                         ]
                     ],
