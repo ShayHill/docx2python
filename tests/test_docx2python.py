@@ -12,8 +12,7 @@ from docx2python.main import docx2python
 
 from .conftest import RESOURCES
 
-
-ALT_TEXT = '----Image alt text---->A close up of a logo\n\nDescription automatically generated<'
+ALT_TEXT = "----Image alt text---->A close up of a logo\n\nDescription automatically generated<"
 
 
 class TestFormatting:
@@ -23,13 +22,17 @@ class TestFormatting:
         """Header text in correct location"""
         with docx2python(RESOURCES / "example.docx") as output:
             header_text = "".join(iter_at_depth(output.header, 4))
-            assert re.match(rf"Header text{ALT_TEXT}----media/image\d+\.\w+----$", header_text)
+            assert re.match(
+                rf"Header text{ALT_TEXT}----media/image\d+\.\w+----$", header_text
+            )
 
     def test_footer(self) -> None:
         """Footer text in correct location"""
         with docx2python(RESOURCES / "example.docx") as output:
             footer_text = "".join(iter_at_depth(output.footer, 4))
-            assert re.match(rf"Footer text{ALT_TEXT}----media/image\d+\.\w+----$", footer_text)
+            assert re.match(
+                rf"Footer text{ALT_TEXT}----media/image\d+\.\w+----$", footer_text
+            )
 
     def test_footnotes(self) -> None:
         """Footnotes extracted."""
@@ -187,8 +190,10 @@ class TestHtmlFormatting:
                         ["<h1>", "Heading 1", "</h1>"],
                         ["<h2>", "Heading 2", "</h2>"],
                         [],
-                        ["----Image alt text---->A jellyfish in water\n\nDescription automatically generated<",
-                         "----media/image2.jpg----"],
+                        [
+                            "----Image alt text---->A jellyfish in water\n\nDescription automatically generated<",
+                            "----media/image2.jpg----",
+                        ],
                     ]
                 ]
             ]
