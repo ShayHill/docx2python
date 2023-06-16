@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     needs: [tests]
-    if: github.ref_name == 'ci_experiment' || !startsWith(github.ref, 'refs/tags')
+    # if: github.ref_name == 'ci_experiment' || !startsWith(github.ref, 'refs/tags')
     steps:
       - run: echo "ref_name is ${{ github.ref_name }} ref is ${{ github.ref }}"
 
