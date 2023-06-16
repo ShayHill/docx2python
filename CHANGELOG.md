@@ -1,3 +1,10 @@
+## 2.8.0 (2023-06-16)
+
+### Feat
+
+- force bump for ci test
+- bump test for ci function
+
 ## 2.7.2 (2023-06-16)
 
 ### Fix
