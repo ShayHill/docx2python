@@ -1,3 +1,11 @@
+## 2.10.0 (2023-06-16)
+
+### Feat
+
+- force bump for ci test
+- force bump for ci test
+- force bump for ci test
+
 ## 2.8.0 (2023-06-16)
 
 ### Feat
