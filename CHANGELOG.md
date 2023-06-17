@@ -1,3 +1,9 @@
+## 2.7.3 (2023-06-17)
+
+### Fix
+
+- sync commitizen and poetry version numbers
+
 ## 2.7.2 (2023-06-16)
 
 ### Fix
