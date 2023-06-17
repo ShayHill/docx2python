@@ -1,3 +1,9 @@
+## 2.11.0 (2023-06-17)
+
+### Feat
+
+- force bump to see commit messages on github
+
 ## 2.10.0 (2023-06-16)
 
 ### Feat

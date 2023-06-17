@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "docx2python"
-version = "2.10.0"
+version = "2.11.0"
 description = "Extract content from docx files"
 authors = ["Shay Hill <shay_public@hotmail.com>"]
 license = "MIT"
@@ -18,7 +18,7 @@ pre-commit = "^3.0.4"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "2.10.0"
+version = "2.11.0"
 tag_format = "$version"
 version_files = [
     "pyproject.toml:^version"
