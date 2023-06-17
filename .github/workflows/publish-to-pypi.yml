@@ -96,7 +96,7 @@ jobs:
     needs: [tests]
     # if: github.ref_name == 'ci_experiment' || !startsWith(github.ref, 'refs/tags')
     steps:
-      - run: echo "ref_name is ${{ github.ref_name }} ref is ${{ github.ref }}"
+      - run: echo "ref_name is ${{ github.ref_name }} ref is ${{ github.ref }}, msg is ${{ github.event.head_commit.message }}"
 
 
   # Deploy on .pypi when pushed to main if all tests pass and if commit is
