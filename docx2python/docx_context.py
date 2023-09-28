@@ -17,6 +17,21 @@ from lxml.etree import _Element as EtreeElement  # type: ignore
 from .namespace import qn
 
 
+def collect_comments(comments_root: EtreeElement) -> dict[str, str]:
+    """
+    Collect the comments of the document
+
+    :param comments_root: Root element of ``word/comments.xml``.
+    :return: dictionary of run id and the text comment
+    """
+    comments_dict: dict[str, str] = {}
+    for comment in comments_root.findall(qn("w:comment")):
+        id_ = str(comment.attrib[qn("w:id")])
+        t = comment.find(".//" + qn("w:t"))
+        comments_dict[id_] = t.text
+    return comments_dict
+
+
 def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
     """
     Collect abstractNum bullet formats into a dictionary

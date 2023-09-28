@@ -20,6 +20,7 @@ def docx2python(
     paragraph_styles: bool = False,
     extract_image: bool | None = None,
     duplicate_merged_cells: bool = False,
+    extract_comments: bool = False,
 ) -> DocxContent:
     """
     Unzip a docx file and extract contents.
@@ -44,7 +45,11 @@ def docx2python(
             + "available as before with ``docx2text(filename).images`` attribute."
         )
     docx_context = DocxReader(
-        docx_filename, html, paragraph_styles, duplicate_merged_cells
+        docx_filename,
+        html,
+        paragraph_styles,
+        duplicate_merged_cells,
+        extract_comments,
     )
     docx_content = DocxContent(docx_context, locals())
     if image_folder:

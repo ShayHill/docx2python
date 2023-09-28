@@ -36,11 +36,11 @@ from lxml import etree
 from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .attribute_register import XML2HTML_FORMATTER
-from .docx_context import collect_numFmts, collect_rels
+from .docx_context import collect_numFmts, collect_rels, collect_comments
 from .docx_text import get_text
 from .merge_runs import merge_elems
 
-CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
+CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes", "comments"}
 
 
 @dataclass
@@ -251,10 +251,12 @@ class DocxReader:
         html: bool = False,
         paragraph_styles: bool = False,
         duplicate_merged_cells: bool = False,
+        extract_comments: bool = False,
     ):
         self.docx_filename = docx_filename
         self.do_pStyle = paragraph_styles
         self.duplicate_merged_cells = duplicate_merged_cells
+        self.extract_comments = extract_comments
 
         if html:
             self.xml2html_format = XML2HTML_FORMATTER
@@ -265,6 +267,7 @@ class DocxReader:
         self.__zipf: None | zipfile.ZipFile = None
         self.__files: None | list[File] = None
         self.__numId2NumFmts: None | dict[str, list[str]] = None
+        self.__comments: None | dict[str, str] = None
         self.__closed = False
 
     @property
@@ -325,6 +328,18 @@ class DocxReader:
             files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
         self.__files = files
         return self.__files
+
+    @property
+    def comments(self) -> dict[str, str]:
+        if self.__comments is not None:
+            return self.__comments
+        try:
+            comments_root = etree.fromstring(self.zipf.read("word/comments.xml"))
+            self.__comments = collect_comments(comments_root)
+        except KeyError:
+            self.__comments = {}
+        return self.__comments
+
 
     @property
     def numId2numFmts(self) -> dict[str, list[str]]:

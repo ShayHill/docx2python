@@ -139,6 +139,7 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
     want to do it. Nothing tricky here except keeping track of the text formatting.
     """
     root = root if root is not None else file.root_element
+    comments = file.context.comments
     bullets = BulletGenerator(file.context.numId2numFmts)
     # numId2count = _new_list_counter()
     tables = DepthCollector(5)
@@ -175,6 +176,13 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
                 text = text.replace("<", "&lt;")
                 text = text.replace(">", "&gt;")
             tables.add_text_into_open_run(text)
+        
+        elif tree.tag == Tags.COMMENT_REFERENCE:
+            if file.context.extract_comments:
+                comment_id = tree.attrib[qn("w:id")]
+                text = comments.get(comment_id, "")
+                text = f"(COMMENT: {text})"
+                tables.add_text_into_open_run(text)
 
         elif tree.tag == Tags.MATH:
             # read equations

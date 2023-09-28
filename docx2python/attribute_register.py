@@ -82,6 +82,7 @@ class Tags(str, Enum):
 
     BODY = qn("w:body")
     BR = qn("w:br")
+    COMMENT_REFERENCE = qn("w:commentReference")
     DOCUMENT = qn("w:document")
     ENDNOTE = qn("w:endnote")
     ENDNOTE_REFERENCE = qn("w:endnoteReference")
