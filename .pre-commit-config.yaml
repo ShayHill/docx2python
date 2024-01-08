@@ -4,7 +4,7 @@ ci:
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v4.5.0
   hooks:
     - id: check-added-large-files
     - id: check-ast
@@ -28,7 +28,7 @@ repos:
     #   - --pytest-test-first
 
 - repo: https://github.com/python-poetry/poetry
-  rev: 1.4.0
+  rev: 1.7.0
   hooks:
     - id: poetry-check
     - id: poetry-lock
@@ -39,7 +39,7 @@ repos:
 #     - id: export-requirements-dev
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.2.0
+  rev: v1.8.0
   hooks:
   - id: mypy
     exclude: "tests"
@@ -48,31 +48,31 @@ repos:
     files: ^(src/|tests/)
 
 - repo: https://github.com/PyCQA/isort
-  rev: 5.12.0
+  rev: 5.13.2
   hooks:
   - id: isort
     args: ["--profile", "black", "--filter-files"]
 
 - repo: https://github.com/psf/black
-  rev: 23.3.0
+  rev: 23.12.1
   hooks:
   - id: black
     language_version: python3.10
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.3.2
+  rev: v3.15.0
   hooks:
   - args:
     - --py37-plus
     id: pyupgrade
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.5.1
+  rev: v1.5.4
   hooks:
   - id: remove-tabs
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: 3.2.0
+  rev: v3.13.0
   hooks:
   - id: commitizen
 
@@ -108,7 +108,7 @@ repos:
     - --accept-no-yields-doc=n
 
 - repo: https://github.com/pycqa/flake8
-  rev: 6.0.0
+  rev: 7.0.0
   hooks:
   - id: flake8
     exclude: "tests"
@@ -118,6 +118,6 @@ repos:
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.305
+  rev: v1.1.345
   hooks:
     - id: pyright
