@@ -62,7 +62,7 @@ def _new_list_counter() -> defaultdict[str, defaultdict[str, int]]:
 
     This is what you need to keep track of where every nested list is at.
     """
-    return defaultdict(lambda: defaultdict(lambda: 0))
+    return defaultdict(lambda: defaultdict(int))
 
 
 def _increment_list_counter(ilvl2count: defaultdict[str, int], ilvl: str) -> int:
