@@ -1,60 +1,46 @@
-[tool.poetry]
+
+[project]
 name = "docx2python"
 version = "2.7.3"
 description = "Extract content from docx files"
-authors = ["Shay Hill <shay_public@hotmail.com>"]
-license = "MIT"
+authors = [{ name = "Shay Hill", email = "shay_public@hotmail.com" }]
+license = {text = "MIT"}
 readme = "README.md"
+requires-python = ">=3.8.0"
+dependencies = ["lxml"]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-lxml = "^4.9.2"
+[project.optional-dependencies]
+dev = ["pytest", "types-lxml", "commitizen", "pre-commit"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
-types-lxml = "^2022.11.8"
-commitizen = "^2.39.1"
-pre-commit = "^3.0.4"
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
 
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "2.7.3"
 tag_format = "$version"
-version_files = [
-    "pyproject.toml:^version"
-]
+major-version-zero = true
+version_files = ["pyproject.toml:^version"]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-# [tox]
-# isolated_build = true
-# envlist = py36
-
-# [testenv]
-# whitelist_externals = poetry
-# commands =
-#     poetry install -v
-#     poetry run pytest tests/
 
 [tool.pyright]
 include = ["src"]
-exclude = ["**/__pycache__.py", "**/tests/**"]
+exclude = ["**/__pycache__.py"]
 
-pythonVersion = "3.10"
+pythonVersion = "3.8"
 pythonPlatform = "Any"
 
 typeCheckingMode = "strict"
 reportShadowedImports = true
 reportCallInDefaultInitializer = true
 reportImplicitStringConcatenation = true
+# reportMissingSuperCall = true
 reportPropertyTypeMismatch = true
 reportUninitializedInstanceVariable = true
 reportUnnecessaryTypeIgnoreComment = true
 reportUnusedCallResult = true
-reportImportCycles = false
-reportIncompatibleMethodOverride = false
 
-venvPath = "C:\\Users\\shaya\\AppData\\Local\\pypoetry\\Cache\\virtualenvs"
-venv = "C:\\Users\\shaya\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\docx2python-fuFHBYOz-py3.11"
+venvPath = "."
+venv = "./venv"
