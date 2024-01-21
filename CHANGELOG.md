@@ -1,3 +1,9 @@
+## 2.8.0 (2024-01-21)
+
+### Feat
+
+- capture hyperlink anchors
+
 ## 2.7.3 (2023-06-17)
 
 ### Fix
