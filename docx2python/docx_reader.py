@@ -1,4 +1,4 @@
-""" Hold and decode docx internal xml files.
+"""Hold and decode docx internal xml files.
 
 :author: Shay Hill
 :created: 3/18/2021
@@ -29,16 +29,21 @@ from dataclasses import dataclass
 from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 from lxml import etree
-from lxml.etree import _Element as EtreeElement  # type: ignore
+from typing_extensions import Self
 
 from .attribute_register import XML2HTML_FORMATTER
 from .docx_context import collect_numFmts, collect_rels
 from .docx_text import get_text
 from .merge_runs import merge_elems
+
+if TYPE_CHECKING:
+    from io import BytesIO
+
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 
@@ -120,7 +125,7 @@ class File:
         dirs = [os.path.dirname(x) for x in (self.dir, self.Target)]
         dirname = "/".join([x for x in dirs if x])
         filename = os.path.basename(self.Target)
-        self.__path = "/".join([dirname, filename])
+        self.__path = f"{dirname}/{filename}"
         return self.__path
 
     @property
@@ -208,7 +213,7 @@ class File:
             root_ = copy.copy(root)
             try:
                 merge_elems(self, root)
-            except Exception as ex:
+            except (TypeError, AttributeError) as ex:
                 warn(
                     "Attempt to merge consecutive elements in "
                     + f"{self.context.docx_filename} {self.path} resulted in "
@@ -251,7 +256,14 @@ class DocxReader:
         html: bool = False,
         paragraph_styles: bool = False,
         duplicate_merged_cells: bool = False,
-    ):
+    ) -> None:
+        """Initialize DocxReader instance.
+
+        :param docx_filename: Path to docx file, or BytesIO object.
+        :param html: If True, convert xml to html.
+        :param paragraph_styles: If True, include paragraph styles in html.
+        :param duplicate_merged_cells: If True, duplicate text in merged cells.
+        """
         self.docx_filename = docx_filename
         self.do_pStyle = paragraph_styles
         self.duplicate_merged_cells = duplicate_merged_cells
@@ -289,7 +301,7 @@ class DocxReader:
             self.__zipf.close()
         self.__closed = True
 
-    def __enter__(self) -> DocxReader:
+    def __enter__(self) -> Self:
         """Do nothing. The zipfile will open itself when needed.
 
         :return: self
@@ -301,7 +313,7 @@ class DocxReader:
         exc_type: Any,  # None | Type[Exception], but py <= 3.9 doesn't like it.
         exc_value: Any,  # None | Exception, but py <= 3.9 doesn't like it.
         exc_traceback: Any,  # None | TracebackType, but py <= 3.9 doesn't like it.
-    ):
+    ) -> Self:
         """Close the zipfile.
 
         :param exc_type: Python internal use
@@ -309,6 +321,7 @@ class DocxReader:
         :param exc_traceback: Python internal use
         """
         self.close()
+        return self
 
     @property
     def files(self) -> list[File]:

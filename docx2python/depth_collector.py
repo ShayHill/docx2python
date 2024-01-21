@@ -99,7 +99,8 @@ class DepthCollector:
         """Return the item at the given address
 
         :param address: a tuple of indices to the item to be returned
-        :return: the item at the address
+        :return: the item at the address.
+            Returns a list of lists (of lists, ...) of strings
         """
         branch = self._rightmost_branches
         for i in address:
@@ -122,7 +123,7 @@ class DepthCollector:
         :return: the new paragraph
         """
         html_style = html_style or []
-        new_par = Par(html_style, self.orphan_runs + [Run([], html_open(html_style))])
+        new_par = Par(html_style, [*self.orphan_runs, Run([], html_open(html_style))])
         self.orphan_runs = []
         self.open_pars.append(new_par)
         return new_par

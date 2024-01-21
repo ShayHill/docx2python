@@ -1,4 +1,4 @@
-""" Merge runs with identical formatting.
+"""Merge runs with identical formatting.
 
 :author: Shay Hill
 :created: 12/13/2021
@@ -11,12 +11,12 @@ import functools
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from lxml.etree import _Element as EtreeElement  # type: ignore
-
 from .attribute_register import RELS_ID, Tags, has_content
 from .text_runs import get_html_formatting
 
 if TYPE_CHECKING:
+    from lxml.etree import _Element as EtreeElement  # type: ignore
+
     from .docx_reader import File
 
 # identify tags that will be merged together (if formatting is equivalent)
@@ -136,7 +136,6 @@ def merge_elems(file: File, tree: EtreeElement) -> None:
 
     Filter out non-content items so runs can be joined even
     """
-
     file_elem_key = functools.partial(_elem_key, file)
 
     elems = [x for x in tree if has_content(x)]

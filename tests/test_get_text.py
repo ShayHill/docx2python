@@ -61,7 +61,7 @@ def numbering_context() -> Dict[str, Dict[str, str]]:
             "undefined",
         ]
     }
-    numId2count = defaultdict(lambda: defaultdict(lambda: 0))
+    numId2count = defaultdict(lambda: defaultdict(int))
     return {"numId2numFmts": numId2numFmts, "numId2count": numId2count}
 
 

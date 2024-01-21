@@ -86,9 +86,7 @@ from .conftest import RESOURCES
 def test_paragraphs_only() -> None:
     """Html tags inserted into text"""
     pars = docx2python(
-        RESOURCES / "nested_paragraphs.docx",
-        html=True,
-        paragraph_styles=True,
+        RESOURCES / "nested_paragraphs.docx", html=True, paragraph_styles=True
     )
     assert pars.document_runs == [
         [[[]]],
@@ -180,9 +178,7 @@ def test_paragraphs_only() -> None:
 def test_par_styles_not_in_text() -> None:
     """Par styles skipped in pure text export"""
     pars = docx2python(
-        RESOURCES / "nested_paragraphs.docx",
-        html=True,
-        paragraph_styles=True,
+        RESOURCES / "nested_paragraphs.docx", html=True, paragraph_styles=True
     )
     assert pars.text == (
         "[Grab your reader’s attention with a great quote from the document or use "

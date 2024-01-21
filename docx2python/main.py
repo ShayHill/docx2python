@@ -5,12 +5,15 @@
 """
 from __future__ import annotations
 
-from io import BytesIO
-from pathlib import Path
+from typing import TYPE_CHECKING
 from warnings import warn
 
 from .docx_output import DocxContent
 from .docx_reader import DocxReader
+
+if TYPE_CHECKING:
+    from io import BytesIO
+    from pathlib import Path
 
 
 def docx2python(

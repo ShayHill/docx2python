@@ -1,4 +1,4 @@
-"""Break up long lines in an unzipped docx file
+r"""Break up long lines in an unzipped docx file
 
 :author: Shay Hill
 :created: 11/15/2020
@@ -20,7 +20,7 @@ import re
 
 
 def break_long_xml_lines(filename: str) -> None:
-    """
+    r"""
     Replace `><` with `>\n<`. Overwrite original file.
 
     :param filename: an xml file (inside an unzipped docx)

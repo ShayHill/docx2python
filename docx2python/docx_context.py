@@ -1,4 +1,4 @@
-""" Content from files that aren't ``word/document.xml``
+"""Content from files that aren't ``word/document.xml``
 
 :author: Shay Hill
 :created: 6/26/2019
@@ -9,12 +9,16 @@ numbering formats, images, and font styles from *other* files in a decompressed 
 from __future__ import annotations
 
 import re
-import zipfile
+from typing import TYPE_CHECKING
 
 from lxml import etree
-from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from .namespace import qn
+
+if TYPE_CHECKING:
+    import zipfile
+
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
 def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:

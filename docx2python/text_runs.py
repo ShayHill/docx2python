@@ -11,12 +11,13 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from contextlib import suppress
-from typing import Sequence, Tuple, Union
-
-from lxml.etree import _Element as EtreeElement  # type: ignore
+from typing import TYPE_CHECKING, Sequence
 
 from .attribute_register import HtmlFormatter, Tags
 from .namespace import qn
+
+if TYPE_CHECKING:
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
 def _elem_tag_str(elem: EtreeElement) -> str:
@@ -92,7 +93,6 @@ def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]
             "szCs": "32",
         }
     """
-
     sub_vals: dict[str, str | None] = {}
     with suppress(StopIteration):
         for sub_element in next(element.iterfind(qname)):
@@ -223,8 +223,8 @@ def _format_Pr_into_html(
     # group together supported formats with the same container and property_
     # e.g., group together everything that goes into `<span style="$HERE$">`
     # con_pro2for[(con, pro)] = string created from for
-    cp2f_keytype = Tuple[Union[None, str], Union[None, str]]
-    con_pro2for: defaultdict[cp2f_keytype, list[str]] = defaultdict(list)
+    con_pro2for: defaultdict[tuple[None | str, None | str], list[str]]
+    con_pro2for = defaultdict(list)
     for tag, val in ((k, v) for k, v in Pr2val.items() if k in xml2html):
         formatter, container, property_ = xml2html[tag]
         con_pro2for[(container, property_)].append(formatter(tag, val or ""))

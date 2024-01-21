@@ -1,4 +1,4 @@
-""" Form checkboxes, dropdowns, and other non-text elements visible in Word.
+"""Form checkboxes, dropdowns, and other non-text elements visible in Word.
 
 :author: Shay Hill
 :created: 6/17/2020
@@ -11,12 +11,15 @@ crossed-out checkboxes. Pypi doesn't like them in my file, so I have to referenc
 them by their escape sequences.
 """
 
-from contextlib import suppress
-from typing import Union
+from __future__ import annotations
 
-from lxml.etree import _Element as EtreeElement  # type: ignore
+from contextlib import suppress
+from typing import TYPE_CHECKING
 
 from .namespace import qn
+
+if TYPE_CHECKING:
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
 def get_checkBox_entry(checkBox: EtreeElement) -> str:
@@ -48,7 +51,7 @@ def get_checkBox_entry(checkBox: EtreeElement) -> str:
     If the ``checked`` attribute is present, but not w:val is given, return unchecked
     """
 
-    def get_wval() -> Union[str, None]:
+    def get_wval() -> str | None:
         """Get the value of the ``w:val`` attribute of the ``checked`` element.
 
         :return: the value of the ``w:val`` attribute of the ``checked`` element

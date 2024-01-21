@@ -1,4 +1,4 @@
-""" The tags and attributes docx2python knows how to handle.
+"""The tags and attributes docx2python knows how to handle.
 
 :author: Shay Hill
 :created: 3/18/2021
@@ -7,12 +7,28 @@ A lot of the information in a docx file isn't text or text attributes. Docx file
 record spelling errors, revision history, etc. Docx2Python will ignore (by design)
 much of this.
 """
-from enum import Enum
-from typing import Callable, Iterator, NamedTuple, Optional
 
-from lxml.etree import _Element as EtreeElement  # type: ignore
+from __future__ import annotations
+
+from enum import Enum
+from typing import TYPE_CHECKING, Callable, Iterator, NamedTuple
 
 from .namespace import qn
+
+if TYPE_CHECKING:
+    from lxml.etree import _Element as EtreeElement  # type: ignore
+
+
+def _just_return_tag(tag: str, val: str) -> str:
+    """
+    A formatter that just returns the tag name.
+
+    :param tag: xml tag name
+    :param val: xml attribute value
+    :return: tag name
+    """
+    del val
+    return tag
 
 
 class HtmlFormatter(NamedTuple):
@@ -40,9 +56,9 @@ class HtmlFormatter(NamedTuple):
     and element ``w:val`` attribute (here ``"32"``).
     """
 
-    formatter: Callable[[str, str], str] = lambda tag, val: tag
-    container: Optional[str] = None  # e.g., 'span'
-    property_: Optional[str] = None  # e.g., 'style'
+    formatter: Callable[[str, str], str] = _just_return_tag
+    container: str | None = None  # e.g., 'span'
+    property_: str | None = None  # e.g., 'style'
 
 
 # An HtmlFormatter instance for every xml format Docx2Python recognizes.
@@ -114,7 +130,7 @@ RELS_ID = qn("r:id")
 _CONTENT_TAGS = set(Tags) - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
 
 
-def has_content(tree: EtreeElement) -> Optional[str]:
+def has_content(tree: EtreeElement) -> str | None:
     """
     Does the element have any descendent content elements?
 

@@ -29,7 +29,8 @@ TablesList = List[List[List[List[Any]]]]
 class IndexedItem(NamedTuple):
     """The address (indices in a nested list) of an item and the item itself."""
 
-    index: tuple[int, ...]
+    # TODO: rename index for docx 3.0
+    index: tuple[int, ...]  # type: ignore
     value: Any
 
 
@@ -107,7 +108,7 @@ def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
             if not isinstance(sequence, argument_type):
                 raise TypeError("will not iterate over sequence item")
             for i, item in enumerate(sequence):
-                yield IndexedItem(index_tuple + (i,), item)
+                yield IndexedItem((*index_tuple, i), item)
 
     depth_n: Iterator[IndexedItem]
     depth_n = (IndexedItem((i,), x) for i, x in enumerate(nested))
@@ -258,7 +259,7 @@ def enum_paragraphs(tables: TablesList) -> Iterator[IndexedItem]:
 
 
 def get_text(tables: TablesList) -> str:
-    """
+    r"""
     Short cut to pull text from any subset of extracted content.
 
     :param tables: ``[[[["string"]]]]``
@@ -281,17 +282,16 @@ def get_html_map(tables: TablesList) -> str:
     will be prepended with an index tuple. (e.g., ``[[[['text']]]]`` will appear as
     ``(0, 0, 0, 0) text``.
     """
-
     # prepend index tuple to each paragraph
     tables_4deep = cast(List[List[List[List[str]]]], tables)
-    for (i, j, k, l), paragraph in enum_at_depth(tables, 4):
-        tables_4deep[i][j][k][l] = " ".join([str((i, j, k, l)), paragraph])
+    for (i, j, k, m), paragraph in enum_at_depth(tables, 4):
+        tables_4deep[i][j][k][m] = " ".join([str((i, j, k, m)), paragraph])
 
     # wrap each paragraph in <pre> tags
     tables_3deep = cast(List[List[List[str]]], tables_4deep)
     for (i, j, k), cell in enum_at_depth(tables_4deep, 3):
-        cell = (str(x) for x in cell)
-        tables_3deep[i][j][k] = "".join([f"<pre>{x}</pre>" for x in cell])
+        cell_strs = (str(x) for x in cell)
+        tables_3deep[i][j][k] = "".join([f"<pre>{x}</pre>" for x in cell_strs])
 
     # wrap each cell in <td> tags
     tables_2deep = cast(List[List[str]], tables_3deep)

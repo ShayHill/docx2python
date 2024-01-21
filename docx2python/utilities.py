@@ -12,16 +12,19 @@ from __future__ import annotations
 
 import copy
 import re
-from pathlib import Path
-from typing import Iterator
+from typing import TYPE_CHECKING, Iterator
 
 from lxml import etree
-from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from docx2python.attribute_register import Tags
 
 from .iterators import iter_at_depth
 from .main import docx2python
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
 def _copy_new_text(elem: EtreeElement, new_text: str) -> EtreeElement:

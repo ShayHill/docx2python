@@ -36,15 +36,22 @@ Also returns a 4-deep nested list (paragraphs are strings)::
 This is the format for default (no trailing "_runs", e.g ``header``) properties.
 
 """
+
+from __future__ import annotations
+
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
+from typing_extensions import Self
+
 from .docx_context import collect_docProps
-from .docx_reader import DocxReader
-from .docx_text import TablesList
 from .iterators import enum_at_depth, get_html_map, iter_at_depth
+
+if TYPE_CHECKING:
+    from .docx_reader import DocxReader
+    from .docx_text import TablesList
 
 
 @dataclass
@@ -52,16 +59,17 @@ class DocxContent:
     """Holds return values for docx content."""
 
     docx_reader: DocxReader
-    docx2python_kwargs: Dict[str, Any]
+    docx2python_kwargs: dict[str, Any]
 
     def close(self):
         """Close the zipfile opened by DocxReader"""
         self.docx_reader.close()
 
-    def __enter__(self) -> "DocxContent":
+    def __enter__(self) -> Self:
         """Do nothing. The zipfile will open itself when needed.
 
-        :return: self"""
+        :return: self
+        """
         return self
 
     def __exit__(
@@ -69,7 +77,7 @@ class DocxContent:
         exc_type: Any,  # None | Type[Exception], but py <= 3.9 doesn't like it.
         exc_value: Any,  # None | Exception, but py <= 3.9 doesn't like it.
         exc_traceback: Any,  # None | TracebackType, but py <= 3.9 doesn't like it.
-    ):
+    ) -> None:
         """Close the zipfile opened by DocxReader
 
         :param exc_type: Python internal use
@@ -93,10 +101,11 @@ class DocxContent:
         """
         if name in {"header", "footer", "body", "footnotes", "endnotes"}:
             runs = deepcopy(getattr(self, name + "_runs"))
-            for (i, j, k, l), paragraph in enum_at_depth(runs, 4):
-                runs[i][j][k][l] = "".join(paragraph)
+            for (i, j, k, m), paragraph in enum_at_depth(runs, 4):
+                runs[i][j][k][m] = "".join(paragraph)
             return runs
-        raise AttributeError(f"no attribute {name}")
+        msg = f"no attribute {name}"
+        raise AttributeError(msg)
 
     def _get_runs(self, type_: str) -> TablesList:
         """Get text runs for an internal document type.
@@ -162,7 +171,7 @@ class DocxContent:
         return self._get_runs("endnotes")
 
     @property
-    def images(self) -> Dict[str, bytes]:
+    def images(self) -> dict[str, bytes]:
         """Get bytestring of all images in the document.
 
         :return: dict {image_name: image_bytes}
@@ -195,7 +204,7 @@ class DocxContent:
 
     @property
     def text(self) -> str:
-        """All docx paragraphs, "\n\n" joined.
+        r"""All docx paragraphs, "\n\n" joined.
 
         :return: all docx paragraphs, "\n\n" joined
         """
@@ -215,7 +224,7 @@ class DocxContent:
         return get_html_map(self.document)
 
     @property
-    def properties(self) -> Dict[str, Optional[str]]:
+    def properties(self) -> dict[str, str | None]:
         """Document core-properties as a dictionary.
 
         :return: document core-properties as a dictionary
@@ -231,7 +240,7 @@ class DocxContent:
         return self.core_properties
 
     @property
-    def core_properties(self) -> Dict[str, Optional[str]]:
+    def core_properties(self) -> dict[str, str | None]:
         """Document core-properties as a dictionary.
 
         :return: document core-properties as a dictionary
@@ -251,7 +260,7 @@ class DocxContent:
             )
             return {}
 
-    def save_images(self, image_folder: str) -> Dict[str, bytes]:
+    def save_images(self, image_folder: str) -> dict[str, bytes]:
         """Write images to hard drive.
 
         :param image_folder: folder to write images to

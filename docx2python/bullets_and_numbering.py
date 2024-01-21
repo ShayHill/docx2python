@@ -1,4 +1,4 @@
-""" Generate bullet and numbered-list strings.
+"""Generate bullet and numbered-list strings.
 
 :author: Shay Hill
 :created: 11/15/2021
@@ -17,12 +17,13 @@ from __future__ import annotations
 
 import warnings
 from collections import defaultdict
-from typing import Callable
-
-from lxml.etree import _Element as EtreeElement  # type: ignore
+from typing import TYPE_CHECKING, Callable
 
 from docx2python import numbering_formats as nums
 from docx2python.namespace import qn
+
+if TYPE_CHECKING:
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
 def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
@@ -62,7 +63,7 @@ def _new_list_counter() -> defaultdict[str, defaultdict[str, int]]:
 
     This is what you need to keep track of where every nested list is at.
     """
-    return defaultdict(lambda: defaultdict(lambda: 0))
+    return defaultdict(lambda: defaultdict(int))
 
 
 def _increment_list_counter(ilvl2count: defaultdict[str, int], ilvl: str) -> int:
@@ -87,7 +88,7 @@ def _increment_list_counter(ilvl2count: defaultdict[str, int], ilvl: str) -> int
     them.
     """
     ilvl2count[ilvl] += 1
-    deeper_levels = [x for x in ilvl2count.keys() if x > ilvl]
+    deeper_levels = [k for k in ilvl2count if k > ilvl]
     for level in deeper_levels:
         del ilvl2count[level]
     return ilvl2count[ilvl]

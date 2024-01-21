@@ -13,8 +13,6 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING, List, Sequence, cast
 
-from lxml.etree import _Element as EtreeElement  # type: ignore
-
 from .attribute_register import Tags
 from .bullets_and_numbering import BulletGenerator
 from .depth_collector import DepthCollector, Run
@@ -30,6 +28,7 @@ from .text_runs import (
 
 if TYPE_CHECKING:
     from docx_reader import File
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 TablesList = List[List[List[List[str]]]]
 
@@ -76,7 +75,6 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
 
     There will only ever be one document list, so the min depth returned is 1
     """
-
     if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
         return None
 
