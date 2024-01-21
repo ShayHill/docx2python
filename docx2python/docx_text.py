@@ -212,6 +212,9 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
             try:
                 rId = tree.attrib[qn("r:id")]
                 link = file.rels[rId]
+                anchor = tree.attrib.get(qn("w:anchor"))
+                if link and anchor:
+                    link = link + "#" + anchor
                 tables.insert_text_as_new_run(f'<a href="{link}">{text}</a>')
             except KeyError:
                 tables.insert_text_as_new_run(text)
