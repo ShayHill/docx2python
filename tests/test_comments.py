@@ -15,5 +15,6 @@ from .conftest import RESOURCES
 def test_comments() -> None:
     """Extract comments and some comment metadata."""
     pars = docx2python(RESOURCES / "comments.docx")
+    _ = pars.body
     pars.close()
     assert True

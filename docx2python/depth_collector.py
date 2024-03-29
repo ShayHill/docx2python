@@ -35,6 +35,8 @@ from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any, Iterable
 
+from docx2python.iterators import enum_at_depth
+
 from .text_runs import html_close, html_open
 
 
@@ -94,6 +96,32 @@ class DepthCollector:
 
         self.open_pars: list[Par] = []
         self.orphan_runs: list[Run] = []
+
+        self.comment_ranges: dict[str, tuple[int, int]] = {}
+
+    def _count_runs(self) -> int:
+        """Count the number of runs seen so far in current and previous paragraphs."""
+        assert len(self.open_pars) == 1
+        cruns = sum(len(x) for x in enum_at_depth(self._rightmost_branches[0], 4))
+        cruns = len(self.open_pars[0].runs)
+        return cruns + len(self.orphan_runs)
+
+    def start_comment_range(self, id_: str) -> None:
+        """Start a comment range at the given address.
+
+        :param id_: the `w:id` of the `w:commentRangeStart` element
+        """
+        cruns = self._count_runs()
+        self.comment_ranges[id_] = (cruns + 1, cruns + 1)
+
+    def end_comment_range(self, id_: str) -> None:
+        """Start a comment range at the given address.
+
+        :param id_: the `w:id` of the `w:commentRangeEnd` element
+        """
+        cruns = self._count_runs()
+        beg = self.comment_ranges[id_][0]
+        self.comment_ranges[id_] = (beg, cruns + 1)
 
     def view_branch(self, address: Iterable[int]) -> Any:
         """Return the item at the given address

@@ -156,6 +156,12 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
         tree_depth = _get_elem_depth(tree)
         tables.set_caret(tree_depth)
 
+        if tree.tag == Tags.COMMENT_RANGE_START:
+            tables.start_comment_range(tree.attrib[qn("w:id")])
+
+        if tree.tag == Tags.COMMENT_RANGE_END:
+            tables.end_comment_range(tree.attrib[qn("w:id")])
+
         # queue up tags before opening any paragraphs or runs
         if tree.tag == Tags.PARAGRAPH:
             par = tables.commence_paragraph(get_paragraph_formatting(tree, xml2html))

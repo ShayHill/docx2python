@@ -98,6 +98,8 @@ class Tags(str, Enum):
 
     BODY = qn("w:body")
     BR = qn("w:br")
+    COMMENT_RANGE_END = qn("w:commentRangeEnd")
+    COMMENT_RANGE_START = qn("w:commentRangeStart")
     DOCUMENT = qn("w:document")
     ENDNOTE = qn("w:endnote")
     ENDNOTE_REFERENCE = qn("w:endnoteReference")
@@ -107,8 +109,8 @@ class Tags(str, Enum):
     FORM_DDLIST = qn("w:ddList")  # drop-down form
     HYPERLINK = qn("w:hyperlink")
     IMAGE = qn("a:blip")
-    IMAGE_ALT = qn("wp:docPr")
     IMAGEDATA = qn("v:imagedata")
+    IMAGE_ALT = qn("wp:docPr")
     MATH = qn("m:oMath")
     PARAGRAPH = qn("w:p")
     PAR_PROPERTIES = qn("w:pPr")
