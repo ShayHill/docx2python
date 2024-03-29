@@ -6,6 +6,7 @@
 Most of the "meat" in a docx file is in ``word/document.xml``. These functions retrieve
 numbering formats, images, and font styles from *other* files in a decompressed docx.
 """
+
 from __future__ import annotations
 
 import re

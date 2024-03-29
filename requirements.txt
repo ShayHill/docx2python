@@ -4,5 +4,7 @@
 #
 #    pip-compile --output-file=requirements.txt --strip-extras pyproject.toml
 #
-lxml==5.1.0
+lxml==5.1.1
+    # via docx2python (pyproject.toml)
+typing-extensions==4.10.0
     # via docx2python (pyproject.toml)

@@ -5,6 +5,7 @@
 
 Join consecutive xml runs with identical formatting. See docstring for ``merge_elems``.
 """
+
 from __future__ import annotations
 
 import functools

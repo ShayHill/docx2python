@@ -46,7 +46,6 @@ to explicate namespace mapping.
 If you extend docx2text with other tags, additional NSMAP entries may be necessary.
 """
 
-
 NSMAP = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
     "cp": "http://schemas.openxmlformats.org/package/2006/metadata/core-properties",

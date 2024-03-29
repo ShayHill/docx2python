@@ -13,6 +13,7 @@ numbered paragraphs are encountered. If extracting partial text, the numbers may
 incorrect, because all paragraphs in a numbered-list format may not be encountered
 during the extraction.
 """
+
 from __future__ import annotations
 
 import warnings

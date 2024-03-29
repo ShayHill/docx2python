@@ -3,6 +3,7 @@
 :author: Shay Hill
 :created: 7/2/2019
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

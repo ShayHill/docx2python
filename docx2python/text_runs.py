@@ -6,6 +6,7 @@
 Text runs are formatted inline in the ``trash/document.xml`` or header files. Read
 those elements to extract formatting information.
 """
+
 from __future__ import annotations
 
 import re

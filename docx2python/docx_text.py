@@ -8,6 +8,7 @@ Content in the extracted docx is found in the ``word`` folder:
     ``word/header1.html``
     ``word/footer1.html``
 """
+
 from __future__ import annotations
 
 from contextlib import suppress
