@@ -29,7 +29,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from warnings import warn
 
 from lxml import etree
@@ -37,13 +37,15 @@ from typing_extensions import Self
 
 from .attribute_register import XML2HTML_FORMATTER
 from .docx_context import collect_numFmts, collect_rels
-from .docx_text import get_text
+from .docx_text import TablesList, get_text, new_depth_collector
 from .merge_runs import merge_elems
 
 if TYPE_CHECKING:
     from io import BytesIO
 
     from lxml.etree import _Element as EtreeElement  # type: ignore
+
+    from .depth_collector import DepthCollector
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 
@@ -89,6 +91,7 @@ class File:
         self.__rels_path: None | str = None
         self.__rels: None | dict[str, str] = None
         self.__root_element: None | EtreeElement = None
+        self.__depth_collector: None | DepthCollector = None
 
     def __repr__(self) -> str:
         """File with self.path
@@ -224,12 +227,23 @@ class File:
         return self.__root_element
 
     @property
+    def depth_collector(self) -> DepthCollector:
+        """DepthCollector instance for this file.
+
+        :return: DepthCollector instance for this file.
+
+        The DepthCollector instance will be used to extract text from the file.
+        """
+        self.__depth_collector = self.__depth_collector or new_depth_collector(self)
+        return self.__depth_collector
+
+    @property
     def content(self) -> list[list[list[list[str]]]]:
         """Text extracted into a 5-layer-deep nested list of strings.
 
         :return: Text extracted into a 5-layer-deep nested list of strings.
         """
-        return get_text(self)
+        return self.get_content()
 
     def get_content(
         self, root: EtreeElement | None = None
@@ -241,6 +255,8 @@ class File:
             If root is not given, return full content of file.
         :return: Text extracted into a 5-layer-deep nested list of strings.
         """
+        if root is None:
+            return cast(TablesList, self.depth_collector.tree)
         return get_text(self, root)
 
 
