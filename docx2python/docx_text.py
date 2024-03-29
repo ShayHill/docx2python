@@ -118,8 +118,10 @@ def merged_text_tree(file: File, root: EtreeElement) -> str:
     return "".join(get_paragraphs(file, root))
 
 
-def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
-    """Xml as a string to a list of cell strings.
+def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCollector:
+    """Populate a DepthCollector instance with text from a docx file.
+
+    Xml as a string to a list of cell strings.
 
     :param file: File instance from which text will be extracted.
     :param root: Optionally extract content from a single element.
@@ -297,4 +299,24 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
     if tables.open_pars:
         tables.conclude_paragraph()
 
+    return tables
+
+
+def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
+    """Xml as a string to a list of cell strings.
+
+    :param file: File instance from which text will be extracted.
+    :param root: Optionally extract content from a single element.
+        If None, root_element of file will be used.
+    :return: A 5-deep nested list of strings.
+
+    Sorts the text into the DepthCollector instance, five-levels deep
+
+    ``[table][row][cell][paragraph][run]`` is a string
+
+    Joins the runs before returning, so return list will be
+
+    ``[table][row][cell][paragraph]`` is a string
+    """
+    tables = new_depth_collector(file, root)
     return cast(TablesList, tables.tree)
