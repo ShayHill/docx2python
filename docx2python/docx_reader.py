@@ -356,6 +356,19 @@ class DocxReader:
         return self.__files
 
     @property
+    def comments(self) -> list[EtreeElement]:
+        """
+        Comments from the document.
+
+        :return: Comments from the document.
+        """
+        try:
+            comment_file = self.file_of_type("comments")
+        except KeyError:
+            return []
+        return list(comment_file.root_element)
+
+    @property
     def numId2numFmts(self) -> dict[str, list[str]]:
         """
         numId referenced in xml to list of numFmt per indentation level
@@ -404,7 +417,7 @@ class DocxReader:
         File instances with attrib Type='http://.../type_'
 
         :param type_: this package looks for any of
-            ("header", "officeDocument", "footer", "footnotes", "endnotes")
+            ("header", "officeDocument", "footer", "footnotes", "endnotes", "comments")
             You can try others. If argument is None (default), returns all content file
             types.
         :return: File instances of the requested type, sorted by path

@@ -46,8 +46,11 @@ from warnings import warn
 
 from typing_extensions import Self
 
-from .docx_context import collect_docProps
+from docx2python.docx_context import collect_docProps
+
+from .docx_text import new_depth_collector
 from .iterators import enum_at_depth, get_html_map, iter_at_depth
+from .namespace import qn
 
 if TYPE_CHECKING:
     from .docx_reader import DocxReader
@@ -213,7 +216,15 @@ class DocxContent:
             # paragraph. Take them out.
             pars = ["".join(x[1:]) for x in iter_at_depth(self.document_runs, 4)]
             return "\n\n".join(pars)
-        return "\n\n".join(iter_at_depth(self.document, 4))
+        return self._get_text(self.document)
+
+    def _get_text(self, tables: TablesList) -> str:
+        r"""All paragraphs in tables, "\n\n" joined.
+
+        :param tables: docx tables
+        :return: all paragraphs in tables, "\n\n" joined
+        """
+        return "\n\n".join(iter_at_depth(tables, 4))
 
     @property
     def html_map(self) -> str:
@@ -259,6 +270,42 @@ class DocxContent:
                 + "so this may be expected."
             )
             return {}
+
+    @property
+    def comments(self) -> list[tuple[str, str, str, str]]:
+        """Get comments from the docx file.
+
+        :return: tuples of (reference_text, author, date, comment_text)
+        """
+        office_document = self.docx_reader.file_of_type("officeDocument")
+        depth_collector = office_document.depth_collector
+        comment_ranges = depth_collector.comment_ranges
+        comment_elements = self.docx_reader.comments
+
+        if len(comment_ranges) != len(comment_elements):
+            msg = (
+                "comment_ranges and comment_elements have different lengths. "
+                + "Failed to extract comments."
+            )
+            warn(msg)
+
+        all_runs = list(enum_at_depth(office_document.content, 5))
+        comments: list[tuple[str, str, str, str]] = []
+        for comment in comment_elements:
+            id_ = comment.attrib[qn("w:id")]
+
+            author = comment.attrib[qn("w:author")]
+            date = comment.attrib[qn("w:date")]
+
+            tree = new_depth_collector(office_document, comment).tree
+            tree_pars = ["".join(x) for x in iter_at_depth(tree, 4)]
+            comment_text = "\n\n".join(tree_pars)
+
+            beg_ref, end_ref = comment_ranges[id_]
+            reference = "".join(x.value for x in all_runs[beg_ref:end_ref])
+
+            comments.append((reference, author, date, comment_text))
+        return comments
 
     def save_images(self, image_folder: str) -> dict[str, bytes]:
         """Write images to hard drive.

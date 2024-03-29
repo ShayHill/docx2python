@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator, cast
 
 from docx2python.iterators import enum_at_depth
 
@@ -99,12 +99,25 @@ class DepthCollector:
 
         self.comment_ranges: dict[str, tuple[int, int]] = {}
 
+    @property
+    def _runs_so_far(self) -> Iterator[str]:
+        """Return all runs seen so far.
+
+        This is to mark the beginning and end of comment ranges.
+        """
+        assert len(self.open_pars) == 1
+        for run_text in enum_at_depth(self._rightmost_branches[0], 5):
+            if run_text:
+                yield cast(str, run_text)
+        for par in self.open_pars:
+            yield from par.strings
+        for run in self.orphan_runs:
+            if run.text:
+                yield run.text
+
     def _count_runs(self) -> int:
         """Count the number of runs seen so far in current and previous paragraphs."""
-        assert len(self.open_pars) == 1
-        cruns = sum(len(x) for x in enum_at_depth(self._rightmost_branches[0], 4))
-        cruns = len(self.open_pars[0].runs)
-        return cruns + len(self.orphan_runs)
+        return len(list(self._runs_so_far))
 
     def start_comment_range(self, id_: str) -> None:
         """Start a comment range at the given address.
@@ -112,7 +125,7 @@ class DepthCollector:
         :param id_: the `w:id` of the `w:commentRangeStart` element
         """
         cruns = self._count_runs()
-        self.comment_ranges[id_] = (cruns + 1, cruns + 1)
+        self.comment_ranges[id_] = (cruns, cruns)
 
     def end_comment_range(self, id_: str) -> None:
         """Start a comment range at the given address.
@@ -121,7 +134,7 @@ class DepthCollector:
         """
         cruns = self._count_runs()
         beg = self.comment_ranges[id_][0]
-        self.comment_ranges[id_] = (beg, cruns + 1)
+        self.comment_ranges[id_] = (beg, cruns)
 
     def view_branch(self, address: Iterable[int]) -> Any:
         """Return the item at the given address
