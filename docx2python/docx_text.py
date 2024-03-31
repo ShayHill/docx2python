@@ -95,7 +95,7 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
     return search_at_depth([tree])
 
 
-def get_paragraphs(file: File, root: EtreeElement) -> list[str]:
+def _get_paragraphs(file: File, root: EtreeElement) -> list[str]:
     """Return a list of paragraphs from the document
 
     :param file: an internal file element (e.g., header, footer, document))
@@ -108,14 +108,248 @@ def get_paragraphs(file: File, root: EtreeElement) -> list[str]:
     return all_paragraphs
 
 
-def merged_text_tree(file: File, root: EtreeElement) -> str:
+def _merged_text_tree(file: File, root: EtreeElement) -> str:
     """Return a string of all text in the document
 
     :param file: an internal file element (e.g., header, footer, document))
     :param root: the root element of the document
     :return: a string of all text in the document
     """
-    return "".join(get_paragraphs(file, root))
+    return "".join(_get_paragraphs(file, root))
+
+
+class TagRunner:
+    """Record or stage text from one xml element."""
+
+    def __init__(self, file: File) -> None:
+        """Gather context information necessary to perform some methods."""
+        self.file = file
+        self.xml2html_format = file.context.xml2html_format
+        self.tables = DepthCollector(5)
+        self.bullets = BulletGenerator(file.context.numId2numFmts)
+
+    def open(self, tree: EtreeElement) -> bool:
+        """Open an output string or list then add element text to it.
+
+        `open` methods will reture True if the element is to be recursed into.
+        """
+        tree_depth = _get_elem_depth(tree)
+        self.tables.set_caret(tree_depth)
+
+        # not all tags are in the attribute register
+        try:
+            tag_name = Tags(tree.tag).name
+        except ValueError:
+            return True
+
+        # not all tags have an open method
+        method_name = f"_open_{tag_name.lower()}"
+        try:
+            method = getattr(self, method_name)
+        except AttributeError:
+            return True
+        return method(tree)
+
+    def close(self, tree: EtreeElement):
+        """Take care of any cleanup after extracting element text."""
+        tree_depth = _get_elem_depth(tree)
+
+        # not all tags are in the attribute register
+        try:
+            tag_name = Tags(tree.tag).name
+        except ValueError:
+            self.tables.set_caret(tree_depth)
+            return
+
+        # not all tags have an open method
+        method_name = f"_close_{tag_name.lower()}"
+        try:
+            method = getattr(self, method_name)
+        except AttributeError:
+            self.tables.set_caret(tree_depth)
+            return
+        method(tree)
+        self.tables.set_caret(tree_depth)
+
+    def _open_paragraph(self, tree: EtreeElement) -> bool:
+        """Open a paragraph."""
+        par_formatting = get_paragraph_formatting(tree, self.xml2html_format)
+        par = self.tables.commence_paragraph(par_formatting)
+        if self.file.context.do_pStyle:
+            par.runs.insert(0, Run([], get_pStyle(tree) or "None"))
+        self.tables.insert_text_as_new_run(self.bullets.get_bullet(tree))
+        return True
+
+    def _open_run(self, tree: EtreeElement) -> bool:
+        """Open a run."""
+        self.tables.commence_run(get_run_formatting(tree, self.xml2html_format))
+        return True
+
+    def _open_comment_range_end(self, tree: EtreeElement) -> bool:
+        """Close a comment range."""
+        self.tables.end_comment_range(tree.attrib[qn("w:id")])
+        return False
+
+    def _open_comment_range_start(self, tree: EtreeElement) -> bool:
+        """Open a comment range."""
+        self.tables.start_comment_range(tree.attrib[qn("w:id")])
+        return False
+
+    def _open_text(self, tree: EtreeElement) -> bool:
+        """Open a text. These do not all contain text."""
+        text = tree.text or ""
+        if self.xml2html_format:
+            text = text.replace("&", "&amp;")
+            text = text.replace("<", "&lt;")
+            text = text.replace(">", "&gt;")
+        self.tables.add_text_into_open_run(text)
+        return True
+
+    def _open_text_math(self, tree: EtreeElement) -> bool:
+        """Open a math text."""
+        return self._open_text(tree)
+
+    def _open_math(self, tree: EtreeElement) -> bool:
+        """Open a math."""
+        text = "".join(str(x) for x in tree.itertext())
+        self.tables.insert_text_as_new_run(f"<latex>{text}</latex>")
+        return False
+
+    def _open_br(self, tree: EtreeElement) -> bool:
+        """Open a break."""
+        _ = tree
+        self.tables.add_text_into_open_run("\n")
+        return True
+
+    def _open_sym(self, tree: EtreeElement) -> bool:
+        """Open a symbol."""
+        font = str(tree.attrib.get(qn("w:font")))
+        char = str(tree.attrib.get(qn("w:char")))
+        if char:
+            self.tables.add_text_into_open_run(
+                f"<span style=font-family:{font}>&#x0{char[1:]};</span>"
+            )
+        return True
+
+    def _open_footnote(self, tree: EtreeElement) -> bool:
+        """Open a footnote."""
+        footnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
+        if "separator" not in footnote_type:
+            self.tables.insert_text_as_new_run(
+                f"footnote{str(tree.attrib[qn('w:id')])})\t"
+            )
+        return True
+
+    def _open_endnote(self, tree: EtreeElement) -> bool:
+        """Open an endnote."""
+        endnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
+        if "separator" not in endnote_type:
+            self.tables.insert_text_as_new_run(
+                f"endnote{str(tree.attrib[qn('w:id')])})\t"
+            )
+        return True
+
+    def _open_hyperlink(self, tree: EtreeElement) -> bool:
+        """Open a hyperlink."""
+        text = _merged_text_tree(self.file, tree)
+        try:
+            rId = tree.attrib[qn("r:id")]
+            link = self.file.rels[rId]
+            anchor = tree.attrib.get(qn("w:anchor"))
+            if link and anchor:
+                link = link + "#" + anchor
+            self.tables.insert_text_as_new_run(f'<a href="{link}">{text}</a>')
+        except KeyError:
+            self.tables.insert_text_as_new_run(text)
+        return False
+
+    def _open_form_checkbox(self, tree: EtreeElement) -> bool:
+        """Open a form checkbox."""
+        self.tables.insert_text_as_new_run(get_checkBox_entry(tree))
+        return True
+
+    def _open_form_ddlist(self, tree: EtreeElement) -> bool:
+        """Open a form dropdown list."""
+        self.tables.insert_text_as_new_run(get_ddList_entry(tree))
+        return True
+
+    def _open_footnote_reference(self, tree: EtreeElement) -> bool:
+        """Open a footnote reference."""
+        self.tables.insert_text_as_new_run(
+            f"----footnote{str(tree.attrib[qn('w:id')])}----"
+        )
+        return True
+
+    def _open_endnote_reference(self, tree: EtreeElement) -> bool:
+        """Open an endnote reference."""
+        self.tables.insert_text_as_new_run(
+            f"----endnote{str(tree.attrib[qn('w:id')])}----"
+        )
+        return True
+
+    def _open_image(self, tree: EtreeElement) -> bool:
+        """Open an image."""
+        with suppress(KeyError):
+            rId = tree.attrib[qn("r:embed")]
+            image = self.file.rels[rId]
+            self.tables.insert_text_as_new_run(f"----{image}----")
+        return True
+
+    def _open_image_alt(self, tree: EtreeElement) -> bool:
+        """Open an image alt."""
+        with suppress(KeyError):
+            description = tree.attrib["descr"]
+            self.tables.insert_text_as_new_run(f"----Image alt text---->{description}<")
+        return True
+
+    def _open_imagedata(self, tree: EtreeElement) -> bool:
+        """Open an image data."""
+        with suppress(KeyError):
+            rId = tree.attrib[qn("r:id")]
+            image = self.file.rels[rId]
+            self.tables.insert_text_as_new_run(f"----{image}----")
+        return True
+
+    def _open_tab(self, tree: EtreeElement) -> bool:
+        """Open a tab."""
+        _ = tree
+        self.tables.insert_text_as_new_run("\t")
+        return True
+
+    def _close_paragraph(self, tree: EtreeElement):
+        """Close a paragraph."""
+        _ = tree
+        self.tables.conclude_paragraph()
+
+    def _close_run(self, tree: EtreeElement):
+        """Close a run."""
+        _ = tree
+        self.tables.conclude_run()
+
+    def _close_table_cell(self, tree: EtreeElement):
+        """Close a table cell.
+
+        If the table cell is part of a merged cell, it will be equal to "" at this
+        point. In this case, copy the text from the adjacent merged cell.
+        """
+        if not self.file.context.duplicate_merged_cells:
+            return
+
+        pr = gather_Pr(tree)
+        tree_depth = _get_elem_depth(tree)
+        assert isinstance(tree_depth, int)
+
+        if pr.get("vMerge", "Not None") is None:
+            self.tables.set_caret(tree_depth)
+            cell_idx = len(self.tables.caret) - 1
+            prev_row_cell = self.tables.view_branch((tree_depth - 2, -2, cell_idx))
+            self.tables.caret[-1] = prev_row_cell
+
+        grid_span = pr.get("gridSpan", 1)
+        assert grid_span is not None
+        for _ in range(int(grid_span) - 1):
+            self.tables.set_caret(tree_depth)
+            self.tables.caret.append(self.tables.caret[-1])
 
 
 def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCollector:
@@ -136,15 +370,12 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
 
     ``[table][row][cell][paragraph]`` is a string
 
-    If you'd like to extend or edit this package, this function is probably where you
-    want to do it. Nothing tricky here except keeping track of the text formatting.
+    If you'd like to extend or edit this package, the TagRunner class is probably
+    where you want to do it. Nothing tricky here except keeping track of the text
+    formatting.
     """
     root = root if root is not None else file.root_element
-    bullets = BulletGenerator(file.context.numId2numFmts)
-    # numId2count = _new_list_counter()
-    tables = DepthCollector(5)
-
-    xml2html = file.context.xml2html_format
+    tag_runner = TagRunner(file)
 
     def branches(tree: EtreeElement) -> None:
         """
@@ -153,153 +384,23 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
         :param tree: An Element from an xml file (etree)
         :effect: Adds text cells to outer variable `tables`.
         """
-        do_descend = True
+        recurse_into_tree = True
+        recurse_into_tree = tag_runner.open(tree)
 
-        tree_depth = _get_elem_depth(tree)
-        tables.set_caret(tree_depth)
-
-        if tree.tag == Tags.COMMENT_RANGE_START:
-            tables.start_comment_range(tree.attrib[qn("w:id")])
-
-        if tree.tag == Tags.COMMENT_RANGE_END:
-            tables.end_comment_range(tree.attrib[qn("w:id")])
-
-        # queue up tags before opening any paragraphs or runs
-        if tree.tag == Tags.PARAGRAPH:
-            par = tables.commence_paragraph(get_paragraph_formatting(tree, xml2html))
-            if file.context.do_pStyle:
-                par.runs.insert(0, Run([], get_pStyle(tree) or "None"))
-            tables.insert_text_as_new_run(bullets.get_bullet(tree))
-
-        elif tree.tag == Tags.RUN:
-            tables.commence_run(get_run_formatting(tree, xml2html))
-
-        elif tree.tag in {Tags.TEXT, Tags.TEXT_MATH}:
-            # oddly enough, these don't all contain text
-            text = tree.text if tree.text is not None else ""
-            if xml2html:
-                text = text.replace("&", "&amp;")
-                text = text.replace("<", "&lt;")
-                text = text.replace(">", "&gt;")
-            tables.add_text_into_open_run(text)
-
-        elif tree.tag == Tags.MATH:
-            # read equations
-            text = "".join(str(x) for x in tree.itertext())
-            do_descend = False
-            tables.insert_text_as_new_run(f"<latex>{text}</latex>")
-
-        elif tree.tag == Tags.BR:
-            tables.add_text_into_open_run("\n")
-
-        elif tree.tag == Tags.SYM:
-            font = str(tree.attrib.get(qn("w:font")))
-            char = str(tree.attrib.get(qn("w:char")))
-            if char:
-                tables.add_text_into_open_run(
-                    f"<span style=font-family:{font}>&#x0{char[1:]};</span>"
-                )
-
-        elif tree.tag == Tags.FOOTNOTE:
-            footnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
-            if "separator" not in footnote_type:
-                tables.insert_text_as_new_run(
-                    f"footnote{str(tree.attrib[qn('w:id')])})\t"
-                )
-
-        elif tree.tag == Tags.ENDNOTE:
-            endnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
-            if "separator" not in endnote_type:
-                tables.insert_text_as_new_run(
-                    f"endnote{str(tree.attrib[qn('w:id')])})\t"
-                )
-
-        elif tree.tag == Tags.HYPERLINK:
-            # look for an href, ignore internal references (anchors)
-            text = merged_text_tree(file, tree)
-            do_descend = False
-            try:
-                rId = tree.attrib[qn("r:id")]
-                link = file.rels[rId]
-                anchor = tree.attrib.get(qn("w:anchor"))
-                if link and anchor:
-                    link = link + "#" + anchor
-                tables.insert_text_as_new_run(f'<a href="{link}">{text}</a>')
-            except KeyError:
-                tables.insert_text_as_new_run(text)
-
-        if tree.tag == Tags.FORM_CHECKBOX:
-            tables.insert_text_as_new_run(get_checkBox_entry(tree))
-
-        elif tree.tag == Tags.FORM_DDLIST:
-            tables.insert_text_as_new_run(get_ddList_entry(tree))
-
-        elif tree.tag == Tags.FOOTNOTE_REFERENCE:
-            tables.insert_text_as_new_run(
-                f"----footnote{str(tree.attrib[qn('w:id')])}----"
-            )
-
-        elif tree.tag == Tags.ENDNOTE_REFERENCE:
-            tables.insert_text_as_new_run(
-                f"----endnote{str(tree.attrib[qn('w:id')])}----"
-            )
-
-        elif tree.tag == Tags.IMAGE:
-            with suppress(KeyError):
-                rId = tree.attrib[qn("r:embed")]
-                image = file.rels[rId]
-                tables.insert_text_as_new_run(f"----{image}----")
-
-        elif tree.tag == Tags.IMAGE_ALT:
-            with suppress(KeyError):
-                description = tree.attrib["descr"]
-                tables.insert_text_as_new_run(f"----Image alt text---->{description}<")
-
-        elif tree.tag == Tags.IMAGEDATA:
-            with suppress(KeyError):
-                rId = tree.attrib[qn("r:id")]
-                image = file.rels[rId]
-                tables.insert_text_as_new_run(f"----{image}----")
-
-        elif tree.tag == Tags.TAB:
-            tables.insert_text_as_new_run("\t")
-
-        if do_descend:
+        if recurse_into_tree:
             for branch in tree:
                 branches(branch)
 
-        if tree.tag == Tags.PARAGRAPH:
-            tables.conclude_paragraph()
-
-        elif tree.tag == Tags.TABLE_CELL and file.context.duplicate_merged_cells:
-            pr = gather_Pr(tree)
-
-            if pr.get("vMerge", "Not None") is None:
-                tables.set_caret(tree_depth)
-                cell_idx = len(tables.caret) - 1
-                assert isinstance(tree_depth, int)
-                prev_row_cell = tables.view_branch((tree_depth - 2, -2, cell_idx))
-                tables.caret[-1] = prev_row_cell
-
-            grid_span = pr.get("gridSpan", 1)
-            assert grid_span is not None
-            for _ in range(int(grid_span) - 1):
-                tables.set_caret(tree_depth)
-                tables.caret.append(tables.caret[-1])
-
-        elif tree.tag == Tags.RUN:
-            tables.conclude_run()
-
-        tables.set_caret(tree_depth)
+        tag_runner.close(tree)
 
     branches(root)
 
-    if tables.orphan_runs:
-        _ = tables.commence_paragraph()
-    if tables.open_pars:
-        tables.conclude_paragraph()
+    if tag_runner.tables.orphan_runs:
+        _ = tag_runner.tables.commence_paragraph()
+    if tag_runner.tables.open_pars:
+        tag_runner.tables.conclude_paragraph()
 
-    return tables
+    return tag_runner.tables
 
 
 def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
