@@ -39,7 +39,6 @@ This is the format for default (no trailing "_runs", e.g ``header``) properties.
 
 from __future__ import annotations
 
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 from warnings import warn
@@ -48,8 +47,8 @@ from typing_extensions import Self
 
 from docx2python.docx_context import collect_docProps
 
-from .docx_text import new_depth_collector
-from .iterators import enum_at_depth, get_html_map, iter_at_depth
+from .docx_text import flatten_text, new_depth_collector
+from .iterators import enum_at_depth, get_html_map, iter_at_depth, join_leaves
 from .namespace import qn
 
 if TYPE_CHECKING:
@@ -103,10 +102,8 @@ class DocxContent:
         paragraphs by default.
         """
         if name in {"header", "footer", "body", "footnotes", "endnotes"}:
-            runs = deepcopy(getattr(self, name + "_runs"))
-            for (i, j, k, m), paragraph in enum_at_depth(runs, 4):
-                runs[i][j][k][m] = "".join(paragraph)
-            return runs
+            runs = getattr(self, name + "_runs")
+            return join_leaves("", runs, 4)
         msg = f"no attribute {name}"
         raise AttributeError(msg)
 
@@ -211,20 +208,8 @@ class DocxContent:
 
         :return: all docx paragraphs, "\n\n" joined
         """
-        if self.docx2python_kwargs["paragraph_styles"] is True:
-            # Paragraph descriptors have been inserted as the first run of each
-            # paragraph. Take them out.
-            pars = ["".join(x[1:]) for x in iter_at_depth(self.document_runs, 4)]
-            return "\n\n".join(pars)
-        return self._get_text(self.document)
-
-    def _get_text(self, tables: TablesList) -> str:
-        r"""All paragraphs in tables, "\n\n" joined.
-
-        :param tables: docx tables
-        :return: all paragraphs in tables, "\n\n" joined
-        """
-        return "\n\n".join(iter_at_depth(tables, 4))
+        do_pStyle = self.docx2python_kwargs["paragraph_styles"]
+        return flatten_text(self.document_runs, do_pStyle)
 
     @property
     def html_map(self) -> str:

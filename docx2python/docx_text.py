@@ -18,7 +18,7 @@ from .attribute_register import Tags
 from .bullets_and_numbering import BulletGenerator
 from .depth_collector import DepthCollector, Run
 from .forms import get_checkBox_entry, get_ddList_entry
-from .iterators import iter_at_depth
+from .iterators import iter_at_depth, join_leaves
 from .namespace import qn
 from .text_runs import (
     gather_Pr,
@@ -95,27 +95,15 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
     return search_at_depth([tree])
 
 
-def _get_paragraphs(file: File, root: EtreeElement) -> list[str]:
-    """Return a list of paragraphs from the document
-
-    :param file: an internal file element (e.g., header, footer, document))
-    :param root: the root element of the document
-    :return: a list of paragraphs
-    """
-    all_paragraphs: list[str] = []
-    for branch in root:
-        all_paragraphs += list(iter_at_depth(get_text(file, branch), 5))
-    return all_paragraphs
-
-
-def _merged_text_tree(file: File, root: EtreeElement) -> str:
-    """Return a string of all text in the document
+def _get_text_below(file: File, root: EtreeElement) -> str:
+    """Return a string of all text below an element
 
     :param file: an internal file element (e.g., header, footer, document))
     :param root: the root element of the document
     :return: a string of all text in the document
     """
-    return "".join(_get_paragraphs(file, root))
+    content_beneath_root = [x for y in [get_text(file, z) for z in root] for x in y]
+    return flatten_text(content_beneath_root, file.context.do_pStyle)
 
 
 class TagRunner:
@@ -251,7 +239,7 @@ class TagRunner:
 
     def _open_hyperlink(self, tree: EtreeElement) -> bool:
         """Open a hyperlink."""
-        text = _merged_text_tree(self.file, tree)
+        text = _get_text_below(self.file, tree)
         try:
             rId = tree.attrib[qn("r:id")]
             link = self.file.rels[rId]
@@ -421,3 +409,18 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
     """
     tables = new_depth_collector(file, root)
     return cast(TablesList, tables.tree)
+
+
+def flatten_text(text: TablesList, do_pStyle: bool) -> str:
+    """Flatten a list of strings into a single string.
+
+    :param text: A 5-deep nested list of strings.
+    :return: A string.
+    """
+    if do_pStyle is True:
+        # Paragraph descriptors have been inserted as the first run of each
+        # paragraph. Take them out.
+        pars = ["".join(x[1:]) for x in iter_at_depth(text, 4)]
+    else:
+        pars = ["".join(x) for x in iter_at_depth(text, 4)]
+    return "\n\n".join(pars)
