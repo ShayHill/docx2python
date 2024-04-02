@@ -1,3 +1,15 @@
+## 2.9.0 (2024-03-30)
+
+### Feat
+
+- extract comments from docx files
+- capture comment ranges
+
+### Refactor
+
+- expose DepthCollector instance for File object
+- expose DepthCollector instance when get_text
+
 ## 2.8.0 (2024-01-21)
 
 ### Feat
