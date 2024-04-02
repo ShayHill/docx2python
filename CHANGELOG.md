@@ -1,3 +1,10 @@
+## 2.9.1 (2024-04-02)
+
+### Refactor
+
+- comb full-text and line-text formatting
+- refactor element text extractors into methods
+
 ## 2.9.0 (2024-03-30)
 
 ### Feat
