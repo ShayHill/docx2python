@@ -18,7 +18,7 @@ from .attribute_register import Tags
 from .bullets_and_numbering import BulletGenerator
 from .depth_collector import DepthCollector, Run
 from .forms import get_checkBox_entry, get_ddList_entry
-from .iterators import iter_at_depth, join_leaves
+from .iterators import iter_at_depth
 from .namespace import qn
 from .text_runs import (
     gather_Pr,

@@ -158,7 +158,7 @@ repos:
   # C901 function is too complex
   # PLR0912 too many branches
   # PLR0915 too many statements
-  rev: 'v0.3.4'
+  rev: 'v0.3.5'
   hooks:
     - id: ruff
       exclude: "tests"
