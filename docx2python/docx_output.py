@@ -90,7 +90,7 @@ class DocxContent:
 
     def __getattr__(self, name: str) -> Any:
         """
-        Create depth-four paragraph tables form depth-five run tables.
+        Create depth-four paragraph tables from depth-five run tables.
 
         :param name: name of an internal docx xml file
         :return: extracted text from named file with runs joined together into
@@ -273,6 +273,7 @@ class DocxContent:
                 + "Failed to extract comments."
             )
             warn(msg)
+            return []
 
         all_runs = list(enum_at_depth(office_document.content, 5))
         comments: list[tuple[str, str, str, str]] = []
