@@ -10,7 +10,7 @@ requires-python = ">=3.8.0"
 dependencies = ["lxml", "typing_extensions"]
 
 [project.optional-dependencies]
-dev = ["pytest", "types-lxml", "commitizen", "pre-commit"]
+dev = ["commitizen", "paragraphs", "pre-commit", "pytest", "tox", "types-lxml"]
 
 [build-system]
 requires = ["setuptools", "setuptools-scm"]
@@ -23,6 +23,21 @@ version = "2.9.2"
 tag_format = "$version"
 major-version-zero = true
 version_files = ["pyproject.toml:^version"]
+
+
+[tool.isort]
+profile = "black"
+
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py{312,311,310,39,38}
+
+[testenv]
+deps = pytest
+commands = pytest
+"""
 
 
 [tool.pyright]
