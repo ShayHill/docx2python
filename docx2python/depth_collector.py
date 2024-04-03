@@ -105,7 +105,6 @@ class DepthCollector:
 
         This is to mark the beginning and end of comment ranges.
         """
-        assert len(self.open_pars) == 1
         for run_text in enum_at_depth(self._rightmost_branches[0], 5):
             if run_text:
                 yield cast(str, run_text)
