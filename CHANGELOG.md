@@ -1,3 +1,11 @@
+## 2.9.2 (2024-04-03)
+
+### Fix
+
+- extract hyperlinks in comments
+- remove open_par limit in DepthCollector
+- return empty list when comments fails
+
 ## 2.9.1 (2024-04-02)
 
 ### Refactor
