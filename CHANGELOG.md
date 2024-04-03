@@ -1,3 +1,9 @@
+## 2.10.1 (2024-04-03)
+
+### Fix
+
+- move paragraphs to main dependencies
+
 ## 2.10.0 (2024-04-03)
 
 ### Feat
