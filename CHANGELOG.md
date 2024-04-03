@@ -1,3 +1,9 @@
+## 2.10.0 (2024-04-03)
+
+### Feat
+
+- support checkox "true"/"false" values
+
 ## 2.9.2 (2024-04-03)
 
 ### Fix
