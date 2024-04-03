@@ -248,6 +248,20 @@ too. I gave checkboxes a bailout value of ``----checkbox failed----`` if the xml
 because I don't have several-thousand test files with checkboxes (as I did with most of the other form elements).
 Checkboxes *should* work, but please let me know if you encounter any that do not.
 
+## access comments
+
+You can access docx comments with the `comments` attribute of the output `DocxContent` object.
+
+```python
+with docx2python('path/to/file.docx') as docx_content:
+    print(docx_content.comments)
+```
+
+For each comment, this will return a tuple:
+
+    `(reference_text, author, date, comment_text)`
+
+
 # New in docx2python Version 2
 
 ## merge consecutive runs with identical formatting
