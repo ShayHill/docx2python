@@ -5,6 +5,8 @@
 
 """
 
+from paragraphs import par
+
 from docx2python.main import docx2python
 
 from .conftest import RESOURCES
@@ -28,7 +30,10 @@ class TestParStyles:
                         [
                             "Header",
                             "Header text",
-                            "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
+                            par(
+                                """----Image alt text---->A close up of a
+                                logo\n\nDescription automatically generated<"""
+                            ),
                             "----media/image1.png----",
                         ]
                     ]
@@ -95,7 +100,10 @@ class TestParStyles:
                         ["None"],
                         [
                             "None",
-                            "----Image alt text---->A jellyfish in water\n\nDescription automatically generated<",
+                            par(
+                                """----Image alt text---->A jellyfish in
+                                water\n\nDescription automatically generated<"""
+                            ),
                             "----media/image2.jpg----",
                         ],
                     ]
@@ -108,7 +116,10 @@ class TestParStyles:
                         [
                             "Footer",
                             "Footer text",
-                            "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
+                            par(
+                                """----Image alt text---->A close up of a
+                                logo\n\nDescription automatically generated<"""
+                            ),
                             "----media/image1.png----",
                         ]
                     ]
@@ -125,7 +136,10 @@ class TestParStyles:
                             "FootnoteText",
                             "footnote2)\t",
                             " Second footnote",
-                            "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
+                            par(
+                                """----Image alt text---->A close up of a
+                                logo\n\nDescription automatically generated<"""
+                            ),
                             "----media/image1.png----",
                         ]
                     ],
@@ -141,7 +155,10 @@ class TestParStyles:
                             "EndnoteText",
                             "endnote2)\t",
                             " Second endnote",
-                            "----Image alt text---->A close up of a logo\n\nDescription automatically generated<",
+                            par(
+                                """----Image alt text---->A close up of a
+                                logo\n\nDescription automatically generated<"""
+                            ),
                             "----media/image1.png----",
                         ]
                     ],

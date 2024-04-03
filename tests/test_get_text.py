@@ -6,6 +6,8 @@ created: 5/20/2019
 Does not test ``get_text``. ``get text`` is tested through source_old.
 """
 
+from __future__ import annotations
+
 from collections import defaultdict
 from typing import Dict
 
@@ -45,7 +47,7 @@ def numbered_paragraphs():
 
 
 @pytest.fixture()
-def numbering_context() -> Dict[str, Dict[str, str]]:
+def numbering_context() -> dict[str, dict[str, str]]:
     """
 
     :return:

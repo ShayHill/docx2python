@@ -31,13 +31,13 @@ class TestOutOfRange:
     def test_enum_at_depth_low(self) -> None:
         """Raise ValueError when attempting to enumerate over depth < 1."""
         with pytest.raises(ValueError) as msg:
-            tuple(enum_at_depth(TABLES, 0))
+            _ = tuple(enum_at_depth(TABLES, 0))
         assert "must be >= 1" in str(msg.value)
 
     def test_enum_at_depth_high(self) -> None:
         """Raise ValueError when attempting to enumerate over depth < 1."""
         with pytest.raises(TypeError) as msg:
-            tuple(enum_at_depth(TABLES, 5))
+            _ = tuple(enum_at_depth(TABLES, 5))
         assert "will not iterate over sequence item" in str(msg.value)
 
 
@@ -45,18 +45,22 @@ class TestIterators:
     """Test iterators.iter_*"""
 
     def test_iter_tables(self) -> None:
+        """Return all tables."""
         assert list(iter_tables(TABLES)) == TABLES
 
     def test_iter_rows(self) -> None:
+        """Return all rows."""
         assert list(iter_rows(TABLES)) == TABLES[0] + TABLES[1]
 
     def test_iter_cells(self) -> None:
+        """Return all cells."""
         assert (
             list(iter_cells(TABLES))
             == TABLES[0][0] + TABLES[0][1] + TABLES[1][0] + TABLES[1][1]
         )
 
     def test_iter_paragraphs(self) -> None:
+        """Return all paragraphs."""
         assert (
             list(iter_paragraphs(TABLES))
             == TABLES[0][0][0]
@@ -71,10 +75,10 @@ class TestIterators:
 
 
 class TestEnumerators:
-
     """Test iterators.enum_*"""
 
     def test_enum_tables(self) -> None:
+        """Return all tables."""
         assert list(enum_tables(TABLES)) == [
             IndexedItem(
                 index=(0,),
@@ -93,6 +97,7 @@ class TestEnumerators:
         ]
 
     def test_enum_rows(self) -> None:
+        """Return all rows."""
         assert list(enum_rows(TABLES)) == [
             IndexedItem(index=(0, 0), value=[["0000", "0001"], ["0010", "0011"]]),
             IndexedItem(index=(0, 1), value=[["0100", "0101"], ["0110", "0111"]]),
@@ -101,6 +106,7 @@ class TestEnumerators:
         ]
 
     def test_enum_cells(self) -> None:
+        """Return all cells."""
         assert list(enum_cells(TABLES)) == [
             IndexedItem(index=(0, 0, 0), value=["0000", "0001"]),
             IndexedItem(index=(0, 0, 1), value=["0010", "0011"]),
@@ -113,6 +119,7 @@ class TestEnumerators:
         ]
 
     def test_enum_paragraphs(self) -> None:
+        """Return all paragraphs."""
         assert list(enum_paragraphs(TABLES)) == [
             IndexedItem(index=(0, 0, 0, 0), value="0000"),
             IndexedItem(index=(0, 0, 0, 1), value="0001"),

@@ -6,6 +6,7 @@ author, date, comment).
 :author: Shay Hill
 :created: 2024-03-29
 """
+
 import os
 import sys
 
@@ -15,6 +16,8 @@ project = os.path.abspath(os.path.join(__file__, "..", ".."))
 sys.path.append(project)
 
 from pathlib import Path
+
+from paragraphs import par
 
 from docx2python import docx2python
 
@@ -29,19 +32,28 @@ def test_comments() -> None:
     pars.close()
     assert comments == [
         (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            par(
+                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
+            ),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "COMMENT",
         ),
         (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            par(
+                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
+            ),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "RESPONSE",
         ),
         (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            par(
+                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
+            ),
             "Shay Hill",
             "2024-03-29T12:10:00Z",
             "Response from Shay Hill",
@@ -53,19 +65,28 @@ def test_comments() -> None:
             "Comment on subset starting with tempor",
         ),
         (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            par(
+                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
+            ),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "COMMENT on par 5",
         ),
         (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            par(
+                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
+            ),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "RESPONSE to comment on par 5",
         ),
         (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            par(
+                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
+            ),
             "Shay Hill",
             "2024-03-29T12:10:00Z",
             "Response from Shay Hill on par 5",
@@ -171,7 +192,19 @@ class TestAdditionalComments:
             "Amet ",
             "Randy Bartels",
             "2024-04-02T17:00:00Z",
-            "Comment 6 with a long comment.\n\nmagna fringilla urna porttitor rhoncus dolor purus non enim praesent elementum facilisis leo vel fringilla est ullamcorper eget nulla facilisi etiam dignissim diam quis enim lobortis scelerisque fermentum dui faucibus in ornare quam viverra orci sagittis eu volutpat odio facilisis mauris\n\nsit amet massa vitae tortor condimentum lacinia quis vel eros donec ac odio tempor orci dapibus ultrices in iaculis nunc sed augue lacus viverra vitae congue eu consequat ac felis donec et odio pellentesque diam volutpat commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend donec pretium vulputate sapien nec sagittis aliquam malesuada bibendum",
+            par(
+                """Comment 6 with a long comment.\n\nmagna fringilla urna porttitor
+                rhoncus dolor purus non enim praesent elementum facilisis leo vel
+                fringilla est ullamcorper eget nulla facilisi etiam dignissim diam
+                quis enim lobortis scelerisque fermentum dui faucibus in ornare quam
+                viverra orci sagittis eu volutpat odio facilisis mauris\n\nsit amet
+                massa vitae tortor condimentum lacinia quis vel eros donec ac odio
+                tempor orci dapibus ultrices in iaculis nunc sed augue lacus viverra
+                vitae congue eu consequat ac felis donec et odio pellentesque diam
+                volutpat commodo sed egestas egestas fringilla phasellus faucibus
+                scelerisque eleifend donec pretium vulputate sapien nec sagittis
+                aliquam malesuada bibendum"""
+            ),
         )
 
     def test_comment_7(
@@ -195,7 +228,19 @@ class TestAdditionalComments:
             "suspendisse ",
             "Randy Bartels",
             "2024-04-02T17:00:00Z",
-            "Long response: magna fringilla urna porttitor rhoncus dolor purus non enim praesent elementum facilisis leo vel fringilla est ullamcorper eget nulla facilisi etiam dignissim diam quis enim lobortis scelerisque fermentum dui faucibus in ornare quam viverra orci sagittis eu volutpat odio facilisis mauris\n\nsit amet massa vitae tortor condimentum lacinia quis vel eros donec ac odio tempor orci dapibus ultrices in iaculis nunc sed augue lacus viverra vitae congue eu consequat ac felis donec et odio pellentesque diam volutpat commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend donec pretium vulputate sapien nec sagittis aliquam malesuada bibendum",
+            par(
+                """Long response: magna fringilla urna porttitor rhoncus dolor purus
+                non enim praesent elementum facilisis leo vel fringilla est
+                ullamcorper eget nulla facilisi etiam dignissim diam quis enim
+                lobortis scelerisque fermentum dui faucibus in ornare quam viverra
+                orci sagittis eu volutpat odio facilisis mauris\n\nsit amet massa
+                vitae tortor condimentum lacinia quis vel eros donec ac odio tempor
+                orci dapibus ultrices in iaculis nunc sed augue lacus viverra vitae
+                congue eu consequat ac felis donec et odio pellentesque diam volutpat
+                commodo sed egestas egestas fringilla phasellus faucibus scelerisque
+                eleifend donec pretium vulputate sapien nec sagittis aliquam
+                malesuada bibendum"""
+            ),
         )
 
     def comment_8(

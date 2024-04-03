@@ -1,4 +1,4 @@
-""" Test methods of File object that are not tested elsewhere.
+"""Test methods of File object that are not tested elsewhere.
 
 :author: Shay Hill
 :created: 4/3/2021

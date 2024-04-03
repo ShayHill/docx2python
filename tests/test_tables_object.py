@@ -4,6 +4,7 @@
 :created: 6/26/2019
 
 """
+
 import pytest
 
 from docx2python.depth_collector import CaretDepthError, DepthCollector

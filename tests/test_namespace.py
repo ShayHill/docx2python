@@ -3,6 +3,7 @@
 :author: Shay Hill
 :created: 7/5/2019
 """
+
 from docx2python.namespace import NSMAP, qn
 
 

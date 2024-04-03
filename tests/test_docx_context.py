@@ -3,6 +3,7 @@
 author: Shay Hill
 created: 6/26/2019
 """
+
 import os
 import tempfile
 import zipfile
@@ -123,7 +124,6 @@ class TestPullImageFiles:
 
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
-
         docx_context = DocxReader(RESOURCES / "basic.docx")
         with tempfile.TemporaryDirectory() as image_folder:
             docx_context.pull_image_files(image_folder)

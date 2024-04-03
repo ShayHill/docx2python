@@ -34,7 +34,6 @@ zinfo = self.getinfo(name)
 File "/usr/local/opt/python@3.8/Frameworks/Python.framework/Versions/3.8/lib/python3.8/zipfile.py", line 1441, in getinfo
 raise KeyError(
 KeyError: "There is no item named 'docProps/core.xml' in the archive"
-
 """
 
 import pytest

@@ -41,7 +41,7 @@ class TestDocument:
 
 class TestText:
     def test_function(self) -> None:
-        """Return '\n\n'-delimited paragraphs as instance.text."""
+        r"""Return '\n\n'-delimited paragraphs as instance.text."""
         with docx2python(RESOURCES / "example.docx") as content:
             assert content.text == "\n\n".join(iter_at_depth(content.document, 4))
 

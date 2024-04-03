@@ -35,7 +35,7 @@ ONE_TEXT_RUN = valid_xml(
 )
 
 NO_STYLE_RUN = valid_xml(
-    '<w:r w:rsidRPr="000E1B98">' "<w:t>no styles applies" "</w:t>" "</w:r>"
+    '<w:r w:rsidRPr="000E1B98">' + "<w:t>no styles applies" + "</w:t>" + "</w:r>"
 )
 
 

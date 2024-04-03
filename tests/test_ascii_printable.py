@@ -1,5 +1,7 @@
-"""Test that most characters in string.printable can are represented (some are
-altered) in Docx2Python output. """
+"""Test that most characters in string.printable can are represented
+
+(some are altered) in Docx2Python output.
+"""
 
 import string
 

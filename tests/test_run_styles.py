@@ -31,6 +31,7 @@
 <span style="background-color: yellow">highlighted yellow
 <span style="background-color: green">highlighted green
 """
+
 from docx2python.main import docx2python
 
 from .conftest import RESOURCES

@@ -111,7 +111,8 @@ class TestSearchReplace:
                 assert output_doc.text == (
                     "Pears and Apples\nPears\nGrapes\n\n"
                     "Apples\nPears\nGrapes and Pears\n\n"
-                    'Pears and <span style="background-color:green">Apples\nPears\nGrapes</span>\n\n'
+                    'Pears and <span style="background-color:green">'
+                    "Apples\nPears\nGrapes</span>\n\n"
                     "Pe<b>a</b>rs and Pears"
                 )
 

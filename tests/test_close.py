@@ -7,7 +7,6 @@ DocxReader instance was created.
 :created: 7/5/2019
 """
 
-
 import pytest
 
 from docx2python.attribute_register import Tags

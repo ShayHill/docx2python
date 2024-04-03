@@ -7,7 +7,6 @@ Uner shadowmimosa shared a docx (libreoffice_conversion.docx), converted by libr
 from a doc that raises a CaretDepthError.
 """
 
-
 import pytest
 
 from docx2python.main import docx2python

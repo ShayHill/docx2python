@@ -17,7 +17,6 @@ document.html as
 docx2text 1.19 would get the image, but not mark the image location in the output text.
 """
 
-
 from docx2python.main import docx2python
 
 from .conftest import RESOURCES

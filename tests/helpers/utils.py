@@ -4,7 +4,6 @@ author: Shay Hill
 created: 6/26/2019
 """
 
-
 from docx2python.namespace import NSMAP
 
 

@@ -12,7 +12,8 @@ example_docx = RESOURCES / "example.docx"
 class TestFromBytes:
     def test_from_bytes(self) -> None:
         """Loads .docx from a buffer of raw bytes."""
-        buf = BytesIO(open(example_docx, "rb").read())
+        with open(example_docx, "rb") as f:
+            buf = BytesIO(f.read())
         with docx2python(buf) as content:
             core_properties = content.core_properties
             expected = {
