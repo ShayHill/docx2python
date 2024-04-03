@@ -98,3 +98,13 @@ def test_unchecked_boxes() -> None:
     assert all_text.count("\u2612") == 12
     assert all_text.count("\u2610") == 32
     pars.close()
+
+
+def test_checkboxes_true_false() -> None:
+    """
+    Checkboxes with "true" and "false" instead of "1" and "0" values.
+    """
+    with docx2python(RESOURCES / "checked-true-false.docx") as pars:
+        all_text = "".join(iter_at_depth(pars.text, 5))
+    assert all_text.count("\u2612") == 4
+    assert all_text.count("\u2610") == 4

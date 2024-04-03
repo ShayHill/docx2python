@@ -64,7 +64,13 @@ def get_checkBox_entry(checkBox: EtreeElement) -> str:
             return str(default.attrib[qn("w:val")])
         return None
 
-    return {"0": "\u2610", "1": "\u2612", None: "----checkbox failed----"}[get_wval()]
+    return {
+        "0": "\u2610",
+        "false": "\u2610",
+        "1": "\u2612",
+        "true": "\u2612",
+        None: "----checkbox failed----",
+    }[get_wval()]
 
 
 def get_ddList_entry(ddList: EtreeElement) -> str:
