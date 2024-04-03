@@ -275,6 +275,14 @@ class DocxContent:
             warn(msg)
             return []
 
+        if not comment_elements:
+            return []
+
+        try:
+            comments_file = self.docx_reader.file_of_type("comments")
+        except KeyError:
+            return []
+
         all_runs = list(enum_at_depth(office_document.content, 5))
         comments: list[tuple[str, str, str, str]] = []
         for comment in comment_elements:
@@ -283,7 +291,7 @@ class DocxContent:
             author = comment.attrib[qn("w:author")]
             date = comment.attrib[qn("w:date")]
 
-            tree = new_depth_collector(office_document, comment).tree
+            tree = new_depth_collector(comments_file, comment).tree
             tree_pars = ["".join(x) for x in iter_at_depth(tree, 4)]
             comment_text = "\n\n".join(tree_pars)
 
