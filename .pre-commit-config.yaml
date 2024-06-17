@@ -158,7 +158,7 @@ repos:
   # C901 function is too complex
   # PLR0912 too many branches
   # PLR0915 too many statements
-  rev: 'v0.4.8'
+  rev: 'v0.4.9'
   hooks:
     - id: ruff
       exclude: "tests"
@@ -170,6 +170,6 @@ repos:
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.366
+  rev: v1.1.367
   hooks:
     - id: pyright
