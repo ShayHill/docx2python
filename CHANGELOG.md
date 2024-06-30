@@ -1,3 +1,9 @@
+## 2.10.2 (2024-06-30)
+
+### Refactor
+
+- remove relative imports in src modules
+
 ## 2.10.1 (2024-04-03)
 
 ### Fix
