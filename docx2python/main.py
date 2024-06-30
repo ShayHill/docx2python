@@ -9,8 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from warnings import warn
 
-from .docx_output import DocxContent
-from .docx_reader import DocxReader
+from docx2python.docx_output import DocxContent
+from docx2python.docx_reader import DocxReader
 
 if TYPE_CHECKING:
     from io import BytesIO

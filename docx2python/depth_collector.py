@@ -37,7 +37,7 @@ from typing import Any, Iterable, Iterator, cast
 
 from docx2python.iterators import enum_at_depth
 
-from .text_runs import html_close, html_open
+from docx2python.text_runs import html_close, html_open
 
 
 @dataclass

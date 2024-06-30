@@ -13,7 +13,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING, Callable, Iterator, NamedTuple
 
-from .namespace import qn
+from docx2python.namespace import qn
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore

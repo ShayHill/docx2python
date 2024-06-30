@@ -35,17 +35,17 @@ from warnings import warn
 from lxml import etree
 from typing_extensions import Self
 
-from .attribute_register import XML2HTML_FORMATTER
-from .docx_context import collect_numFmts, collect_rels
-from .docx_text import TablesList, get_text, new_depth_collector
-from .merge_runs import merge_elems
+from docx2python.attribute_register import XML2HTML_FORMATTER
+from docx2python.docx_context import collect_numFmts, collect_rels
+from docx2python.docx_text import TablesList, get_text, new_depth_collector
+from docx2python.merge_runs import merge_elems
 
 if TYPE_CHECKING:
     from io import BytesIO
 
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
-    from .depth_collector import DepthCollector
+    from docx2python.depth_collector import DepthCollector
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 

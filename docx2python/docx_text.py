@@ -14,13 +14,13 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING, List, Sequence, cast
 
-from .attribute_register import Tags
-from .bullets_and_numbering import BulletGenerator
-from .depth_collector import DepthCollector, Run
-from .forms import get_checkBox_entry, get_ddList_entry
-from .iterators import iter_at_depth
-from .namespace import qn
-from .text_runs import (
+from docx2python.attribute_register import Tags
+from docx2python.bullets_and_numbering import BulletGenerator
+from docx2python.depth_collector import DepthCollector, Run
+from docx2python.forms import get_checkBox_entry, get_ddList_entry
+from docx2python.iterators import iter_at_depth
+from docx2python.namespace import qn
+from docx2python.text_runs import (
     gather_Pr,
     get_paragraph_formatting,
     get_pStyle,

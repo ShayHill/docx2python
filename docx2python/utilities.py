@@ -18,8 +18,8 @@ from lxml import etree
 
 from docx2python.attribute_register import Tags
 
-from .iterators import iter_at_depth
-from .main import docx2python
+from docx2python.iterators import iter_at_depth
+from docx2python.main import docx2python
 
 if TYPE_CHECKING:
     from pathlib import Path
