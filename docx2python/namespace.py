@@ -46,26 +46,26 @@ to explicate namespace mapping.
 If you extend docx2text with other tags, additional NSMAP entries may be necessary.
 """
 
-NSMAP = {
-    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
-    "cp": "http://schemas.openxmlformats.org/package/2006/metadata/core-properties",
-    "dc": "http://purl.org/dc/elements/1.1/",
-    "dcterms": "http://purl.org/dc/terms/",
-    "m": "http://schemas.openxmlformats.org/officeDocument/2006/math",
-    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-    "v": "urn:schemas-microsoft-com:vml",
-    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
-    "wp": "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
-}
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Iterator
+
+if TYPE_CHECKING:
+    from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
-def qn(tag: str) -> str:
+def qn(elem: EtreeElement, tag: str) -> str:
     """
     Turn a namespace-prefixed tag into a Clark-notation qualified tag.
 
+    :param elem: lxml.etree._Element object
     :param tag: namespace-prefixed tag, e.g. ``w:p``
     :return: Clark-notation qualified tag,
         e.g. ``{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p``
+        IN THE NAMESPACES DEFINED IN THE ``elem`` ELEMENT
+
+    Most lxml elements contain the entire namespace of their parent elements. Create
+    a tag within this namespace.
 
     Stands for 'qualified name', a utility function to turn a namespace prefixed tag
     name into a Clark-notation qualified tag name for lxml.
@@ -75,6 +75,50 @@ def qn(tag: str) -> str:
 
     Source: https://github.com/python-openxml/python-docx/
     """
-    prefix, tagroot = tag.split(":")
-    uri = NSMAP[prefix]
-    return f"{{{uri}}}{tagroot}"
+    prefix, localname = tag.split(":")
+    uri = elem.nsmap[prefix]
+    return f"{{{uri}}}{localname}"
+
+
+def get_attrib_by_qn(elem: EtreeElement, tag: str) -> str:
+    """
+    Get the attribute of an element by a namespace-prefixed tag.
+
+    :param elem: lxml.etree._Element object
+    :param tag: namespace-prefixed tag, e.g. ``w:p``
+    :return: attribute of the element with the namespace-prefixed tag
+    """
+    return elem.attrib[qn(elem, tag)]
+
+
+def find_by_qn(elem: EtreeElement, tag: str) -> EtreeElement | None:
+    """
+    Find all elements in the tree with a namespace-prefixed tag.
+
+    :param elem: lxml.etree._Element object
+    :param tag: namespace-prefixed tag, e.g. ``w:p``
+    :return: list of elements with the namespace-prefixed tag
+    """
+    return elem.find(qn(elem, tag))
+
+
+def findall_by_qn(elem: EtreeElement, tag: str) -> list[EtreeElement]:
+    """
+    Find all elements in the tree with a namespace-prefixed tag.
+
+    :param elem: lxml.etree._Element object
+    :param tag: namespace-prefixed tag, e.g. ``w:p``
+    :return: list of elements with the namespace-prefixed tag
+    """
+    return elem.findall(qn(elem, tag))
+
+
+def iterfind_by_qn(elem: EtreeElement, tag: str) -> Iterator[EtreeElement]:
+    """
+    Iterate over all elements in the tree with a namespace-prefixed tag.
+
+    :param elem: lxml.etree._Element object
+    :param tag: namespace-prefixed tag, e.g. ``w:p``
+    :return: iterator over elements with the namespace-prefixed tag
+    """
+    yield from elem.iterfind(qn(elem, tag))

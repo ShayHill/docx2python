@@ -14,7 +14,7 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING, List, Sequence, cast
 
-from docx2python.attribute_register import Tags
+from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.bullets_and_numbering import BulletGenerator
 from docx2python.depth_collector import DepthCollector, Run
 from docx2python.forms import get_checkBox_entry, get_ddList_entry
@@ -76,7 +76,7 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
 
     There will only ever be one document list, so the min depth returned is 1
     """
-    if tree.tag in {Tags.DOCUMENT, Tags.BODY}:
+    if get_prefixed_tag(tree) in {Tags.DOCUMENT, Tags.BODY}:
         return None
 
     def search_at_depth(tree_: Sequence[EtreeElement], _depth: int = 0) -> int | None:
@@ -87,7 +87,7 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
         """
         if not tree_:
             return None
-        if any(x.tag == Tags.PARAGRAPH for x in tree_):
+        if any(get_prefixed_tag(x) == Tags.PARAGRAPH for x in tree_):
             return max(4 - _depth, 1)
         grandchildren = [list(x) for x in tree_]
         return search_at_depth([x for y in grandchildren for x in y], _depth + 1)
@@ -126,7 +126,7 @@ class TagRunner:
 
         # not all tags are in the attribute register
         try:
-            tag_name = Tags(tree.tag).name
+            tag_name = Tags(get_prefixed_tag(tree)).name
         except ValueError:
             return True
 
@@ -144,7 +144,7 @@ class TagRunner:
 
         # not all tags are in the attribute register
         try:
-            tag_name = Tags(tree.tag).name
+            tag_name = Tags(get_prefixed_tag(tree)).name
         except ValueError:
             self.tables.set_caret(tree_depth)
             return
@@ -175,12 +175,12 @@ class TagRunner:
 
     def _open_comment_range_end(self, tree: EtreeElement) -> bool:
         """Close a comment range."""
-        self.tables.end_comment_range(tree.attrib[qn("w:id")])
+        self.tables.end_comment_range(tree.attrib[qn(tree, "w:id")])
         return False
 
     def _open_comment_range_start(self, tree: EtreeElement) -> bool:
         """Open a comment range."""
-        self.tables.start_comment_range(tree.attrib[qn("w:id")])
+        self.tables.start_comment_range(tree.attrib[qn(tree, "w:id")])
         return False
 
     def _open_text(self, tree: EtreeElement) -> bool:
@@ -211,8 +211,8 @@ class TagRunner:
 
     def _open_sym(self, tree: EtreeElement) -> bool:
         """Open a symbol."""
-        font = str(tree.attrib.get(qn("w:font")))
-        char = str(tree.attrib.get(qn("w:char")))
+        font = str(tree.attrib.get(qn(tree, "w:font")))
+        char = str(tree.attrib.get(qn(tree, "w:char")))
         if char:
             self.tables.add_text_into_open_run(
                 f"<span style=font-family:{font}>&#x0{char[1:]};</span>"
@@ -221,19 +221,19 @@ class TagRunner:
 
     def _open_footnote(self, tree: EtreeElement) -> bool:
         """Open a footnote."""
-        footnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
+        footnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in footnote_type:
             self.tables.insert_text_as_new_run(
-                f"footnote{str(tree.attrib[qn('w:id')])})\t"
+                f"footnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
             )
         return True
 
     def _open_endnote(self, tree: EtreeElement) -> bool:
         """Open an endnote."""
-        endnote_type = str(tree.attrib.get(qn("w:type"), "")).lower()
+        endnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in endnote_type:
             self.tables.insert_text_as_new_run(
-                f"endnote{str(tree.attrib[qn('w:id')])})\t"
+                f"endnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
             )
         return True
 
@@ -241,9 +241,9 @@ class TagRunner:
         """Open a hyperlink."""
         text = _get_text_below(self.file, tree)
         try:
-            rId = tree.attrib[qn("r:id")]
+            rId = tree.attrib[qn(tree, "r:id")]
             link = self.file.rels[rId]
-            anchor = tree.attrib.get(qn("w:anchor"))
+            anchor = tree.attrib.get(qn(tree, "w:anchor"))
             if link and anchor:
                 link = link + "#" + anchor
             self.tables.insert_text_as_new_run(f'<a href="{link}">{text}</a>')
@@ -264,21 +264,21 @@ class TagRunner:
     def _open_footnote_reference(self, tree: EtreeElement) -> bool:
         """Open a footnote reference."""
         self.tables.insert_text_as_new_run(
-            f"----footnote{str(tree.attrib[qn('w:id')])}----"
+            f"----footnote{str(tree.attrib[qn(tree, 'w:id')])}----"
         )
         return True
 
     def _open_endnote_reference(self, tree: EtreeElement) -> bool:
         """Open an endnote reference."""
         self.tables.insert_text_as_new_run(
-            f"----endnote{str(tree.attrib[qn('w:id')])}----"
+            f"----endnote{str(tree.attrib[qn(tree, 'w:id')])}----"
         )
         return True
 
     def _open_image(self, tree: EtreeElement) -> bool:
         """Open an image."""
         with suppress(KeyError):
-            rId = tree.attrib[qn("r:embed")]
+            rId = tree.attrib[qn(tree, "r:embed")]
             image = self.file.rels[rId]
             self.tables.insert_text_as_new_run(f"----{image}----")
         return True
@@ -293,7 +293,7 @@ class TagRunner:
     def _open_imagedata(self, tree: EtreeElement) -> bool:
         """Open an image data."""
         with suppress(KeyError):
-            rId = tree.attrib[qn("r:id")]
+            rId = tree.attrib[qn(tree, "r:id")]
             image = self.file.rels[rId]
             self.tables.insert_text_as_new_run(f"----{image}----")
         return True

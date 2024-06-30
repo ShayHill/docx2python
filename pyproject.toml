@@ -42,6 +42,7 @@ commands = pytest
 
 [tool.pytest.ini_options]
 pythonpath = ["tests"]
+log_cli = 1
 
 
 [tool.pyright]

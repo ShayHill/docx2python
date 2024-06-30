@@ -4,19 +4,71 @@ author: Shay Hill
 created: 6/26/2019
 """
 
-from docx2python.namespace import NSMAP
+_BEG_XML = (
+    '<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordp'
+    'rocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/201'
+    '4/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8'
+    '/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/2'
+    '1/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9'
+    '/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10'
+    '/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11'
+    '/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12'
+    '/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13'
+    '/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14'
+    '/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility'
+    '/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" x'
+    'mlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns'
+    ':o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.mic'
+    'rosoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/'
+    'officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.'
+    'org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmln'
+    's:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawin'
+    'g" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessi'
+    'ngDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http'
+    '://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http:'
+    '//schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas'
+    '.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.micro'
+    'soft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microso'
+    'ft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.co'
+    'm/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/offic'
+    'e/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/'
+    'office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft'
+    '.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.co'
+    'm/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsof'
+    't.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.micros'
+    'oft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/o'
+    'ffice/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w1'
+    '6 w16cex w16sdtdh w16du wp14"><w:body>'
+)
+
+_BEG_PAR = (
+    '<w:p w14:paraId="35866A03" w14:textId="0EF95E5C" w:rsidR="00E25118" w:rsid'
+    'RDefault="006467EB">'
+)
+
+_END_PAR = "</w:p>"
+
+_END_XML = (
+    '<w:sectPr w:rsidR="00E25118"><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:t'
+    'op="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:fo'
+    'oter="720" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="36'
+    '0"/></w:sectPr></w:body></w:document>'
+)
 
 
 def valid_xml(elements: str) -> bytes:
     """Build a legal xml file from elements."""
-    xmlns = " ".join(
-        ['xmlns:w="{}"'.format(NSMAP["w"]), 'xmlns:v="{}"'.format(NSMAP["v"])]
-    )
-    return bytes(
-        '<?xml version="1.0" encoding="UTF-8"?>'
-        "<w:document {}>".format(xmlns) + elements + "</w:document>",
-        encoding="utf-8",
-    )
+    beg = _BEG_XML
+    end = _END_XML
+    if elements.startswith("<w:p"):
+        pass
+    elif elements.startswith("<w:r"):
+        beg +=  _BEG_PAR
+        end = _END_PAR + end
+    else:
+        msg = f"No provision for inserting {elements[:10]} into valid_xml."
+        raise ValueError(msg)
+    return (beg + elements + end).encode("utf-8")
 
 
 ARABIC_2_ROMAN = {

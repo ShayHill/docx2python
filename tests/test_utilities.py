@@ -18,14 +18,19 @@ class TestSearchReplace:
         """Apples -> Pears, Pears -> Apples
 
         Ignore html differences when html is False"""
+
+        # assert test file is in default state
         html = False
         input_filename = RESOURCES / "apples_and_pears.docx"
-        with docx2python(input_filename, html=html) as input_doc:
-            assert input_doc.text == (
+        expect = (
                 "Apples and Pears\n\nPears and Apples\n\n"
                 "Apples and Pears\n\nPears and Apples"
             )
+        with docx2python(input_filename, html=html) as input_doc:
+            result = input_doc.text
+        assert result == expect
 
+        # attempt a search and replace
         with tempfile.TemporaryDirectory() as temp_dir:
             output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
             replace_docx_text(
@@ -36,11 +41,13 @@ class TestSearchReplace:
                 ("Bananas", "Pears"),
                 html=html,
             )
+            expect = (
+                "Pears and Apples\n\nApples and Pears\n\n"
+                "Pears and Apples\n\nApples and Pears"
+            )
             with docx2python(output_filename, html=html) as output_doc:
-                assert output_doc.text == (
-                    "Pears and Apples\n\nApples and Pears\n\n"
-                    "Pears and Apples\n\nApples and Pears"
-                )
+                result = output_doc.text
+            assert result == expect
 
     def test_ampersand(self) -> None:
         """Apples -> Pears, Pears -> Apples

@@ -16,7 +16,7 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
-from docx2python.namespace import qn
+from docx2python.namespace import get_attrib_by_qn, iterfind_by_qn, qn
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
@@ -57,11 +57,11 @@ def get_checkBox_entry(checkBox: EtreeElement) -> str:
         :return: the value of the ``w:val`` attribute of the ``checked`` element
         """
         with suppress(StopIteration):
-            checked = next(checkBox.iterfind(qn("w:checked")))
-            return str(checked.attrib.get(qn("w:val")) or "1")
+            checked = next(iterfind_by_qn(checkBox, "w:checked"))
+            return str(checked.attrib.get(qn(checked, "w:val")) or "1")
         with suppress(StopIteration, KeyError):
-            default = next(checkBox.iterfind(qn("w:default")))
-            return str(default.attrib[qn("w:val")])
+            default = next(iterfind_by_qn(checkBox, "w:default"))
+            return str(get_attrib_by_qn(default, "w:val"))
         return None
 
     return {
@@ -88,11 +88,11 @@ def get_ddList_entry(ddList: EtreeElement) -> str:
     <w:result w:val="0"/> might be missing when selection is "0"
     """
     list_entries = [
-        x.attrib.get(qn("w:val")) for x in ddList.findall(qn("w:listEntry"))
+        get_attrib_by_qn(x, "w:val") for x in iterfind_by_qn(ddList, "w:listEntry")
     ]
     try:
-        result = next(ddList.iterfind(qn("w:result")))
-        list_index = int(result.attrib[qn("w:val")])
+        result = next(iterfind_by_qn(ddList, "w:result"))
+        list_index = int(get_attrib_by_qn(result, "w:val"))
     except (StopIteration, KeyError):
         list_index = 0
     return str(list_entries[list_index])

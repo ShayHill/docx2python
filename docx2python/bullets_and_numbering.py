@@ -21,7 +21,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Callable
 
 from docx2python import numbering_formats as nums
-from docx2python.namespace import qn
+from docx2python.namespace import get_attrib_by_qn, iterfind_by_qn
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
@@ -130,10 +130,13 @@ class BulletGenerator:
         bullet preceded by one tab for every indentation level.
         """
         try:
-            pPr = next(paragraph.iterfind(qn("w:pPr")))
-            numPr = next(pPr.iterfind(qn("w:numPr")))
-            numId = next(numPr.iterfind(qn("w:numId"))).attrib[qn("w:val")]
-            ilvl = next(numPr.iterfind(qn("w:ilvl"))).attrib[qn("w:val")]
+            pPr = next(iterfind_by_qn(paragraph, "w:pPr"))
+            numPr = next(iterfind_by_qn(pPr, "w:numPr"))
+
+            numIdElem = next(iterfind_by_qn(numPr, "w:numId"))
+            numId = get_attrib_by_qn(numIdElem, "w:val")
+            ilvlElem = next(iterfind_by_qn(numPr, "w:ilvl"))
+            ilvl = get_attrib_by_qn(ilvlElem, "w:val")
             try:
                 numFmt = self.numId2numFmts[str(numId)][int(ilvl)]
             except IndexError:

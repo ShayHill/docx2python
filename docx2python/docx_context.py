@@ -9,12 +9,12 @@ numbering formats, images, and font styles from *other* files in a decompressed 
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 from lxml import etree
 
-from docx2python.namespace import qn
+from docx2python.attribute_register import get_localname
+from docx2python.namespace import find_by_qn, findall_by_qn, get_attrib_by_qn
 
 if TYPE_CHECKING:
     import zipfile
@@ -66,22 +66,25 @@ def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
     """
     abstractNumId2numFmts: dict[str, list[str]] = {}
 
-    for abstractNum in numFmts_root.findall(qn("w:abstractNum")):
-        id_ = str(abstractNum.attrib[qn("w:abstractNumId")])
+    for abstractNum in findall_by_qn(numFmts_root, "w:abstractNum"):
+        id_ = str(get_attrib_by_qn(abstractNum, "w:abstractNumId"))
+
         abstractNumId2numFmts[id_] = []
-        for lvl in abstractNum.findall(qn("w:lvl")):
-            numFmt = lvl.find(qn("w:numFmt"))
+        for lvl in findall_by_qn(abstractNum, "w:lvl"):
+            numFmt = find_by_qn(lvl, "w:numFmt")
             if numFmt is not None:
-                abstractNumId2numFmts[id_].append(str(numFmt.attrib[qn("w:val")]))
+                abstractNumId2numFmts[id_].append(
+                    str(get_attrib_by_qn(numFmt, "w:val"))
+                )
 
     numId2numFmts: dict[str, list[str]] = {}
     num: EtreeElement
-    for num in (x for x in numFmts_root.findall(qn("w:num"))):
-        numId = num.attrib[qn("w:numId")]
-        abstractNumId = num.find(qn("w:abstractNumId"))
+    for num in findall_by_qn(numFmts_root, "w:num"):
+        numId = get_attrib_by_qn(num, "w:numId")
+        abstractNumId = find_by_qn(num, "w:abstractNumId")
         if abstractNumId is None:
             continue
-        abstractNumIdval = abstractNumId.attrib.get(qn("w:val"))
+        abstractNumIdval = get_attrib_by_qn(abstractNumId, "w:val")
         numId2numFmts[str(numId)] = abstractNumId2numFmts[str(abstractNumIdval)]
 
     return numId2numFmts
@@ -197,10 +200,4 @@ def collect_docProps(root: EtreeElement) -> dict[str, str | None]:
             ...
         }
     """
-    docProp2text: dict[str, str | None] = {}
-    capture_tag_name = re.compile(r"{.+}(?P<tag_name>\w+)")
-    for dc in root:
-        tag_match = re.match(capture_tag_name, dc.tag)
-        if tag_match:
-            docProp2text[tag_match.group("tag_name")] = dc.text
-    return docProp2text
+    return {get_localname(x): x.text for x in root}

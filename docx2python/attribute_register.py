@@ -13,10 +13,61 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING, Callable, Iterator, NamedTuple
 
-from docx2python.namespace import qn
+from lxml import etree
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
+
+
+def get_localname(elem: EtreeElement) -> str:
+    """Return the localname of the element tag.
+
+    :param elem: xml element
+    :return: localname of element tag
+
+    Where `elem.tag` would return something like
+    `{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p`
+
+    ...
+
+    return `p`.
+    """
+    qname = etree.QName(elem.tag)
+    return qname.localname
+
+
+def get_prefixed_tag(elem: EtreeElement) -> str:
+    """Return the element tag with a prefix instead of a full uri.
+
+    :param elem: xml element
+    :return: prefixed tag of element
+
+    Where `elem.tag` would return something like
+    `{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p`.
+
+    ...
+
+    return `w:p`.
+
+    `w:p` is the tag as it appears inside the element within the xml. Lxml expands
+    the tag to `{http:...}p`. This function returns the tag as it appears in the xml.
+
+    Purpose:
+
+    The full tag name contains a full namespace uri for an element. Docx2Python
+    handles many elements identically even where they have different namespace uris.
+    For example:
+
+    * `{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p` and
+    * `{http://purl.oclc.org/ooxml/wordprocessingml/main}p`
+
+    are both paragraphs. The first with the default Word namespace and the second
+    with the what MS refers to as the "strict open xml namespace". Docx2Python can
+    will recognize both as paragraphs and treat them identically. To that end,
+    Docx2Python identifies such paragraphs by their matching "prefixed tag" names
+    (`w:p`), not their full tag names.
+    """
+    return f"{elem.prefix}:{get_localname(elem)}"
 
 
 def _just_return_tag(tag: str, val: str) -> str:
@@ -96,40 +147,50 @@ class Tags(str, Enum):
     These are the tags that provoke some action in docx2python.
     """
 
-    BODY = qn("w:body")
-    BR = qn("w:br")
-    COMMENT_RANGE_END = qn("w:commentRangeEnd")
-    COMMENT_RANGE_START = qn("w:commentRangeStart")
-    DOCUMENT = qn("w:document")
-    ENDNOTE = qn("w:endnote")
-    ENDNOTE_REFERENCE = qn("w:endnoteReference")
-    FOOTNOTE = qn("w:footnote")
-    FOOTNOTE_REFERENCE = qn("w:footnoteReference")
-    FORM_CHECKBOX = qn("w:checkBox")
-    FORM_DDLIST = qn("w:ddList")  # drop-down form
-    HYPERLINK = qn("w:hyperlink")
-    IMAGE = qn("a:blip")
-    IMAGEDATA = qn("v:imagedata")
-    IMAGE_ALT = qn("wp:docPr")
-    MATH = qn("m:oMath")
-    PARAGRAPH = qn("w:p")
-    PAR_PROPERTIES = qn("w:pPr")
-    RUN = qn("w:r")
-    RUN_PROPERTIES = qn("w:rPr")
-    SYM = qn("w:sym")
-    TAB = qn("w:tab")
-    TABLE = qn("w:tbl")
-    TABLE_CELL = qn("w:tc")
-    TABLE_ROW = qn("w:tr")
-    TEXT = qn("w:t")
-    TEXT_MATH = qn("m:t")
+    BODY = "w:body"
+    BR = "w:br"
+    COMMENT_RANGE_END = "w:commentRangeEnd"
+    COMMENT_RANGE_START = "w:commentRangeStart"
+    DOCUMENT = "w:document"
+    ENDNOTE = "w:endnote"
+    ENDNOTE_REFERENCE = "w:endnoteReference"
+    FOOTNOTE = "w:footnote"
+    FOOTNOTE_REFERENCE = "w:footnoteReference"
+    FORM_CHECKBOX = "w:checkBox"
+    FORM_DDLIST = "w:ddList"  # drop-down form
+    HYPERLINK = "w:hyperlink"
+    IMAGE = "a:blip"
+    IMAGEDATA = "v:imagedata"
+    IMAGE_ALT = "wp:docPr"
+    MATH = "m:oMath"
+    PARAGRAPH = "w:p"
+    PAR_PROPERTIES = "w:pPr"
+    RUN = "w:r"
+    RUN_PROPERTIES = "w:rPr"
+    SYM = "w:sym"
+    TAB = "w:tab"
+    TABLE = "w:tbl"
+    TABLE_CELL = "w:tc"
+    TABLE_ROW = "w:tr"
+    TEXT = "w:t"
+    TEXT_MATH = "m:t"
 
-
-# elem.attrib key for relationship ids. These can find the information they reference by
-# ``file_instance.rels[elem.attrib[RELS_ID]]``
-RELS_ID = qn("r:id")
 
 _CONTENT_TAGS = set(Tags) - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
+
+
+def _is_content(elem: EtreeElement) -> bool:
+    """Is the element a content element?
+
+    sdf   :param elem: xml element
+    :return: True if the element is a content element
+
+    Docx2Python ignores spell check, revision, and other elements. This function
+    checks that the element is a content element.
+
+    If the element is a content element, it will be processed further.
+    """
+    return get_prefixed_tag(elem) in _CONTENT_TAGS
 
 
 def has_content(tree: EtreeElement) -> str | None:
@@ -155,7 +216,7 @@ def has_content(tree: EtreeElement) -> str | None:
         :yield: child content elements
         :return: None
         """
-        if tree_.tag in _CONTENT_TAGS:
+        if _is_content(tree_):
             yield tree_.tag
         for branch in tree_:
             yield from iter_content(branch)

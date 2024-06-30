@@ -10,7 +10,7 @@ import zipfile
 
 from lxml import etree
 
-from docx2python.attribute_register import Tags
+from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.docx_context import collect_numFmts
 from docx2python.docx_reader import DocxReader
 from docx2python.iterators import iter_at_depth
@@ -19,7 +19,6 @@ from docx2python.main import docx2python
 from tests.conftest import RESOURCES
 
 example_docx = RESOURCES / "example.docx"
-
 
 class TestSaveDocx:
     def test_save_unchanged(self) -> None:
@@ -37,7 +36,7 @@ class TestSaveDocx:
         """Creates a valid docx and updates text"""
         input_context = DocxReader(example_docx)
         input_xml = input_context.file_of_type("officeDocument").root_element
-        for elem in (x for x in input_xml.iter() if x.tag == Tags.TEXT):
+        for elem in (x for x in input_xml.iter() if get_prefixed_tag(x) == Tags.TEXT):
             if not elem.text:
                 continue
             elem.text = elem.text.replace("bullet", "BULLET")

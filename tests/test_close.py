@@ -9,7 +9,7 @@ DocxReader instance was created.
 
 import pytest
 
-from docx2python.attribute_register import Tags
+from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.docx_reader import DocxReader
 from docx2python.main import docx2python
 
@@ -45,7 +45,7 @@ class TestDocxReaderContext:
         """DocxReader can be used as a context manager."""
         with DocxReader(example_docx) as input_context:
             input_xml = input_context.file_of_type("officeDocument").root_element
-            assert input_xml.tag == Tags.DOCUMENT
+            assert get_prefixed_tag(input_xml) == Tags.DOCUMENT
 
     def test_context_manager_close(self):
         """DocxReader can be used as a context manager."""

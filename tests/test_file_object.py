@@ -4,7 +4,7 @@
 :created: 4/3/2021
 """
 
-from docx2python.attribute_register import Tags
+from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.docx_reader import DocxReader
 from docx2python.main import docx2python
 
@@ -37,7 +37,9 @@ class TestFileObject:
         context = DocxReader(RESOURCES / "example.docx")
         document_xml = context.file_of_type("officeDocument")
         first_par = next(
-            x for x in document_xml.root_element.iter() if x.tag == Tags.PARAGRAPH
+            x
+            for x in document_xml.root_element.iter()
+            if get_prefixed_tag(x) == Tags.PARAGRAPH
         )
         assert [
             [[[full_extraction.body_runs[0][0][0][0]]]]

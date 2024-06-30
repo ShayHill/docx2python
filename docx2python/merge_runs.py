@@ -12,7 +12,7 @@ import functools
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from docx2python.attribute_register import RELS_ID, Tags, has_content
+from docx2python.attribute_register import Tags, get_prefixed_tag, has_content
 from docx2python.text_runs import get_html_formatting
 
 if TYPE_CHECKING:
@@ -24,6 +24,11 @@ if TYPE_CHECKING:
 _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
 
 
+def _is_mergeable(elem: EtreeElement) -> bool:
+    """Can a run be merged with another run?"""
+    return elem.tag in _MERGEABLE_TAGS or get_prefixed_tag(elem) in _MERGEABLE_TAGS
+
+
 def _elem_key(file: File, elem: EtreeElement) -> tuple[str, str, list[str]]:
     """
     Enough information to tell if two elements are more-or-less identically formatted.
@@ -31,7 +36,7 @@ def _elem_key(file: File, elem: EtreeElement) -> tuple[str, str, list[str]]:
     :param elem: any element in an xml file.
     :return: A summary of attributes (if two adjacent elements return the same key,
         they are considered mergeable). Only used to merge elements, so returns None
-        if element tags are not in _MERGEABLE_TAGS.
+        if elements are not mergeable.
 
     Ignore text formatting differences if consecutive link elements point to the same
     address. Always join these.
@@ -48,15 +53,24 @@ def _elem_key(file: File, elem: EtreeElement) -> tuple[str, str, list[str]]:
 
     """
     tag = elem.tag
-    if tag not in _MERGEABLE_TAGS:
+    if not _is_mergeable(elem):
         return tag, "", []
 
     # always join links pointing to the same address
-    rels_id = elem.attrib.get(RELS_ID)
+    # elem.attrib key for relationship ids. These can find the information they
+    # reference by ``file_instance.rels[elem.attrib[RELS_ID]]``
+    rels_id_key = f"{{{elem.nsmap['r']}}}id"
+    rels_id = elem.attrib.get(rels_id_key)
     if rels_id:
         return tag, str(file.rels[str(rels_id)]), []
 
     return tag, "", get_html_formatting(elem, file.context.xml2html_format)
+
+
+def _is_text_or_text_math(elem: EtreeElement) -> bool:
+    """Can an element be treated as text?"""
+    text_or_text_math = {Tags.TEXT, Tags.TEXT_MATH}
+    return elem.tag in text_or_text_math or get_prefixed_tag(elem) in text_or_text_math
 
 
 def merge_elems(file: File, tree: EtreeElement) -> None:
@@ -142,8 +156,8 @@ def merge_elems(file: File, tree: EtreeElement) -> None:
     elems = [x for x in tree if has_content(x)]
     runs = [list(y) for _, y in groupby(elems, key=file_elem_key)]
 
-    for run in (x for x in runs if len(x) > 1 and x[0].tag in _MERGEABLE_TAGS):
-        if run[0].tag in {Tags.TEXT, Tags.TEXT_MATH}:
+    for run in (x for x in runs if len(x) > 1 and _is_mergeable(x[0])):
+        if _is_text_or_text_math(run[0]):
             run[0].text = "".join(x.text or "" for x in run)
         for elem in run[1:]:
             for e in elem:

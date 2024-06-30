@@ -53,7 +53,7 @@ from docx2python.iterators import (
     iter_at_depth,
     join_leaves,
 )
-from docx2python.namespace import qn
+from docx2python.namespace import get_attrib_by_qn
 
 if TYPE_CHECKING:
     from docx2python.docx_reader import DocxReader
@@ -290,10 +290,9 @@ class DocxContent:
         all_runs = list(enum_at_depth(office_document.content, 5))
         comments: list[tuple[str, str, str, str]] = []
         for comment in comment_elements:
-            id_ = comment.attrib[qn("w:id")]
-
-            author = comment.attrib[qn("w:author")]
-            date = comment.attrib[qn("w:date")]
+            id_ = get_attrib_by_qn(comment, "w:id")
+            author = get_attrib_by_qn(comment, "w:author")
+            date = get_attrib_by_qn(comment, "w:date")
 
             tree = new_depth_collector(comments_file, comment).tree
             tree_pars = ["".join(x) for x in iter_at_depth(tree, 4)]

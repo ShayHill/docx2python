@@ -9,44 +9,20 @@ those elements to extract formatting information.
 
 from __future__ import annotations
 
-import re
 from collections import defaultdict
 from contextlib import suppress
 from typing import TYPE_CHECKING, Sequence
 
-from docx2python.attribute_register import HtmlFormatter, Tags
+from docx2python.attribute_register import (
+    HtmlFormatter,
+    Tags,
+    get_localname,
+    get_prefixed_tag,
+)
 from docx2python.namespace import qn
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
-
-
-def _elem_tag_str(elem: EtreeElement) -> str:
-    """The text part of an elem.tag (the portion right of the colon)
-
-    :param elem: an xml element
-    :return: the text part of an elem.tag (the portion right of the colon)
-    :raise RuntimeError: if the tag is not qualified
-
-    create with:
-
-        document = etree.fromstring('bytes string')
-        # recursively search document elements.
-
-    **E.g., given**:
-
-        document = etree.fromstring('bytes string')
-        # document.tag = '{http://schemas.openxml.../2006/main}:document'
-        elem_tag_str(document)
-
-    **E.g., returns**:
-
-        'document'
-    """
-    tag_str = re.match(r"{.*}(?P<tag_name>\w+)", elem.tag)
-    if tag_str:
-        return tag_str.group("tag_name")
-    raise RuntimeError("could not get tag from elem")
 
 
 def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]:
@@ -97,11 +73,12 @@ def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]
     sub_vals: dict[str, str | None] = {}
     with suppress(StopIteration):
         for sub_element in next(element.iterfind(qname)):
-            sub_val = sub_element.attrib.get(qn("w:val"))
+            sub_val = sub_element.attrib.get(qn(sub_element, "w:val"))
+
             if sub_val:
-                sub_vals[_elem_tag_str(sub_element)] = str(sub_val)
+                sub_vals[get_localname(sub_element)] = str(sub_val)
             else:
-                sub_vals[_elem_tag_str(sub_element)] = None
+                sub_vals[get_localname(sub_element)] = None
     return sub_vals
 
 
@@ -261,9 +238,9 @@ def get_html_formatting(
         }
     :return: ``[(rPr, val), (rPr, val) ...]``
     """
-    if elem.tag == Tags.RUN:
+    if get_prefixed_tag(elem) == Tags.RUN:
         return get_run_formatting(elem, xml2html)
-    if elem.tag == Tags.PARAGRAPH:
+    if get_prefixed_tag(elem) == Tags.PARAGRAPH:
         return get_paragraph_formatting(elem, xml2html)
     return []
 

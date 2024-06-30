@@ -16,7 +16,6 @@ from typing import TYPE_CHECKING, Iterator
 
 from lxml import etree
 
-from docx2python.attribute_register import Tags
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
@@ -36,6 +35,16 @@ def _copy_new_text(elem: EtreeElement, new_text: str) -> EtreeElement:
     new_elem = copy.deepcopy(elem)
     new_elem.text = new_text
     return new_elem
+
+
+def _new_br_element(elem: EtreeElement) -> EtreeElement:
+    """Return a break element with a representative elements namespace.
+
+    :param elem: xml element
+    :return: a new br element
+    """
+    prefix = elem.nsmap["w"]
+    return etree.Element(f"{{{prefix}}}br")
 
 
 def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
@@ -63,7 +72,7 @@ def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
             new_elems = [_copy_new_text(elem, line) for line in text.splitlines()]
 
             # insert breakpoints where line breaks were
-            breaks = [etree.Element(Tags.BR) for _ in new_elems]
+            breaks = [_new_br_element(elem) for _ in new_elems]
             new_elems = [x for pair in zip(new_elems, breaks) for x in pair][:-1]
 
             # replace the original element with the new elements

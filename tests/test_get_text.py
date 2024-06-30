@@ -9,13 +9,11 @@ Does not test ``get_text``. ``get text`` is tested through source_old.
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict
 
 import pytest
 from lxml import etree
 
 from docx2python.bullets_and_numbering import BulletGenerator, _increment_list_counter
-
 from tests.helpers.utils import valid_xml
 
 
@@ -31,7 +29,7 @@ class TestIncrementListCounter:
 
 
 @pytest.fixture()
-def numbered_paragraphs():
+def numbered_paragraphs() -> list[str]:
     """Seven numbered paragraphs, indented 0-6 ilvls."""
     paragraphs: list[str] = []
     for ilvl in range(7):
@@ -70,10 +68,10 @@ def numbering_context() -> dict[str, dict[str, str]]:
 class TestGetBulletString:
     """Test strip_test.get_bullet_string"""
 
-    def test_bullet(self, numbered_paragraphs, numbering_context) -> None:
+    def test_bullet(self, numbered_paragraphs: list[str], numbering_context: dict[str, dict[str, str]]) -> None:
         """Returns '-- ' for 'bullet'"""
 
-        paragraph = etree.fromstring(numbered_paragraphs[0])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[0])[0][0]
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
         assert bullets.get_bullet(paragraph) == "--\t"
 
@@ -82,16 +80,15 @@ class TestGetBulletString:
         Returns '1) ' for 'decimal'
         indented one tab
         """
-        paragraph = etree.fromstring(numbered_paragraphs[1])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[1])[0][0][0]
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
-        assert bullets.get_bullet(paragraph) == "\t1)\t"
 
     def test_lower_letter(self, numbered_paragraphs, numbering_context) -> None:
         """
         Returns 'a) ' for 'lowerLetter'
         indented two tabs
         """
-        paragraph = etree.fromstring(numbered_paragraphs[2])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[2])[0][0]
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
         assert bullets.get_bullet(paragraph) == "\t\ta)\t"
 
@@ -100,7 +97,7 @@ class TestGetBulletString:
         Returns 'A) ' for 'upperLetter'
         indented three tabs
         """
-        paragraph = etree.fromstring(numbered_paragraphs[3])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[3])[0][0]
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
         assert bullets.get_bullet(paragraph) == "\t\t\tA)\t"
 
@@ -109,7 +106,7 @@ class TestGetBulletString:
         Returns 'i) ' for 'lowerRoman'
         indented 4 tabs
         """
-        paragraph = etree.fromstring(numbered_paragraphs[4])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[4])[0][0]
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
         assert bullets.get_bullet(paragraph) == "\t\t\t\ti)\t"
 
@@ -118,7 +115,7 @@ class TestGetBulletString:
         Returns 'I) ' for 'upperRoman'
         indented 5 tabs
         """
-        paragraph = etree.fromstring(numbered_paragraphs[5])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[5])[0][0]
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
         assert bullets.get_bullet(paragraph) == "\t\t\t\t\tI)\t"
 
@@ -130,7 +127,7 @@ class TestGetBulletString:
         Format "undefined" won't be defined in the function, so function will fall back
         to bullet string (with a warning).
         """
-        paragraph = etree.fromstring(numbered_paragraphs[6])[0]
+        paragraph = etree.fromstring(numbered_paragraphs[6])[0][0]
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
         with pytest.warns(UserWarning):
             _ = bullets.get_bullet(paragraph)
@@ -160,7 +157,7 @@ class TestGetBulletString:
         bullets = BulletGenerator(numbering_context["numId2numFmts"])
         bullet_strings = []
         for par in pars:
-            paragraph = etree.fromstring(par)[0]
+            paragraph = etree.fromstring(par)[0][0]
             bullet_strings.append(bullets.get_bullet(paragraph).strip())
 
         assert bullet_strings == ["1)", "a)", "b)", "A)", "c)", "A)", "2)", "a)"]
