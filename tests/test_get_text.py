@@ -16,7 +16,7 @@ from lxml import etree
 
 from docx2python.bullets_and_numbering import BulletGenerator, _increment_list_counter
 
-from .helpers.utils import valid_xml
+from tests.helpers.utils import valid_xml
 
 
 class TestIncrementListCounter:

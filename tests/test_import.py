@@ -7,7 +7,7 @@
 
 from docx2python import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 def test() -> None:

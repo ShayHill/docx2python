@@ -80,7 +80,7 @@ Paragraphs are returned in by the order in which they *close*.
 
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 def test_paragraphs_only() -> None:

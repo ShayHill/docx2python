@@ -15,7 +15,7 @@ from docx2python.text_runs import (
     html_open,
 )
 
-from .helpers.utils import valid_xml
+from tests.helpers.utils import valid_xml
 
 ONE_TEXT_RUN = valid_xml(
     '<w:r w:rsidRPr="000E1B98">'

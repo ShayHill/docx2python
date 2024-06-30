@@ -8,7 +8,7 @@ The sample file here has a hyperlink he was not able to export correctly.
 
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 long_hyperlink = RESOURCES / "long_hyperlink.docx"
 

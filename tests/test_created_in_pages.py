@@ -30,7 +30,7 @@ User Raiyan provided two docx files created in pages:
 
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 class TestParagraphsOnly:
