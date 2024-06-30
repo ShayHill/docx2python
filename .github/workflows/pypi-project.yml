@@ -43,7 +43,7 @@ jobs:
   bump_version:
     runs-on: ubuntu-latest
     name: "Bump version and create changelog with commitizen"
-    continue-on-error: true
+    continue-on-error: false
     needs: [tests]
     if: github.ref == 'refs/heads/dev'
     steps:
