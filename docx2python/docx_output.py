@@ -46,9 +46,13 @@ from warnings import warn
 from typing_extensions import Self
 
 from docx2python.docx_context import collect_docProps
-
 from docx2python.docx_text import flatten_text, new_depth_collector
-from docx2python.iterators import enum_at_depth, get_html_map, iter_at_depth, join_leaves
+from docx2python.iterators import (
+    enum_at_depth,
+    get_html_map,
+    iter_at_depth,
+    join_leaves,
+)
 from docx2python.namespace import qn
 
 if TYPE_CHECKING:
