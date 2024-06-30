@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING, Iterator
 from lxml import etree
 
 from docx2python.attribute_register import Tags
-
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 

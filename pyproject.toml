@@ -40,6 +40,10 @@ commands = pytest
 """
 
 
+[tool.pytest.ini_options]
+pythonpath = ["tests"]
+
+
 [tool.pyright]
 include = ["src"]
 exclude = ["**/__pycache__.py"]
@@ -56,6 +60,7 @@ reportPropertyTypeMismatch = true
 reportUninitializedInstanceVariable = true
 reportUnnecessaryTypeIgnoreComment = true
 reportUnusedCallResult = true
+reportUnknownLambdaType = false
 
 venvPath = "."
 venv = "./venv"

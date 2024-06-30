@@ -36,7 +36,6 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, Iterator, cast
 
 from docx2python.iterators import enum_at_depth
-
 from docx2python.text_runs import html_close, html_open
 
 

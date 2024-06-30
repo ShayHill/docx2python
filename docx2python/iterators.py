@@ -164,6 +164,7 @@ def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
             This will happen if you try to iterate into a string in a list of
             strings.
         """
+        sequence: Sequence[Any]
         for index_tuple, sequence in enumd:
             if not isinstance(sequence, argument_type):
                 raise TypeError("will not iterate over sequence item")
