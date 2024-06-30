@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from lxml import etree
 
-from .namespace import qn
+from docx2python.namespace import qn
 
 if TYPE_CHECKING:
     import zipfile

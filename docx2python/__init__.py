@@ -4,7 +4,7 @@
 :created: 2023-01-09
 """
 
-from .main import docx2python
+from docx2python.main import docx2python
 
 __all__ = ["docx2python"]
 

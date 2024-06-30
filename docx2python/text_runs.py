@@ -14,8 +14,8 @@ from collections import defaultdict
 from contextlib import suppress
 from typing import TYPE_CHECKING, Sequence
 
-from .attribute_register import HtmlFormatter, Tags
-from .namespace import qn
+from docx2python.attribute_register import HtmlFormatter, Tags
+from docx2python.namespace import qn
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore

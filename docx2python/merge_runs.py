@@ -12,13 +12,13 @@ import functools
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from .attribute_register import RELS_ID, Tags, has_content
-from .text_runs import get_html_formatting
+from docx2python.attribute_register import RELS_ID, Tags, has_content
+from docx2python.text_runs import get_html_formatting
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
-    from .docx_reader import File
+    from docx2python.docx_reader import File
 
 # identify tags that will be merged together (if formatting is equivalent)
 _MERGEABLE_TAGS = {Tags.RUN, Tags.HYPERLINK, Tags.TEXT, Tags.TEXT_MATH}
