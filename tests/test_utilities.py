@@ -10,7 +10,7 @@ import tempfile
 from docx2python.main import docx2python
 from docx2python.utilities import get_headings, get_links, replace_docx_text
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 class TestSearchReplace:

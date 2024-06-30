@@ -15,14 +15,11 @@ import pytest
 project = os.path.abspath(os.path.join(__file__, "..", ".."))
 sys.path.append(project)
 
-from pathlib import Path
 
 from paragraphs import par
 
 from docx2python import docx2python
-
-# from .conftest import RESOURCES
-RESOURCES = Path(project, "tests", "resources")
+from tests.conftest import RESOURCES
 
 
 def test_comments() -> None:

@@ -34,7 +34,7 @@
 
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 class TestParStyles:

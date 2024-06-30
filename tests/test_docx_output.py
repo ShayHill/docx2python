@@ -7,7 +7,7 @@
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 class TestDocument:

@@ -17,7 +17,7 @@ from docx2python.numbering_formats import (
     upper_roman,
 )
 
-from .helpers.utils import ARABIC_2_ROMAN
+from tests.helpers.utils import ARABIC_2_ROMAN
 
 
 class TestLowerLetter:

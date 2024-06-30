@@ -8,7 +8,7 @@ from docx2python.attribute_register import Tags
 from docx2python.docx_reader import DocxReader
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 class TestFileObject:

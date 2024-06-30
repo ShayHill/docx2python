@@ -71,7 +71,7 @@ Then finally to (by merging text)
 
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 def test_merge_runs():

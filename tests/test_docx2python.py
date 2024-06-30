@@ -13,7 +13,7 @@ from paragraphs import par
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 ALT_TEXT = par(
     """----Image alt text---->A close up of a logo\n\n

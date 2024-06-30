@@ -9,7 +9,7 @@ but I didn't want to alter it in my version of Word.
 
 from docx2python.main import docx2python
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 class TestCheckboxToHtml:

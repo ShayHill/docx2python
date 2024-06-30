@@ -24,7 +24,7 @@ parsing through forms that have all of their stuff in tables.
 from docx2python import docx2python
 from docx2python.iterators import iter_at_depth
 
-from .conftest import RESOURCES
+from tests.conftest import RESOURCES
 
 
 def test_checked_boxes() -> None:
