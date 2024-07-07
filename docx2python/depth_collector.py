@@ -261,10 +261,14 @@ class DepthCollector:
         """
         if depth is None:
             return
-        while self.caret_depth < depth:
+        if self.caret_depth < depth:
             self._drop_caret()
-        while self.caret_depth > depth:
+        elif self.caret_depth > depth:
             self._raise_caret()
+        if self.caret_depth == depth:
+            # placeholder for adding tag
+            return
+        self.set_caret(depth)
 
     def insert(self, item: list[str]) -> None:
         """Add item at self._par_depth. Add branches if necessary to reach depth.
