@@ -288,12 +288,11 @@ class DepthCollector:
         """
         self._open_run.text += item
 
-    def insert_text_as_new_run(self, item: str, styled: bool = False) -> None:
+    def insert_text_as_new_run(self, item: str) -> None:
         """
         Close previous run, cache style, open and close new run, re-open cached style.
 
         :param item: string to insert into new run
-        :param styled: True if item has associated html styles
 
         This is for items like links that may be inside a run element with other text.
 
@@ -304,15 +303,13 @@ class DepthCollector:
         Starts with an open run
             <run><b>some text
 
-        Then hits the link. We'll make this a run inside the actual run
+        Then hits the link.
 
+            <run><b>some text  # this is where we are
             <run><b>some text</b></run>  # close this open run
             <run><a href="">link</a></run>  # add link as a new run
             <run><b>  # open a new run with the same style as the aborted first run
         """
         open_style = self._open_run.html_style
-        if styled:
-            self._open_runs.append(Run(open_style, item))
-        else:
-            self._open_runs.append(Run([], item))
+        self._open_runs.append(Run([], item))
         self._open_runs.append(Run(open_style))
