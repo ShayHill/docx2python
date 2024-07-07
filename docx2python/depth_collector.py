@@ -79,7 +79,7 @@ class CaretDepthError(Exception):
 class DepthCollector:
     """Insert items into a tree at a consistent depth."""
 
-    def __init__(self, item_depth: int) -> None:
+    def __init__(self) -> None:
         """
         Record item depth and initiate data container.
 
@@ -87,8 +87,6 @@ class DepthCollector:
             may appear above. I.e., this is how many brackets to open before inserting
             an item. E.g., item_depth = 3 => [[['item']]].
         """
-        # TODO: factor out item_depth
-        self.item_depth = item_depth
         self._par_depth = 4
 
         self._rightmost_branches: list[Any] = [[]]
@@ -235,8 +233,8 @@ class DepthCollector:
         :raise CaretDepthError: if caret is already at the maximum depth
         :return: None
         """
-        if self.caret_depth >= self.item_depth:
-            raise CaretDepthError("will not lower caret beneath item_depth")
+        if self.caret_depth >= self._par_depth:
+            raise CaretDepthError("will not lower caret beneath paragraph depth")
         self._rightmost_branches[-1].append([])
         self._rightmost_branches.append(self._rightmost_branches[-1][-1])
 
@@ -261,13 +259,13 @@ class DepthCollector:
         """
         if depth is None:
             return
+        if self.caret_depth == depth:
+            # placeholder for adding tag
+            return
         if self.caret_depth < depth:
             self._drop_caret()
         elif self.caret_depth > depth:
             self._raise_caret()
-        if self.caret_depth == depth:
-            # placeholder for adding tag
-            return
         self.set_caret(depth)
 
     def insert(self, item: list[str]) -> None:
@@ -287,8 +285,8 @@ class DepthCollector:
 
         :param item: string to insert into previous run
 
-        This is for tags and other text that appears between run tags. All entries to
-        ``add_text_into_open_run`` will be merged together.
+        This is for formatting tags and other text that appears between run tags. All
+        entries to ``add_text_into_open_run`` will be merged together.
         """
         self._open_run.text += item
 

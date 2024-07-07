@@ -113,7 +113,7 @@ class TagRunner:
         """Gather context information necessary to perform some methods."""
         self.file = file
         self.xml2html_format = file.context.xml2html_format
-        self.tables = DepthCollector(5)
+        self.tables = DepthCollector()
         self.bullets = BulletGenerator(file.context.numId2numFmts)
 
     def open(self, tree: EtreeElement) -> bool:
