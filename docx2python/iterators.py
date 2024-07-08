@@ -319,16 +319,6 @@ def enum_paragraphs(tables: TablesList) -> Iterator[IndexedItem]:
     return enum_at_depth(tables, 4)
 
 
-def get_text(tables: TablesList) -> str:
-    r"""
-    Short cut to pull text from any subset of extracted content.
-
-    :param tables: ``[[[["string"]]]]``
-    :return: "string" (all paragraphs in tables joined with '\n\n'
-    """
-    return "\n\n".join(iter_at_depth(tables, 4))
-
-
 def get_html_map(tables: TablesList) -> str:
     """
     Create a visual map in html format.

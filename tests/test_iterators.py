@@ -14,7 +14,6 @@ from docx2python.iterators import (
     enum_rows,
     enum_tables,
     get_html_map,
-    get_text,
     iter_cells,
     iter_paragraphs,
     iter_rows,
@@ -138,17 +137,6 @@ class TestEnumerators:
             IndexedItem(index=(1, 1, 1, 0), value="1110"),
             IndexedItem(index=(1, 1, 1, 1), value="1111"),
         ]
-
-
-class TestGetText:
-    """Test iterators.get_text"""
-
-    def test_captures_text(self) -> None:
-        """Return all text, '\n\n' joined."""
-        assert get_text(TABLES) == (
-            "0000\n\n0001\n\n0010\n\n0011\n\n0100\n\n0101\n\n0110\n\n0111\n\n"
-            "1000\n\n1001\n\n1010\n\n1011\n\n1100\n\n1101\n\n1110\n\n1111"
-        )
 
 
 class TestGetHtmlMap:
