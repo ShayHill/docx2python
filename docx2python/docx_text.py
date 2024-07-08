@@ -91,6 +91,7 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
     return search_at_depth([tree])
 
 
+# TODO: remove root argument from _get_text_below
 def _get_text_below(file: File, root: EtreeElement) -> str:
     """Return a string of all text below an element
 
@@ -98,8 +99,10 @@ def _get_text_below(file: File, root: EtreeElement) -> str:
     :param root: the root element of the document
     :return: a string of all text in the document
     """
-    content_beneath_root = [x for y in [ggget_text(file, z) for z in root] for x in y]
-    return flatten_text(content_beneath_root, file.context.do_pStyle)
+    content_beneath_root = [
+        x for y in [get_file_text(file, z) for z in root] for x in y
+    ]
+    return flatten_text(content_beneath_root)
 
 
 class TagRunner:
@@ -360,8 +363,6 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
         :param tree: An Element from an xml file (etree)
         :effect: Adds text cells to outer variable `tables`.
         """
-        # TODO: see why recurse_into_tree is defined twice
-        recurse_into_tree = True
         recurse_into_tree = tag_runner.open(tree)
 
         if recurse_into_tree:
@@ -380,50 +381,38 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
     return tag_runner.tables
 
 
-# TODO: factor this into get_text and get_content
-def get_text(file: File, root: EtreeElement | None = None) -> list[list[list[Par]]]:
-    """Xml as a string to a list of cell strings.
+def get_file_content(
+    file: File, root: EtreeElement | None = None
+) -> list[list[list[Par]]]:
+    """Extract file content as a nested list of Par instances.
 
     :param file: File instance from which text will be extracted.
     :param root: Optionally extract content from a single element.
         If None, root_element of file will be used.
-    :return: A 5-deep nested list of strings.
+    :return: A nested list of Par instances [[[Par]]]
 
-    Sorts the text into the DepthCollector instance, five-levels deep
-
-    ``[table][row][cell][paragraph][run]`` is a string
-
-    Joins the runs before returning, so return list will be
-
-    ``[table][row][cell][paragraph]`` is a string
+    ``[table][row][cell][par]`` is a Par instances
     """
     tables = new_depth_collector(file, root)
     return tables.tree
 
 
-# TODO: eventually rename this into get_text and get_text into get_content
-def ggget_text(
+def get_file_text(
     file: File, root: EtreeElement | None = None
 ) -> list[list[list[list[str]]]]:
-    """Xml as a string to a list of cell strings.
+    """Extract file content as a nested list of strings.
 
     :param file: File instance from which text will be extracted.
     :param root: Optionally extract content from a single element.
         If None, root_element of file will be used.
     :return: A 5-deep nested list of strings.
 
-    Sorts the text into the DepthCollector instance, five-levels deep
-
-    ``[table][row][cell][paragraph][run]`` is a string
-
-    Joins the runs before returning, so return list will be
-
     ``[table][row][cell][paragraph][run]`` is a string
     """
-    return get_par_strings(get_text(file, root))
+    return get_par_strings(get_file_content(file, root))
 
 
-def flatten_text(text: TablesList, do_pStyle: bool) -> str:
+def flatten_text(text: list[list[list[list[str]]]]) -> str:
     """Flatten a list of strings into a single string.
 
     :param text: A 5-deep nested list of strings.
@@ -431,12 +420,3 @@ def flatten_text(text: TablesList, do_pStyle: bool) -> str:
     """
     pars = ["".join(x) for x in iter_at_depth(text, 4)]
     return "\n\n".join(pars)
-    # TODO: clean this up
-    if do_pStyle is True:
-        # Paragraph descriptors have been inserted as the first run of each
-        # paragraph. Take them out.
-        pars = [[x.pStyle, *x.strings] for x in iter_at_depth(text, 4)]
-    else:
-        pars = [x.strings for x in iter_at_depth(text, 4)]
-
-    return "\n\n".join("".join(x) for x in pars)

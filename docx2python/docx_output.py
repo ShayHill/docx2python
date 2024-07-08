@@ -213,8 +213,7 @@ class DocxContent:
 
         :return: all docx paragraphs, "\n\n" joined
         """
-        do_pStyle = self.docx2python_kwargs["paragraph_styles"]
-        return flatten_text(self.document_runs, do_pStyle)
+        return flatten_text(self.document_runs)
 
     @property
     def html_map(self) -> str:

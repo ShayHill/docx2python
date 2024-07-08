@@ -40,7 +40,7 @@ from typing_extensions import Self
 from docx2python import depth_collector
 from docx2python.attribute_register import XML2HTML_FORMATTER
 from docx2python.docx_context import collect_numFmts, collect_rels
-from docx2python.docx_text import get_text, new_depth_collector
+from docx2python.docx_text import get_file_content, new_depth_collector
 from docx2python.merge_runs import merge_elems
 
 if TYPE_CHECKING:
@@ -267,7 +267,7 @@ class File:
         """
         if root is None:
             return self.depth_collector.tree
-        return get_text(self, root)
+        return get_file_content(self, root)
 
     def get_text(self, root: EtreeElement | None = None) -> list[list[list[list[str]]]]:
         """
