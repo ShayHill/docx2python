@@ -45,6 +45,7 @@ from warnings import warn
 
 from typing_extensions import Self
 
+from docx2python.depth_collector import get_par_strings
 from docx2python.docx_context import collect_docProps
 from docx2python.docx_text import flatten_text, new_depth_collector
 from docx2python.iterators import (
@@ -119,9 +120,9 @@ class DocxContent:
             You can try others.
         :return: text runs [[[[str]]]]
         """
-        content: TablesList = []
+        content: list[list[list[list[str]]]] = []
         for file in self.docx_reader.files_of_type(type_):
-            content += file.content
+            content += file.text
         return content
 
     @property
@@ -287,14 +288,14 @@ class DocxContent:
         except KeyError:
             return []
 
-        all_runs = list(enum_at_depth(office_document.content, 5))
+        all_runs = list(enum_at_depth(get_par_strings(office_document.content), 5))
         comments: list[tuple[str, str, str, str]] = []
         for comment in comment_elements:
             id_ = get_attrib_by_qn(comment, "w:id")
             author = get_attrib_by_qn(comment, "w:author")
             date = get_attrib_by_qn(comment, "w:date")
 
-            tree = new_depth_collector(comments_file, comment).tree
+            tree = new_depth_collector(comments_file, comment).tree_text
             tree_pars = ["".join(x) for x in iter_at_depth(tree, 4)]
             comment_text = "\n\n".join(tree_pars)
 

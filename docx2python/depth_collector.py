@@ -33,19 +33,20 @@ from __future__ import annotations
 
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Iterable, Iterator, cast
-
-from lxml.etree import _Element as EtreeElement  # type: ignore
+from typing import TYPE_CHECKING, Any, Iterable, Iterator, List, Union, cast
 
 from docx2python.iterators import enum_at_depth
 from docx2python.text_runs import (
     get_paragraph_formatting,
+    get_pStyle,
     get_run_formatting,
     html_close,
     html_open,
 )
 
 if TYPE_CHECKING:
+    from lxml.etree import _Element as EtreeElement  # type: ignore
+
     from docx2python.docx_reader import File
 
 
@@ -71,7 +72,12 @@ class Par:
     """A text paragraph. Html styles and a list of run strings"""
 
     html_style: list[str]
+    pstyle: str
     runs: list[Run] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        """Add an empty run to the paragraph"""
+        self.runs.append(Run([], html_open(self.html_style)))
 
     @property
     def strings(self) -> list[str]:
@@ -80,6 +86,37 @@ class Par:
         :return: a string for each run with text content
         """
         return [x for x in (str(y) for y in self.runs) if x]
+
+
+NestedPars = List[Union[Par, "NestedPars"]]
+NestedStrings = List[Union[List[str], "NestedStrings"]]
+
+
+def _nested_pars_to_nested_strings(nested_pars: NestedPars) -> NestedStrings:
+    """Return a list of strings from the runs
+
+    :param par: a paragraph
+    :return: a string for each run with text content
+
+    Extract a list of sublists of strings from a list of sublists of Par instances.
+    This is the recursive part of `get_par_strings` split out so we can return
+    explicit type hints in the public function.
+    """
+    return [
+        x.strings if isinstance(x, Par) else _nested_pars_to_nested_strings(x)
+        for x in nested_pars
+    ]
+
+
+def get_par_strings(nested_pars: list[list[list[Par]]]) -> list[list[list[list[str]]]]:
+    """Convert DepthCollector's nested Par instances into a nested list of strings.
+
+    :param nested_pars: a list of Par instances. These will be the first element in
+        the DepthCollector's tables list [[[Par]]]
+    :return: a list of strings from the runs [[[[str]]]]
+    """
+    as_strings = _nested_pars_to_nested_strings(cast(NestedPars, nested_pars))
+    return cast(List[List[List[List[str]]]], as_strings)
 
 
 class CaretDepthError(Exception):
@@ -97,7 +134,8 @@ class DepthCollector:
             may appear above. I.e., this is how many brackets to open before inserting
             an item. E.g., item_depth = 3 => [[['item']]].
         """
-        self.xml2html_format = file.context.xml2html_format
+        self._do_pStyle = file.context.do_pStyle
+        self._xml2html_format = file.context.xml2html_format
         self._par_depth = 4
 
         self._rightmost_branches: list[Any] = [[]]
@@ -113,7 +151,7 @@ class DepthCollector:
 
         This is to mark the beginning and end of comment ranges.
         """
-        for run_text in enum_at_depth(self._rightmost_branches[0], 5):
+        for run_text in enum_at_depth(self.tree_text, 5):
             if run_text:
                 yield cast(str, run_text)
         for par in self.open_pars:
@@ -170,12 +208,17 @@ class DepthCollector:
         :param elem: the paragraph element (for extracting style information)
         :return: the new paragraph
         """
-        html_style: list[str] | None = None
+        html_style: list[str] = []
         if elem is not None:
-            html_style = get_paragraph_formatting(elem, self.xml2html_format)
-        html_style = html_style or []
+            html_style = get_paragraph_formatting(elem, self._xml2html_format) or []
 
-        new_par = Par(html_style, [*self.orphan_runs, Run([], html_open(html_style))])
+        pStyle = ""
+        if elem is not None and self._do_pStyle:
+            pStyle = get_pStyle(elem)
+
+        new_par = Par(
+            html_style, pStyle, [*self.orphan_runs, Run([], html_open(html_style))]
+        )
         self.orphan_runs = []
         self.open_pars.append(new_par)
         return new_par
@@ -184,7 +227,7 @@ class DepthCollector:
         """Close the current paragraph and add it to the tree."""
         old_par = self.open_pars.pop()
         old_par.runs.append(Run([], html_close(old_par.html_style)))
-        self.insert(old_par.strings)
+        self.insert(old_par)
 
     def commence_run(self, elem: EtreeElement | None = None) -> None:
         """Open a new run and add it to the current paragraph.
@@ -193,7 +236,7 @@ class DepthCollector:
         """
         html_style: list[str] | None = None
         if elem is not None:
-            html_style = get_run_formatting(elem, self.xml2html_format)
+            html_style = get_run_formatting(elem, self._xml2html_format)
         html_style = html_style or []
         self._open_runs.append(Run(html_style or []))
 
@@ -202,12 +245,21 @@ class DepthCollector:
         self.commence_run()
 
     @property
-    def tree(self) -> list[str | list[str]]:
-        """All collected items.
+    def tree(self) -> list[list[list[Par]]]:
+        """All collected paragraphs as Par instances.
 
         :return: a nested list of _par_depth + 1 levels
         """
         return self._rightmost_branches[0]
+
+    @property
+    def tree_text(self) -> list[list[list[list[str]]]]:
+        """All collected paragraphs as a lists of strings.
+
+        :return: a string of all text in the tree
+        """
+        return get_par_strings(self.tree)
+        # TODO: use this property for output instead of DocxOutput._get_runs
 
     @property
     def caret(self) -> list[str | list[str]]:
@@ -287,7 +339,7 @@ class DepthCollector:
             self._raise_caret()
         self.set_caret(depth)
 
-    def insert(self, item: list[str]) -> None:
+    def insert(self, par: Par) -> None:
         """Add item at self._par_depth. Add branches if necessary to reach depth.
 
         :param item: list of strings to insert at caret
@@ -295,8 +347,10 @@ class DepthCollector:
         This dumps the contents of the most recently closed paragraph into the
         _rightmost_branches collector.
         """
+        # TODO: see if this is still used
         self.set_caret(self._par_depth)
-        self._rightmost_branches[-1].append(item)
+        self._rightmost_branches[-1].append(par)
+        # self._rightmost_branches[-1].append(item)
 
     def add_text_into_open_run(self, item: str) -> None:
         """
@@ -307,7 +361,7 @@ class DepthCollector:
         This is for formatting tags and other text that appears between run tags. All
         entries to ``add_text_into_open_run`` will be merged together.
         """
-        if self.xml2html_format:
+        if self._xml2html_format:
             item = item.replace("&", "&amp;")
             item = item.replace("<", "&lt;")
             item = item.replace(">", "&gt;")

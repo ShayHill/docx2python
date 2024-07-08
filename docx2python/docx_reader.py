@@ -18,6 +18,8 @@ files is accessible through the ``DocxContent`` class. This class holds file
 instances and decodes shared non-content in a docx file structure.
 """
 
+# TODO: factor out all TablesList type hints?
+
 from __future__ import annotations
 
 import copy
@@ -29,15 +31,16 @@ from dataclasses import dataclass
 from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 from lxml import etree
 from typing_extensions import Self
 
+from docx2python import depth_collector
 from docx2python.attribute_register import XML2HTML_FORMATTER
 from docx2python.docx_context import collect_numFmts, collect_rels
-from docx2python.docx_text import TablesList, get_text, new_depth_collector
+from docx2python.docx_text import get_text, new_depth_collector
 from docx2python.merge_runs import merge_elems
 
 if TYPE_CHECKING:
@@ -45,7 +48,7 @@ if TYPE_CHECKING:
 
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
-    from docx2python.depth_collector import DepthCollector
+    from docx2python.depth_collector import DepthCollector, Par
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 
@@ -238,16 +241,23 @@ class File:
         return self.__depth_collector
 
     @property
-    def content(self) -> list[list[list[list[str]]]]:
+    def content(self) -> list[list[list[Par]]]:
+        # TODO: fix type hint and docstring for File.content
         """Text extracted into a 5-layer-deep nested list of strings.
 
         :return: Text extracted into a 5-layer-deep nested list of strings.
         """
         return self.get_content()
 
-    def get_content(
-        self, root: EtreeElement | None = None
-    ) -> list[list[list[list[str]]]]:
+    @property
+    def text(self) -> list[list[list[list[str]]]]:
+        """Text extracted into a 5-layer-deep nested list of strings.
+
+        :return: Text extracted into a 5-layer-deep nested list of strings.
+        """
+        return self.get_text()
+
+    def get_content(self, root: EtreeElement | None = None) -> list[list[list[Par]]]:
         """
         The same content as property 'content' with optional given root.
 
@@ -256,8 +266,18 @@ class File:
         :return: Text extracted into a 5-layer-deep nested list of strings.
         """
         if root is None:
-            return cast(TablesList, self.depth_collector.tree)
+            return self.depth_collector.tree
         return get_text(self, root)
+
+    def get_text(self, root: EtreeElement | None = None) -> list[list[list[list[str]]]]:
+        """
+        The same content as property 'text' with optional given root.
+
+        :param root: Extract content of file from root down.
+            If root is not given, return full content of file.
+        :return: Text extracted into a 5-layer-deep nested list of strings.
+        """
+        return depth_collector.get_par_strings(self.get_content(root))
 
 
 @dataclass

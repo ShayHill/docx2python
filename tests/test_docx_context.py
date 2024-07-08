@@ -44,7 +44,7 @@ class TestSaveDocx:
             with_text_replaced = os.path.join(temp_dir, "with_text_replaced.docx")
             input_context.save(with_text_replaced)
             with DocxReader(with_text_replaced) as output_context:
-                output_runs = output_context.file_of_type("officeDocument").content
+                output_runs = output_context.file_of_type("officeDocument").text
         output_text = "".join(iter_at_depth(output_runs, 5))
         assert "bullet" not in output_text
         assert "BULLET" in output_text

@@ -12,15 +12,15 @@ Content in the extracted docx is found in the ``word`` folder:
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING, List, Sequence, cast
+from typing import TYPE_CHECKING, List, Sequence
 
 from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.bullets_and_numbering import BulletGenerator
-from docx2python.depth_collector import DepthCollector, Run
+from docx2python.depth_collector import DepthCollector, Par, get_par_strings
 from docx2python.forms import get_checkBox_entry, get_ddList_entry
 from docx2python.iterators import iter_at_depth
 from docx2python.namespace import qn
-from docx2python.text_runs import gather_Pr, get_pStyle
+from docx2python.text_runs import gather_Pr
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
@@ -98,7 +98,7 @@ def _get_text_below(file: File, root: EtreeElement) -> str:
     :param root: the root element of the document
     :return: a string of all text in the document
     """
-    content_beneath_root = [x for y in [get_text(file, z) for z in root] for x in y]
+    content_beneath_root = [x for y in [ggget_text(file, z) for z in root] for x in y]
     return flatten_text(content_beneath_root, file.context.do_pStyle)
 
 
@@ -156,9 +156,7 @@ class TagRunner:
 
     def _open_paragraph(self, tree: EtreeElement) -> bool:
         """Open a paragraph."""
-        par = self.tables.commence_paragraph(tree)
-        if self.file.context.do_pStyle:
-            par.runs.insert(0, Run([], get_pStyle(tree) or "None"))
+        _ = self.tables.commence_paragraph(tree)
         self.tables.insert_text_as_new_run(self.bullets.get_bullet(tree))
         return True
 
@@ -382,7 +380,8 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
     return tag_runner.tables
 
 
-def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
+# TODO: factor this into get_text and get_content
+def get_text(file: File, root: EtreeElement | None = None) -> list[list[list[Par]]]:
     """Xml as a string to a list of cell strings.
 
     :param file: File instance from which text will be extracted.
@@ -399,7 +398,29 @@ def get_text(file: File, root: EtreeElement | None = None) -> TablesList:
     ``[table][row][cell][paragraph]`` is a string
     """
     tables = new_depth_collector(file, root)
-    return cast(TablesList, tables.tree)
+    return tables.tree
+
+
+# TODO: eventually rename this into get_text and get_text into get_content
+def ggget_text(
+    file: File, root: EtreeElement | None = None
+) -> list[list[list[list[str]]]]:
+    """Xml as a string to a list of cell strings.
+
+    :param file: File instance from which text will be extracted.
+    :param root: Optionally extract content from a single element.
+        If None, root_element of file will be used.
+    :return: A 5-deep nested list of strings.
+
+    Sorts the text into the DepthCollector instance, five-levels deep
+
+    ``[table][row][cell][paragraph][run]`` is a string
+
+    Joins the runs before returning, so return list will be
+
+    ``[table][row][cell][paragraph][run]`` is a string
+    """
+    return get_par_strings(get_text(file, root))
 
 
 def flatten_text(text: TablesList, do_pStyle: bool) -> str:
@@ -408,10 +429,14 @@ def flatten_text(text: TablesList, do_pStyle: bool) -> str:
     :param text: A 5-deep nested list of strings.
     :return: A string.
     """
+    pars = ["".join(x) for x in iter_at_depth(text, 4)]
+    return "\n\n".join(pars)
+    # TODO: clean this up
     if do_pStyle is True:
         # Paragraph descriptors have been inserted as the first run of each
         # paragraph. Take them out.
-        pars = ["".join(x[1:]) for x in iter_at_depth(text, 4)]
+        pars = [[x.pStyle, *x.strings] for x in iter_at_depth(text, 4)]
     else:
-        pars = ["".join(x) for x in iter_at_depth(text, 4)]
-    return "\n\n".join(pars)
+        pars = [x.strings for x in iter_at_depth(text, 4)]
+
+    return "\n\n".join("".join(x) for x in pars)

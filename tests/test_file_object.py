@@ -24,7 +24,7 @@ class TestFileObject:
         context = DocxReader(RESOURCES / "example.docx")
         assert (
             full_extraction.body_runs
-            == context.file_of_type("officeDocument").get_content()
+            == context.file_of_type("officeDocument").get_text()
         )
         context.close()
         full_extraction.close()
@@ -43,6 +43,6 @@ class TestFileObject:
         )
         assert [
             [[[full_extraction.body_runs[0][0][0][0]]]]
-        ] == document_xml.get_content(first_par)
+        ] == document_xml.get_text(first_par)
         context.close()
         full_extraction.close()
