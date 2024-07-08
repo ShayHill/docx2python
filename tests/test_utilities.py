@@ -47,6 +47,7 @@ class TestSearchReplace:
             )
             with docx2python(output_filename, html=html) as output_doc:
                 result = output_doc.text
+
             assert result == expect
 
     def test_ampersand(self) -> None:

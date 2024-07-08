@@ -33,10 +33,20 @@ from __future__ import annotations
 
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Iterator, cast
+from typing import TYPE_CHECKING, Any, Iterable, Iterator, cast
+
+from lxml.etree import _Element as EtreeElement  # type: ignore
 
 from docx2python.iterators import enum_at_depth
-from docx2python.text_runs import html_close, html_open
+from docx2python.text_runs import (
+    get_paragraph_formatting,
+    get_run_formatting,
+    html_close,
+    html_open,
+)
+
+if TYPE_CHECKING:
+    from docx2python.docx_reader import File
 
 
 @dataclass
@@ -79,7 +89,7 @@ class CaretDepthError(Exception):
 class DepthCollector:
     """Insert items into a tree at a consistent depth."""
 
-    def __init__(self) -> None:
+    def __init__(self, file: File) -> None:
         """
         Record item depth and initiate data container.
 
@@ -87,6 +97,7 @@ class DepthCollector:
             may appear above. I.e., this is how many brackets to open before inserting
             an item. E.g., item_depth = 3 => [[['item']]].
         """
+        self.xml2html_format = file.context.xml2html_format
         self._par_depth = 4
 
         self._rightmost_branches: list[Any] = [[]]
@@ -153,13 +164,17 @@ class DepthCollector:
         """
         return [x for x in (str(x) for x in runs) if x]
 
-    def commence_paragraph(self, html_style: list[str] | None = None) -> Par:
+    def commence_paragraph(self, elem: EtreeElement | None = None) -> Par:
         """Gather any cached runs and open a new paragraph.
 
-        :param html_style: html style to apply to the paragraph
+        :param elem: the paragraph element (for extracting style information)
         :return: the new paragraph
         """
+        html_style: list[str] | None = None
+        if elem is not None:
+            html_style = get_paragraph_formatting(elem, self.xml2html_format)
         html_style = html_style or []
+
         new_par = Par(html_style, [*self.orphan_runs, Run([], html_open(html_style))])
         self.orphan_runs = []
         self.open_pars.append(new_par)
@@ -171,11 +186,15 @@ class DepthCollector:
         old_par.runs.append(Run([], html_close(old_par.html_style)))
         self.insert(old_par.strings)
 
-    def commence_run(self, html_style: list[str] | None = None) -> None:
+    def commence_run(self, elem: EtreeElement | None = None) -> None:
         """Open a new run and add it to the current paragraph.
 
-        :param html_style: html style to apply to the run
+        :param elem: the run element (for extracting style information)
         """
+        html_style: list[str] | None = None
+        if elem is not None:
+            html_style = get_run_formatting(elem, self.xml2html_format)
+        html_style = html_style or []
         self._open_runs.append(Run(html_style or []))
 
     def conclude_run(self) -> None:
@@ -287,6 +306,18 @@ class DepthCollector:
 
         This is for formatting tags and other text that appears between run tags. All
         entries to ``add_text_into_open_run`` will be merged together.
+        """
+        if self.xml2html_format:
+            item = item.replace("&", "&amp;")
+            item = item.replace("<", "&lt;")
+            item = item.replace(">", "&gt;")
+        self._open_run.text += item
+
+    def add_code_into_open_run(self, item: str) -> None:
+        """
+        Add text into previous run without escaping symbols.
+
+        :param item: string to insert into previous run
         """
         self._open_run.text += item
 

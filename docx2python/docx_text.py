@@ -20,16 +20,12 @@ from docx2python.depth_collector import DepthCollector, Run
 from docx2python.forms import get_checkBox_entry, get_ddList_entry
 from docx2python.iterators import iter_at_depth
 from docx2python.namespace import qn
-from docx2python.text_runs import (
-    gather_Pr,
-    get_paragraph_formatting,
-    get_pStyle,
-    get_run_formatting,
-)
+from docx2python.text_runs import gather_Pr, get_pStyle
 
 if TYPE_CHECKING:
-    from docx_reader import File
     from lxml.etree import _Element as EtreeElement  # type: ignore
+
+    from docx2python.docx_reader import File
 
 TablesList = List[List[List[List[str]]]]
 
@@ -112,8 +108,7 @@ class TagRunner:
     def __init__(self, file: File) -> None:
         """Gather context information necessary to perform some methods."""
         self.file = file
-        self.xml2html_format = file.context.xml2html_format
-        self.tables = DepthCollector()
+        self.tables = DepthCollector(file)
         self.bullets = BulletGenerator(file.context.numId2numFmts)
 
     def open(self, tree: EtreeElement) -> bool:
@@ -161,8 +156,7 @@ class TagRunner:
 
     def _open_paragraph(self, tree: EtreeElement) -> bool:
         """Open a paragraph."""
-        par_formatting = get_paragraph_formatting(tree, self.xml2html_format)
-        par = self.tables.commence_paragraph(par_formatting)
+        par = self.tables.commence_paragraph(tree)
         if self.file.context.do_pStyle:
             par.runs.insert(0, Run([], get_pStyle(tree) or "None"))
         self.tables.insert_text_as_new_run(self.bullets.get_bullet(tree))
@@ -170,7 +164,7 @@ class TagRunner:
 
     def _open_run(self, tree: EtreeElement) -> bool:
         """Open a run."""
-        self.tables.commence_run(get_run_formatting(tree, self.xml2html_format))
+        self.tables.commence_run(tree)
         return True
 
     def _open_comment_range_end(self, tree: EtreeElement) -> bool:
@@ -186,10 +180,6 @@ class TagRunner:
     def _open_text(self, tree: EtreeElement) -> bool:
         """Open a text. These do not all contain text."""
         text = tree.text or ""
-        if self.xml2html_format:
-            text = text.replace("&", "&amp;")
-            text = text.replace("<", "&lt;")
-            text = text.replace(">", "&gt;")
         self.tables.add_text_into_open_run(text)
         return True
 
@@ -206,7 +196,7 @@ class TagRunner:
     def _open_br(self, tree: EtreeElement) -> bool:
         """Open a break."""
         _ = tree
-        self.tables.add_text_into_open_run("\n")
+        self.tables.add_code_into_open_run("\n")
         return True
 
     def _open_sym(self, tree: EtreeElement) -> bool:
@@ -214,7 +204,7 @@ class TagRunner:
         font = str(tree.attrib.get(qn(tree, "w:font")))
         char = str(tree.attrib.get(qn(tree, "w:char")))
         if char:
-            self.tables.add_text_into_open_run(
+            self.tables.add_code_into_open_run(
                 f"<span style=font-family:{font}>&#x0{char[1:]};</span>"
             )
         return True
@@ -372,6 +362,7 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
         :param tree: An Element from an xml file (etree)
         :effect: Adds text cells to outer variable `tables`.
         """
+        # TODO: see why recurse_into_tree is defined twice
         recurse_into_tree = True
         recurse_into_tree = tag_runner.open(tree)
 
