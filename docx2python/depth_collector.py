@@ -75,10 +75,6 @@ class Par:
     pstyle: str
     runs: list[Run] = field(default_factory=list)
 
-    def __post_init__(self) -> None:
-        """Add an empty run to the paragraph"""
-        self.runs.append(Run([], html_open(self.html_style)))
-
     @property
     def strings(self) -> list[str]:
         """Return a list of strings from the runs
