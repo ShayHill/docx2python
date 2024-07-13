@@ -135,8 +135,7 @@ def get_headings(path_in: Path | str) -> Iterator[list[str]]:
     Else, paragraphs style will be "".
     """
     heading_pattern = re.compile(r"Heading\d")
-    extraction = docx2python(path_in, paragraph_styles=True)
-    for par in iter_at_depth(extraction.document_runs, 4):
-        if re.match(heading_pattern, par[0]):
-            yield par
-    extraction.close()
+    with docx2python(path_in, html=True) as extraction:
+        for par in iter_at_depth(extraction.document_pars, 4):
+            if re.match(heading_pattern, par.style):
+                yield par.strings

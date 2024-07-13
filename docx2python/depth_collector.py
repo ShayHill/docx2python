@@ -72,7 +72,7 @@ class Par:
     """A text paragraph. Html styles and a list of run strings"""
 
     html_style: list[str]
-    pstyle: str
+    style: str
     runs: list[Run] = field(default_factory=list)
 
     @property
@@ -130,7 +130,6 @@ class DepthCollector:
             may appear above. I.e., this is how many brackets to open before inserting
             an item. E.g., item_depth = 3 => [[['item']]].
         """
-        self._do_pStyle = file.context.do_pStyle
         self._xml2html_format = file.context.xml2html_format
         self._par_depth = 4
 
@@ -209,7 +208,7 @@ class DepthCollector:
             html_style = get_paragraph_formatting(elem, self._xml2html_format) or []
 
         pStyle = ""
-        if elem is not None and self._do_pStyle:
+        if elem is not None:
             pStyle = get_pStyle(elem)
 
         new_par = Par(

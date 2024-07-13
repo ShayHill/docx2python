@@ -290,7 +290,6 @@ class DocxReader:
         self,
         docx_filename: Path | str | BytesIO,
         html: bool = False,
-        paragraph_styles: bool = False,
         duplicate_merged_cells: bool = False,
     ) -> None:
         """Initialize DocxReader instance.
@@ -301,7 +300,6 @@ class DocxReader:
         :param duplicate_merged_cells: If True, duplicate text in merged cells.
         """
         self.docx_filename = docx_filename
-        self.do_pStyle = paragraph_styles
         self.duplicate_merged_cells = duplicate_merged_cells
 
         if html:

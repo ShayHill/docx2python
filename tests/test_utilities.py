@@ -138,6 +138,6 @@ def test_get_links() -> None:
 def test_get_headings() -> None:
     """Return all headings (paragraphs with heading style) in document"""
     assert [x for x in get_headings(RESOURCES / "example.docx")] == [
-        ["Heading1", "Heading 1"],
-        ["Heading2", "Heading 2"],
+        ["<h1>", "Heading 1", "</h1>"],
+        ["<h2>", "Heading 2", "</h2>"],
     ]

@@ -193,7 +193,10 @@ class TestHtmlFormatting:
     def test_paragraph_formatting(self) -> None:
         """Text formatting converted to html."""
         with docx2python(RESOURCES / "example.docx", html=True) as html_output:
-            assert html_output.body_runs[3] == [
+            # body_pars = html_output.body_pars
+            # styled = [(par.pstyle, par.strings) for par in iter_at_depth(body_pars[3], 3)]
+            # breakpoint()
+            expect = [
                 [
                     [
                         ["Text outside table"],
@@ -214,7 +217,8 @@ class TestHtmlFormatting:
                     ]
                 ]
             ]
-
+            result = html_output.body_runs[3]
+            assert result == expect
 
 class TestImageDir:
     """Write images out to file given an image directory."""

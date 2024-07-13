@@ -7,8 +7,8 @@
 
 from paragraphs import par
 
+from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 
@@ -21,148 +21,94 @@ class TestParStyles:
 
         :return:
         """
-        content = docx2python(RESOURCES / "example.docx", paragraph_styles=True)
-        assert content.document_runs == [
-            [[[["Header"]]]],
-            [
+        with docx2python(RESOURCES / "example.docx") as extraction:
+            document_pars = extraction.document_pars
+        styled = [(p.style, p.strings) for p in iter_at_depth(document_pars, 4)]
+        styled = [x for x in styled if x[1]]
+        expect = [
+            (
+                "Header",
                 [
-                    [
-                        [
-                            "Header",
-                            "Header text",
-                            par(
-                                """----Image alt text---->A close up of a
-                                logo\n\nDescription automatically generated<"""
-                            ),
-                            "----media/image1.png----",
-                        ]
-                    ]
-                ]
-            ],
-            [[[["Header"]]]],
-            [
-                [
-                    [
-                        ["ListParagraph", "I)\t", "expect I"],
-                        ["ListParagraph", "\tA)\t", "expect A"],
-                        ["ListParagraph", "\tB)\t", "expect B"],
-                        ["ListParagraph", "\t\t1)\t", "expect 1"],
-                        ["ListParagraph", "\t\t\ta)\t", "expect a"],
-                        ["ListParagraph", "\t\t\tb)\t", "expect b"],
-                        ["ListParagraph", "\t\t\t\t1)\t", "expect 1"],
-                        ["ListParagraph", "\t\t\t\t\ta)\t", "expect a"],
-                        ["ListParagraph", "\t\t\t\t\t\ti)\t", "expect i"],
-                        ["ListParagraph", "\t\t\t\t\t\tii)\t", "expect ii"],
-                        ["ListParagraph", "II)\t", "This should be II"],
-                        ["ListParagraph", "\tA)\t", "This should be A), not C)"],
-                    ]
+                    "Header text",
+                    "----Image alt text---->A close up of a logo\n\n"
+                    + "Description automatically generated<",
+                    "----media/image1.png----",
                 ],
+            ),
+            ("ListParagraph", ["I)\t", "expect I"]),
+            ("ListParagraph", ["\tA)\t", "expect A"]),
+            ("ListParagraph", ["\tB)\t", "expect B"]),
+            ("ListParagraph", ["\t\t1)\t", "expect 1"]),
+            ("ListParagraph", ["\t\t\ta)\t", "expect a"]),
+            ("ListParagraph", ["\t\t\tb)\t", "expect b"]),
+            ("ListParagraph", ["\t\t\t\t1)\t", "expect 1"]),
+            ("ListParagraph", ["\t\t\t\t\ta)\t", "expect a"]),
+            ("ListParagraph", ["\t\t\t\t\t\ti)\t", "expect i"]),
+            ("ListParagraph", ["\t\t\t\t\t\tii)\t", "expect ii"]),
+            ("ListParagraph", ["II)\t", "This should be II"]),
+            ("ListParagraph", ["\tA)\t", "This should be A), not C)"]),
+            ("ListParagraph", ["--\t", "bullet no indent"]),
+            ("ListParagraph", ["\t--\t", "bullet indent 1"]),
+            ("ListParagraph", ["\t\t--\t", "bullet indent 2"]),
+            ("", ["Bold"]),
+            ("", ["Italics"]),
+            ("", ["Underlined"]),
+            ("", ["Large Font"]),
+            ("", ["Colored"]),
+            ("", ["Large Colored"]),
+            ("", ["Large Bold"]),
+            ("", ["Large Bold Italics Underlined"]),
+            ("", ["Nested"]),
+            ("", ["Table"]),
+            ("", ["A"]),
+            ("", ["B"]),
+            ("", ["Tab", "\t", "delimited", "\t", "text"]),
+            ("", ["10 < 20 and 20 > 10"]),
+            ("", ["Text outside table"]),
+            ("", ["Reference footnote 1", "----footnote1----"]),
+            ("", ["Reference footnote 2", "----footnote2----"]),
+            ("", ["Reference endnote 1", "----endnote1----"]),
+            ("", ["Reference endnote 2", "----endnote2----"]),
+            ("Heading1", ["Heading 1"]),
+            ("Heading2", ["Heading 2"]),
+            (
+                "",
                 [
-                    [
-                        ["ListParagraph", "--\t", "bullet no indent"],
-                        ["ListParagraph", "\t--\t", "bullet indent 1"],
-                        ["ListParagraph", "\t\t--\t", "bullet indent 2"],
-                    ]
+                    "----Image alt text---->A jellyfish in water\n\n"
+                    + "Description automatically generated<",
+                    "----media/image2.jpg----",
                 ],
+            ),
+            (
+                "Footer",
                 [
-                    [
-                        ["None", "Bold"],
-                        ["None", "Italics"],
-                        ["None", "Underlined"],
-                        ["None", "Large Font"],
-                        ["None", "Colored"],
-                        ["None", "Large Colored"],
-                        ["None", "Large Bold"],
-                        ["None", "Large Bold Italics Underlined"],
-                    ]
+                    "Footer text",
+                    "----Image alt text---->A close up of a logo\n\n"
+                    + "Description automatically generated<",
+                    "----media/image1.png----",
                 ],
-                [],
-            ],
-            [
-                [[["None", "Nested"]], [["None", "Table"]]],
-                [[["None", "A"]], [["None", "B"]]],
-            ],
-            [
-                [[["None"]]],
-                [[["None", "Tab", "\t", "delimited", "\t", "text"]]],
-                [[["None", "10 < 20 and 20 > 10"]]],
-            ],
-            [
+            ),
+            ("FootnoteText", ["footnote1)\t", " First footnote"]),
+            (
+                "FootnoteText",
                 [
-                    [
-                        ["None", "Text outside table"],
-                        ["None", "Reference footnote 1", "----footnote1----"],
-                        ["None", "Reference footnote 2", "----footnote2----"],
-                        ["None", "Reference endnote 1", "----endnote1----"],
-                        ["None", "Reference endnote 2", "----endnote2----"],
-                        ["Heading1", "Heading 1"],
-                        ["Heading2", "Heading 2"],
-                        ["None"],
-                        [
-                            "None",
-                            par(
-                                """----Image alt text---->A jellyfish in
-                                water\n\nDescription automatically generated<"""
-                            ),
-                            "----media/image2.jpg----",
-                        ],
-                    ]
-                ]
-            ],
-            [[[["Footer"]]]],
-            [
+                    "footnote2)\t",
+                    " Second footnote",
+                    "----Image alt text---->A close up of a logo\n\n"
+                    + "Description automatically generated<",
+                    "----media/image1.png----",
+                ],
+            ),
+            ("EndnoteText", ["endnote1)\t", " First endnote"]),
+            (
+                "EndnoteText",
                 [
-                    [
-                        [
-                            "Footer",
-                            "Footer text",
-                            par(
-                                """----Image alt text---->A close up of a
-                                logo\n\nDescription automatically generated<"""
-                            ),
-                            "----media/image1.png----",
-                        ]
-                    ]
-                ]
-            ],
-            [[[["Footer"]]]],
-            [
-                [
-                    [["None"]],
-                    [["None"]],
-                    [["FootnoteText", "footnote1)\t", " First footnote"]],
-                    [
-                        [
-                            "FootnoteText",
-                            "footnote2)\t",
-                            " Second footnote",
-                            par(
-                                """----Image alt text---->A close up of a
-                                logo\n\nDescription automatically generated<"""
-                            ),
-                            "----media/image1.png----",
-                        ]
-                    ],
-                ]
-            ],
-            [
-                [
-                    [["None"]],
-                    [["None"]],
-                    [["EndnoteText", "endnote1)\t", " First endnote"]],
-                    [
-                        [
-                            "EndnoteText",
-                            "endnote2)\t",
-                            " Second endnote",
-                            par(
-                                """----Image alt text---->A close up of a
-                                logo\n\nDescription automatically generated<"""
-                            ),
-                            "----media/image1.png----",
-                        ]
-                    ],
-                ]
-            ],
+                    "endnote2)\t",
+                    " Second endnote",
+                    "----Image alt text---->A close up of a logo\n\n"
+                    + "Description automatically generated<",
+                    "----media/image1.png----",
+                ],
+            ),
         ]
-        content.close()
+        assert styled == expect

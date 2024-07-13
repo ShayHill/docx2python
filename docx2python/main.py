@@ -21,7 +21,6 @@ def docx2python(
     docx_filename: str | Path | BytesIO,
     image_folder: str | None = None,
     html: bool = False,
-    paragraph_styles: bool = False,
     extract_image: bool | None = None,
     duplicate_merged_cells: bool = False,
 ) -> DocxContent:
@@ -47,9 +46,7 @@ def docx2python(
             + "``docx2python(filename).write_images(image_folder)``. Images files are "
             + "available as before with ``docx2text(filename).images`` attribute."
         )
-    docx_context = DocxReader(
-        docx_filename, html, paragraph_styles, duplicate_merged_cells
-    )
+    docx_context = DocxReader(docx_filename, html, duplicate_merged_cells)
     docx_content = DocxContent(docx_context, locals())
     if image_folder:
         _ = docx_content.images

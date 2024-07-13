@@ -57,6 +57,7 @@ from docx2python.iterators import (
 from docx2python.namespace import get_attrib_by_qn
 
 if TYPE_CHECKING:
+    from docx2python.depth_collector import Par
     from docx2python.docx_reader import DocxReader
     from docx2python.docx_text import TablesList
 
@@ -95,85 +96,167 @@ class DocxContent:
 
     def __getattr__(self, name: str) -> Any:
         """
-        Create depth-four paragraph tables from depth-five run tables.
+        Create sub-attributes for docx content.
 
         :param name: name of an internal docx xml file
         :return: extracted text from named file with runs joined together into
             paragraphs.
         :raise AttributeError: if "name" file cannot be found
 
+        For supported docx content file types (header, footer, body (officeDocument),
+        footnotes, endnotes, documents), return docx 1.0 style paragraphs [[[str]]],
+        attribute_runs [[[[str]]]] or attribute_pars [[[Par]]] as appropriate.
+
         Docx2Python v1 joined runs into paragraphs [[[str]]] earlier in the code.
+
         Docx2Python v2 exposes runs [[[[str]]]] to the user, but still returns
         paragraphs by default.
+
+        Docx2Python v3 exposes Par and Run instances to the user, access these as
+        header_pars, footer_pars, etc.
         """
-        if name in {"header", "footer", "body", "footnotes", "endnotes"}:
+        if name in {"header", "footer", "body", "footnotes", "endnotes", "document"}:
             runs = getattr(self, name + "_runs")
             return join_leaves("", runs, 4)
+        if name in {
+            "header_runs",
+            "footer_runs",
+            "body_runs",
+            "footnotes_runs",
+            "endnotes_runs",
+            "document_runs",
+        }:
+            pars = getattr(self, name[:-5] + "_pars")
+            return get_par_strings(pars)
         msg = f"no attribute {name}"
         raise AttributeError(msg)
 
-    def _get_runs(self, type_: str) -> TablesList:
-        """Get text runs for an internal document type.
+    def _get_pars(self, type_: str) -> list[list[list[Par]]]:
+        """Get Par instances for an internal document type.
 
         :param type_: this package looks for any of
             ("header", "officeDocument", "footer", "footnotes", "endnotes")
             You can try others.
-        :return: text runs [[[[str]]]]
+        :return: text paragraphs [[[Par]]]
         """
-        content: list[list[list[list[str]]]] = []
+        content: list[list[list[Par]]] = []
         for file in self.docx_reader.files_of_type(type_):
-            content += file.text
+            content += file.content
         return content
 
     @property
-    def header_runs(self) -> TablesList:
-        """Get text runs for header files.
+    def header_pars(self) -> list[list[list[Par]]]:
+        """Get nested Par instances for header files.
 
-        :return: text runs [[[[str]]]]
+        :return: nested Par instances [[[Par]]]
         """
-        return self._get_runs("header")
+        return self._get_pars("header")
 
     @property
-    def footer_runs(self) -> TablesList:
-        """Get text runs for footer files.
+    def footer_pars(self) -> list[list[list[Par]]]:
+        """Get nested Par instances for footer files.
 
-        :return: text runs [[[[str]]]]
+        :return: nested Par instances [[[Par]]]
         """
-        return self._get_runs("footer")
+        return self._get_pars("footer")
 
     @property
-    def officeDocument_runs(self) -> TablesList:
-        """Get text runs for the main officeDocument file.
+    def officeDocument_pars(self) -> list[list[list[Par]]]:
+        """Get nested Par instances for the main officeDocument file.
 
-        :return: text runs [[[[str]]]]
+        :return: nested Par instances [[[Par]]]
         """
-        return self._get_runs("officeDocument")
+        return self._get_pars("officeDocument")
 
     @property
-    def body_runs(self) -> TablesList:
-        """Get text runs for the main officeDocument file.
+    def body_pars(self) -> list[list[list[Par]]]:
+        """Get nested Par instances for the main officeDocument file.
 
-        :return: text runs [[[[str]]]]
+        :return: nested Par instances [[[Par]]]
 
-        This is an alias for officeDocument_runs.
+        This is an alias for officeDocument_pars.
         """
-        return self.officeDocument_runs
+        return self.officeDocument_pars
 
     @property
-    def footnotes_runs(self) -> TablesList:
-        """Get text runs for footnotes files.
+    def footnotes_pars(self) -> list[list[list[Par]]]:
+        """Get nested Par instances for footnotes files.
 
-        :return: text runs [[[[str]]]]
+        :return: nested Par instances [[[Par]]]
         """
-        return self._get_runs("footnotes")
+        return self._get_pars("footnotes")
 
     @property
-    def endnotes_runs(self) -> TablesList:
-        """Get text runs for endnotes files.
+    def endnotes_pars(self) -> list[list[list[Par]]]:
+        """Get nested Par instances for endnotes files.
 
-        :return: text runs [[[[str]]]]
+        :return: nested Par instances [[[Par]]]
         """
-        return self._get_runs("endnotes")
+        return self._get_pars("endnotes")
+
+    @property
+    def document_pars(self) -> list[list[list[Par]]]:
+        """All docx x_pars properties concatenated.
+
+        :return: nested Par instances [[[Par]]]
+        """
+        return (
+            self.header_pars
+            + self.body_pars
+            + self.footer_pars
+            + self.footnotes_pars
+            + self.endnotes_pars
+        )
+
+    # @property
+    # def header_runs(self) -> TablesList:
+    #     """Get text runs for header files.
+
+    #     :return: text runs [[[[str]]]]
+    #     """
+    #     return self._get_runs("header")
+
+    # @property
+    # def footer_runs(self) -> TablesList:
+    #     """Get text runs for footer files.
+
+    #     :return: text runs [[[[str]]]]
+    #     """
+    #     return self._get_runs("footer")
+
+    # @property
+    # def officeDocument_runs(self) -> TablesList:
+    #     """Get text runs for the main officeDocument file.
+
+    #     :return: text runs [[[[str]]]]
+    #     """
+    #     return self._get_runs("officeDocument")
+
+    # @property
+    # def body_runs(self) -> TablesList:
+    #     """Get text runs for the main officeDocument file.
+
+    #     :return: text runs [[[[str]]]]
+
+    #     This is an alias for officeDocument_runs.
+    #     """
+    #     return self.officeDocument_runs
+
+    # @property
+    # def footnotes_runs(self) -> TablesList:
+    #     """Get text runs for footnotes files.
+
+    #     :return: text runs [[[[str]]]]
+    #     """
+    #     return self._get_runs("footnotes")
+
+    # @property
+    # def endnotes_runs(self) -> TablesList:
+    #     """Get text runs for endnotes files.
+
+    #     :return: text runs [[[[str]]]]
+    #     """
+    #     return self._get_runs("endnotes")
 
     @property
     def images(self) -> dict[str, bytes]:
