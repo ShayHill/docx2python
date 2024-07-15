@@ -44,7 +44,7 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.10.0
+  rev: v1.10.1
   hooks:
   - id: mypy
     name: mypy
@@ -158,7 +158,7 @@ repos:
   # C901 function is too complex
   # PLR0912 too many branches
   # PLR0915 too many statements
-  rev: 'v0.4.10'
+  rev: 'v0.5.2'
   hooks:
     - id: ruff
       exclude: "tests"
@@ -170,6 +170,6 @@ repos:
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.368
+  rev: v1.1.371
   hooks:
     - id: pyright
