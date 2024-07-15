@@ -14,7 +14,7 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING, List, Sequence
 
-from docx2python.attribute_register import Tags, get_prefixed_tag
+from docx2python.attribute_register import Tags, get_localname, get_prefixed_tag
 from docx2python.bullets_and_numbering import BulletGenerator
 from docx2python.depth_collector import DepthCollector, Par, get_par_strings
 from docx2python.forms import get_checkBox_entry, get_ddList_entry
@@ -27,6 +27,10 @@ if TYPE_CHECKING:
 
     from docx2python.docx_reader import File
 
+ParsTable = List[List[List[List[Par]]]]
+TextTable = List[List[List[List[List[str]]]]]
+
+# TODO: factor out TablesList
 TablesList = List[List[List[List[str]]]]
 
 
@@ -120,7 +124,7 @@ class TagRunner:
         `open` methods will reture True if the element is to be recursed into.
         """
         tree_depth = _get_elem_depth(tree)
-        self.tables.set_caret(tree_depth)
+        self.tables.set_caret(tree_depth, tree)
 
         # not all tags are in the attribute register
         try:
@@ -381,9 +385,7 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
     return tag_runner.tables
 
 
-def get_file_content(
-    file: File, root: EtreeElement | None = None
-) -> list[list[list[Par]]]:
+def get_file_content(file: File, root: EtreeElement | None = None) -> ParsTable:
     """Extract file content as a nested list of Par instances.
 
     :param file: File instance from which text will be extracted.
@@ -397,9 +399,7 @@ def get_file_content(
     return tables.tree
 
 
-def get_file_text(
-    file: File, root: EtreeElement | None = None
-) -> list[list[list[list[str]]]]:
+def get_file_text(file: File, root: EtreeElement | None = None) -> TextTable:
     """Extract file content as a nested list of strings.
 
     :param file: File instance from which text will be extracted.
@@ -412,7 +412,7 @@ def get_file_text(
     return get_par_strings(get_file_content(file, root))
 
 
-def flatten_text(text: list[list[list[list[str]]]]) -> str:
+def flatten_text(text: TextTable) -> str:
     """Flatten a list of strings into a single string.
 
     :param text: A 5-deep nested list of strings.

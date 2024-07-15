@@ -57,9 +57,13 @@ from docx2python.iterators import (
 from docx2python.namespace import get_attrib_by_qn
 
 if TYPE_CHECKING:
+    from typing import List
+
     from docx2python.depth_collector import Par
     from docx2python.docx_reader import DocxReader
     from docx2python.docx_text import TablesList
+
+    ParsTable = List[List[List[List[Par]]]]
 
 
 @dataclass
@@ -131,7 +135,7 @@ class DocxContent:
         msg = f"no attribute {name}"
         raise AttributeError(msg)
 
-    def _get_pars(self, type_: str) -> list[list[list[Par]]]:
+    def _get_pars(self, type_: str) -> ParsTable:
         """Get Par instances for an internal document type.
 
         :param type_: this package looks for any of
@@ -139,13 +143,13 @@ class DocxContent:
             You can try others.
         :return: text paragraphs [[[Par]]]
         """
-        content: list[list[list[Par]]] = []
+        content: ParsTable = []
         for file in self.docx_reader.files_of_type(type_):
             content += file.content
         return content
 
     @property
-    def header_pars(self) -> list[list[list[Par]]]:
+    def header_pars(self) -> ParsTable:
         """Get nested Par instances for header files.
 
         :return: nested Par instances [[[Par]]]
@@ -153,7 +157,7 @@ class DocxContent:
         return self._get_pars("header")
 
     @property
-    def footer_pars(self) -> list[list[list[Par]]]:
+    def footer_pars(self) -> ParsTable:
         """Get nested Par instances for footer files.
 
         :return: nested Par instances [[[Par]]]
@@ -161,7 +165,7 @@ class DocxContent:
         return self._get_pars("footer")
 
     @property
-    def officeDocument_pars(self) -> list[list[list[Par]]]:
+    def officeDocument_pars(self) -> ParsTable:
         """Get nested Par instances for the main officeDocument file.
 
         :return: nested Par instances [[[Par]]]
@@ -169,7 +173,7 @@ class DocxContent:
         return self._get_pars("officeDocument")
 
     @property
-    def body_pars(self) -> list[list[list[Par]]]:
+    def body_pars(self) -> ParsTable:
         """Get nested Par instances for the main officeDocument file.
 
         :return: nested Par instances [[[Par]]]
@@ -179,7 +183,7 @@ class DocxContent:
         return self.officeDocument_pars
 
     @property
-    def footnotes_pars(self) -> list[list[list[Par]]]:
+    def footnotes_pars(self) -> ParsTable:
         """Get nested Par instances for footnotes files.
 
         :return: nested Par instances [[[Par]]]
@@ -187,7 +191,7 @@ class DocxContent:
         return self._get_pars("footnotes")
 
     @property
-    def endnotes_pars(self) -> list[list[list[Par]]]:
+    def endnotes_pars(self) -> ParsTable:
         """Get nested Par instances for endnotes files.
 
         :return: nested Par instances [[[Par]]]
@@ -195,7 +199,7 @@ class DocxContent:
         return self._get_pars("endnotes")
 
     @property
-    def document_pars(self) -> list[list[list[Par]]]:
+    def document_pars(self) -> ParsTable:
         """All docx x_pars properties concatenated.
 
         :return: nested Par instances [[[Par]]]
@@ -382,7 +386,7 @@ class DocxContent:
             comment_text = "\n\n".join(tree_pars)
 
             beg_ref, end_ref = comment_ranges[id_]
-            reference = "".join(x.value for x in all_runs[beg_ref:end_ref])
+            reference = "".join(y for _, y in all_runs[beg_ref:end_ref])
 
             comments.append((reference, author, date, comment_text))
         return comments

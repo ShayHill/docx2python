@@ -26,6 +26,7 @@ def test_comments() -> None:
     """Extract comments and some comment metadata."""
     pars = docx2python(RESOURCES / "comments.docx")
     comments = pars.comments
+
     pars.close()
     assert comments == [
         (

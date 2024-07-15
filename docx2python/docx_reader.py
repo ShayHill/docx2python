@@ -31,7 +31,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, List
 from warnings import warn
 
 from lxml import etree
@@ -42,6 +42,9 @@ from docx2python.attribute_register import XML2HTML_FORMATTER
 from docx2python.docx_context import collect_numFmts, collect_rels
 from docx2python.docx_text import get_file_content, new_depth_collector
 from docx2python.merge_runs import merge_elems
+
+ParsTable = List[List[List[List[depth_collector.Par]]]]
+TextTable = List[List[List[List[List[str]]]]]
 
 if TYPE_CHECKING:
     from io import BytesIO
@@ -241,7 +244,7 @@ class File:
         return self.__depth_collector
 
     @property
-    def content(self) -> list[list[list[Par]]]:
+    def content(self) -> ParsTable:
         # TODO: fix type hint and docstring for File.content
         """Text extracted into a 5-layer-deep nested list of strings.
 
@@ -250,14 +253,14 @@ class File:
         return self.get_content()
 
     @property
-    def text(self) -> list[list[list[list[str]]]]:
-        """Text extracted into a 5-layer-deep nested list of strings.
+    def text(self) -> TextTable:
+        """Text extracted into a 6-layer-deep nested list of strings.
 
-        :return: Text extracted into a 5-layer-deep nested list of strings.
+        :return: Text extracted into a 6-layer-deep nested list of strings.
         """
         return self.get_text()
 
-    def get_content(self, root: EtreeElement | None = None) -> list[list[list[Par]]]:
+    def get_content(self, root: EtreeElement | None = None) -> ParsTable:
         """
         The same content as property 'content' with optional given root.
 
@@ -269,7 +272,7 @@ class File:
             return self.depth_collector.tree
         return get_file_content(self, root)
 
-    def get_text(self, root: EtreeElement | None = None) -> list[list[list[list[str]]]]:
+    def get_text(self, root: EtreeElement | None = None) -> TextTable:
         """
         The same content as property 'text' with optional given root.
 

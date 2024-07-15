@@ -5,7 +5,7 @@
 
 ::
 
-    [  # tables
+    [  # document
         [  # table
             [  # row
                 [  # cell
@@ -31,10 +31,11 @@ Pass out of package with depth_collector_instance.tree.
 
 from __future__ import annotations
 
+import dataclasses
 from contextlib import suppress
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Iterable, Iterator, List, Union, cast
 
+from docx2python.attribute_register import get_localname
 from docx2python.iterators import enum_at_depth
 from docx2python.text_runs import (
     get_paragraph_formatting,
@@ -50,12 +51,12 @@ if TYPE_CHECKING:
     from docx2python.docx_reader import File
 
 
-@dataclass
+@dataclasses.dataclass
 class Run:
     """A text run. Html styles and text content"""
 
-    html_style: list[str] = field(default_factory=list)
-    text: str = field(default="")
+    html_style: list[str] = dataclasses.field(default_factory=list)
+    text: str = ""
 
     def __str__(self) -> str:
         """Return any text content in the run
@@ -67,13 +68,14 @@ class Run:
         return ""
 
 
-@dataclass
+@dataclasses.dataclass
 class Par:
     """A text paragraph. Html styles and a list of run strings"""
 
     html_style: list[str]
     style: str
-    runs: list[Run] = field(default_factory=list)
+    lineage: list[str | None]
+    runs: list[Run] = dataclasses.field(default_factory=list)
 
     @property
     def strings(self) -> list[str]:
@@ -84,6 +86,10 @@ class Par:
         return [x for x in (str(y) for y in self.runs) if x]
 
 
+ParsTable = List[List[List[List[Par]]]]
+TextTable = List[List[List[List[List[str]]]]]
+
+# TODO: get rid of types NestedPars and NestedStrings
 NestedPars = List[Union[Par, "NestedPars"]]
 NestedStrings = List[Union[List[str], "NestedStrings"]]
 
@@ -104,7 +110,7 @@ def _nested_pars_to_nested_strings(nested_pars: NestedPars) -> NestedStrings:
     ]
 
 
-def get_par_strings(nested_pars: list[list[list[Par]]]) -> list[list[list[list[str]]]]:
+def get_par_strings(nested_pars: ParsTable) -> TextTable:
     """Convert DepthCollector's nested Par instances into a nested list of strings.
 
     :param nested_pars: a list of Par instances. These will be the first element in
@@ -112,7 +118,7 @@ def get_par_strings(nested_pars: list[list[list[Par]]]) -> list[list[list[list[s
     :return: a list of strings from the runs [[[[str]]]]
     """
     as_strings = _nested_pars_to_nested_strings(cast(NestedPars, nested_pars))
-    return cast(List[List[List[List[str]]]], as_strings)
+    return cast(List[List[List[List[List[str]]]]], as_strings)
 
 
 class CaretDepthError(Exception):
@@ -133,6 +139,7 @@ class DepthCollector:
         self._xml2html_format = file.context.xml2html_format
         self._par_depth = 4
 
+        self._lineage = ["document", None, None, None, None]
         self._rightmost_branches: list[Any] = [[]]
 
         self.open_pars: list[Par] = []
@@ -212,7 +219,10 @@ class DepthCollector:
             pStyle = get_pStyle(elem)
 
         new_par = Par(
-            html_style, pStyle, [*self.orphan_runs, Run([], html_open(html_style))]
+            html_style,
+            pStyle,
+            self._lineage,
+            [*self.orphan_runs, Run([], html_open(html_style))],
         )
         self.orphan_runs = []
         self.open_pars.append(new_par)
@@ -240,7 +250,7 @@ class DepthCollector:
         self.commence_run()
 
     @property
-    def tree(self) -> list[list[list[Par]]]:
+    def tree(self) -> ParsTable:
         """All collected paragraphs as Par instances.
 
         :return: a nested list of _par_depth + 1 levels
@@ -248,7 +258,7 @@ class DepthCollector:
         return self._rightmost_branches[0]
 
     @property
-    def tree_text(self) -> list[list[list[list[str]]]]:
+    def tree_text(self) -> TextTable:
         """All collected paragraphs as a lists of strings.
 
         :return: a string of all text in the tree
@@ -313,7 +323,7 @@ class DepthCollector:
             raise CaretDepthError("will not raise caret above root")
         self._rightmost_branches = self._rightmost_branches[:-1]
 
-    def set_caret(self, depth: None | int) -> None:
+    def set_caret(self, depth: None | int, elem: EtreeElement | None = None) -> None:
         """
         Set caret at given depth.
 
@@ -326,13 +336,14 @@ class DepthCollector:
         if depth is None:
             return
         if self.caret_depth == depth:
-            # placeholder for adding tag
+            self._lineage[depth] = None if elem is None else get_localname(elem)
             return
         if self.caret_depth < depth:
             self._drop_caret()
         elif self.caret_depth > depth:
+            self._lineage[self.caret_depth] = None
             self._raise_caret()
-        self.set_caret(depth)
+        self.set_caret(depth, elem)
 
     def insert(self, par: Par) -> None:
         """Add item at self._par_depth. Add branches if necessary to reach depth.
@@ -342,10 +353,8 @@ class DepthCollector:
         This dumps the contents of the most recently closed paragraph into the
         _rightmost_branches collector.
         """
-        # TODO: see if this is still used
         self.set_caret(self._par_depth)
         self._rightmost_branches[-1].append(par)
-        # self._rightmost_branches[-1].append(item)
 
     def add_text_into_open_run(self, item: str) -> None:
         """

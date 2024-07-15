@@ -5,11 +5,11 @@
 
 This package extracts docx text as::
 
-    [  # tables
+    [  # tables (full document contents)
         [  # table
             [  # row
                 [  # cell
-                    ""  # paragraph
+                    "" or [""] or Par # paragraph
                 ]
             ]
         ]
@@ -21,7 +21,18 @@ These functions help manipulate that deep nest without deep indentation.
 
 from __future__ import annotations
 
-from typing import Any, Iterable, Iterator, List, NamedTuple, Sequence, Union, cast
+import copy
+from typing import (
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Literal,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 TablesList = List[List[List[List[Any]]]]
 
@@ -29,6 +40,15 @@ TablesList = List[List[List[List[Any]]]]
 CollTL = List[Union[str, "CollTL"]]
 
 
+_T = TypeVar("_T")
+_U = TypeVar("_U")
+
+IndexedItem = str
+
+TextTable = List[List[List[List[List[str]]]]]
+
+
+# TODO: remove depth argument from join_leaves. Make it join_runs
 def join_leaves(
     joint: str, str_tree: CollTL, to_depth: int, _depth: int = 0
 ) -> CollTL | str:
@@ -86,15 +106,57 @@ def join_leaves(
     return [join_leaves(joint, cast(CollTL, b), to_depth, _depth + 1) for b in str_tree]
 
 
-class IndexedItem(NamedTuple):
-    """The address (indices in a nested list) of an item and the item itself."""
+@overload
+def enum_at_depth(
+    nested: Iterable[_T], depth: Literal[1]
+) -> Iterator[tuple[tuple[int,], _T]]:
+    ...
 
-    # TODO: rename index for docx 3.0
-    index: tuple[int, ...]  # type: ignore
-    value: Any
+
+@overload
+def enum_at_depth(
+    nested: Iterable[Iterable[_T]], depth: Literal[2]
+) -> Iterator[tuple[tuple[int, int], _T]]:
+    ...
 
 
-def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
+@overload
+def enum_at_depth(
+    nested: Iterable[Iterable[Iterable[_T]]], depth: Literal[3]
+) -> Iterator[tuple[tuple[int, int, int], _T]]:
+    ...
+
+
+@overload
+def enum_at_depth(
+    nested: Iterable[Iterable[Iterable[Iterable[_T]]]], depth: Literal[4]
+) -> Iterator[tuple[tuple[int, int, int, int], _T]]:
+    ...
+
+
+@overload
+def enum_at_depth(
+    nested: Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]], depth: Literal[5]
+) -> Iterator[tuple[tuple[int, int, int, int, int], _T]]:
+    ...
+
+
+def enum_at_depth(
+    nested: (
+        Iterable[_T]
+        | Iterable[Iterable[_T]]
+        | Iterable[Iterable[Iterable[_T]]]
+        | Iterable[Iterable[Iterable[Iterable[_T]]]]
+        | Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]]
+    ),
+    depth: Literal[1, 2, 3, 4, 5],
+) -> (
+    Iterator[tuple[tuple[int,], _T]]
+    | Iterator[tuple[tuple[int, int], _T]]
+    | Iterator[tuple[tuple[int, int, int], _T]]
+    | Iterator[tuple[tuple[int, int, int, int], _T]]
+    | Iterator[tuple[tuple[int, int, int, int, int], _T]]
+):
     """Enumerate over a nested sequence at depth.
 
     :param nested: a (nested) sequence
@@ -106,7 +168,10 @@ def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
         * ...
 
     :return: tuples (tuple "address", item)
-    :raise ValueError: if depth is less than 1
+    :raise ValueError: if depth is less than 1 or more than 5. These hard limits (and
+        very not-dry function) are how I return nice types and keep python 3.8
+        compatibility. There are the only depths you will need for the return types
+        in this project.
 
     >>> sequence = [
     ...     [[["a", "b"], ["c"]], [["d", "e"]]],
@@ -114,73 +179,106 @@ def enum_at_depth(nested: Sequence[Any], depth: int) -> Iterator[IndexedItem]:
     ... ]
 
     >>> for x in enum_at_depth(sequence, 1): print(x)
-    IndexedItem(index=(0,), value=[[['a', 'b'], ['c']], [['d', 'e']]])
-    IndexedItem(index=(1,), value=[[['f'], ['g', 'h']]])
+    ((0,), [[['a', 'b'], ['c']], [['d', 'e']]])
+    ((1,), [[['f'], ['g', 'h']]])
 
     >>> for x in enum_at_depth(sequence, 2): print(x)
-    IndexedItem(index=(0, 0), value=[['a', 'b'], ['c']])
-    IndexedItem(index=(0, 1), value=[['d', 'e']])
-    IndexedItem(index=(1, 0), value=[['f'], ['g', 'h']])
+    ((0, 0), [['a', 'b'], ['c']])
+    ((0, 1), [['d', 'e']])
+    ((1, 0), [['f'], ['g', 'h']])
 
     >>> for x in enum_at_depth(sequence, 3): print(x)
-    IndexedItem(index=(0, 0, 0), value=['a', 'b'])
-    IndexedItem(index=(0, 0, 1), value=['c'])
-    IndexedItem(index=(0, 1, 0), value=['d', 'e'])
-    IndexedItem(index=(1, 0, 0), value=['f'])
-    IndexedItem(index=(1, 0, 1), value=['g', 'h'])
+    ((0, 0, 0), ['a', 'b'])
+    ((0, 0, 1), ['c'])
+    ((0, 1, 0), ['d', 'e'])
+    ((1, 0, 0), ['f'])
+    ((1, 0, 1), ['g', 'h'])
 
     >>> for x in enum_at_depth(sequence, 4): print(x)
-    IndexedItem(index=(0, 0, 0, 0), value='a')
-    IndexedItem(index=(0, 0, 0, 1), value='b')
-    IndexedItem(index=(0, 0, 1, 0), value='c')
-    IndexedItem(index=(0, 1, 0, 0), value='d')
-    IndexedItem(index=(0, 1, 0, 1), value='e')
-    IndexedItem(index=(1, 0, 0, 0), value='f')
-    IndexedItem(index=(1, 0, 1, 0), value='g')
-    IndexedItem(index=(1, 0, 1, 1), value='h')
+    ((0, 0, 0, 0), 'a')
+    ((0, 0, 0, 1), 'b')
+    ((0, 0, 1, 0), 'c')
+    ((0, 1, 0, 0), 'd')
+    ((0, 1, 0, 1), 'e')
+    ((1, 0, 0, 0), 'f')
+    ((1, 0, 1, 0), 'g')
+    ((1, 0, 1, 1), 'h')
+    """
+    if depth == 1:
+        nested = cast(List[_T], nested)
+        yield from (((i,), x) for i, x in enumerate(nested))
+        return
+    if depth == 2:
+        nested = cast(List[List[_T]], nested)
+        depth_minus_one = depth - 1
+        for i, x in enumerate(nested):
+            for j, y in enum_at_depth(x, depth_minus_one):
+                yield ((i, *j), y)
+    elif depth == 3:
+        nested = cast(List[List[List[_T]]], nested)
+        depth_minus_one = depth - 1
+        for i, x in enumerate(nested):
+            for j, y in enum_at_depth(x, depth_minus_one):
+                yield ((i, *j), y)
+    elif depth == 4:
+        nested = cast(List[List[List[List[_T]]]], nested)
+        depth_minus_one = depth - 1
+        for i, x in enumerate(nested):
+            for j, y in enum_at_depth(x, depth_minus_one):
+                yield ((i, *j), y)
+    elif depth == 5:
+        nested = cast(List[List[List[List[List[_T]]]]], nested)
+        depth_minus_one = depth - 1
+        for i, x in enumerate(nested):
+            for j, y in enum_at_depth(x, depth_minus_one):
+                yield ((i, *j), y)
+    else:
+        msg = "depth argument must be 1, 2, 3, 4, or 5"
+        raise ValueError(msg)
 
-    >>> list(enum_at_depth(sequence, 5))
-    Traceback (most recent call last):
+
+@overload
+def iter_at_depth(nested: Iterable[_T], depth: Literal[1]) -> Iterator[_T]:
     ...
-    TypeError: will not iterate over sequence item
-
-    This error is analogous to the ``TypeError: 'int' object is not iterable`` you
-    would see if attempting to enumerate over a non-iterable. In this case,
-    you've attempted to enumerate over an item that *may* be iterable, but is not of
-    the same type as the ``nested`` sequence argument. This type checking is how we
-    can safely descend into a nested list of strings.
-    """
-    if depth < 1:
-        raise ValueError("depth argument must be >= 1")
-    argument_type = type(nested)
-
-    def enumerate_next_depth(enumd: Iterable[IndexedItem]) -> Iterator[IndexedItem]:
-        """
-        Descend into a nested sequence, enumerating along descent
-
-        :param enumd: tuples (tuple of indices, sequences)
-        :return: updated index tuples with items from each sequence.
-        :raises TypeError: if the sequence is not of the same type as the ``nested``.
-            This will happen if you try to iterate into a string in a list of
-            strings.
-        """
-        sequence: Sequence[Any]
-        for index_tuple, sequence in enumd:
-            if not isinstance(sequence, argument_type):
-                raise TypeError("will not iterate over sequence item")
-            for i, item in enumerate(sequence):
-                yield IndexedItem((*index_tuple, i), item)
-
-    depth_n: Iterator[IndexedItem]
-    depth_n = (IndexedItem((i,), x) for i, x in enumerate(nested))
-    for _ in range(1, depth):
-        depth_n = enumerate_next_depth(depth_n)
-    return (x for x in depth_n)
 
 
-def iter_at_depth(nested: Sequence[Any], depth: int) -> Iterator[Any]:
-    """
-    Iterate over a nested sequence at depth.
+@overload
+def iter_at_depth(nested: Iterable[Iterable[_T]], depth: Literal[2]) -> Iterator[_T]:
+    ...
+
+
+@overload
+def iter_at_depth(
+    nested: Iterable[Iterable[Iterable[_T]]], depth: Literal[3]
+) -> Iterator[_T]:
+    ...
+
+
+@overload
+def iter_at_depth(
+    nested: Iterable[Iterable[Iterable[Iterable[_T]]]], depth: Literal[4]
+) -> Iterator[_T]:
+    ...
+
+
+@overload
+def iter_at_depth(
+    nested: Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]], depth: Literal[5]
+) -> Iterator[_T]:
+    ...
+
+
+def iter_at_depth(
+    nested: (
+        Iterable[_T]
+        | Iterable[Iterable[_T]]
+        | Iterable[Iterable[Iterable[_T]]]
+        | Iterable[Iterable[Iterable[Iterable[_T]]]]
+        | Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]]
+    ),
+    depth: Literal[1, 2, 3, 4, 5],
+) -> Iterator[_T]:
+    """Iterate over a nested sequence at depth.
 
     :param nested: a (nested) sequence
     :param depth: depth of iteration
@@ -191,6 +289,7 @@ def iter_at_depth(nested: Sequence[Any], depth: int) -> Iterator[Any]:
         * ...
 
     :return: sub-sequences or items in nested
+    :raise ValueError: if depth is less than 1 or more than 5.
 
     >>> sequence = [
     ...     [[["a", "b"], ["c"]], [["d", "e"]]],
@@ -216,114 +315,126 @@ def iter_at_depth(nested: Sequence[Any], depth: int) -> Iterator[Any]:
     >>> list(iter_at_depth(sequence, 4))
     ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     """
-    return (value for _, value in enum_at_depth(nested, depth))
+    if depth == 1:
+        nested = cast(List[_T], nested)
+        return (x for _, x in enum_at_depth(nested, depth))
+    if depth == 2:
+        nested = cast(List[List[_T]], nested)
+        return (x for _, x in enum_at_depth(nested, depth))
+    if depth == 3:
+        nested = cast(List[List[List[_T]]], nested)
+        return (x for _, x in enum_at_depth(nested, depth))
+    if depth == 4:
+        nested = cast(List[List[List[List[_T]]]], nested)
+        return (x for _, x in enum_at_depth(nested, depth))
+    if depth == 5:
+        nested = cast(List[List[List[List[List[_T]]]]], nested)
+        return (x for _, x in enum_at_depth(nested, depth))
+    msg = "depth argument must be 1, 2, 3, 4, or 5"
+    raise ValueError(msg)
 
 
-def iter_tables(tables: TablesList) -> Iterator[list[list[list[Any]]]]:
-    """
-    Iterate over ``tables[i]``
+def iter_tables(tables: Iterable[_T]) -> Iterator[_T]:
+    """Iterate over ``tables[i]``
 
     Analog of iter_at_depth(tables, 1)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return: ``tables[0], tables[1], ... tables[i]``
     """
     return iter_at_depth(tables, 1)
 
 
-def iter_rows(tables: TablesList) -> Iterator[list[list[Any]]]:
-    """
-    Iterate over ``tables[:][j]``
+def iter_rows(tables: Iterable[Iterable[_T]]) -> Iterator[_T]:
+    """Iterate over ``tables[:][j]``
 
     Analog of iter_at_depth(tables, 2)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return: ``tables[0][0], tables[0][1], ... tables[i][j]``
     """
     return iter_at_depth(tables, 2)
 
 
-def iter_cells(tables: TablesList) -> Iterator[list[Any]]:
-    """
-    Iterate over ``tables[:][:][k]``
+def iter_cells(tables: Iterable[Iterable[Iterable[_T]]]) -> Iterator[_T]:
+    """Iterate over ``tables[:][:][k]``
 
     Analog of iter_at_depth(tables, 3)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return: ``tables[0][0][0], tables[0][0][1], ... tables[i][j][k]``
     """
     return iter_at_depth(tables, 3)
 
 
-def iter_paragraphs(tables: TablesList) -> Iterator[str]:
-    """
-    Iterate over ``tables[:][:][:][l]``
+def iter_paragraphs(tables: Iterable[Iterable[Iterable[Iterable[_T]]]]) -> Iterator[_T]:
+    """Iterate over ``tables[:][:][:][l]``
 
     Analog of iter_at_depth(tables, 4)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return: ``tables[0][0][0][0], tables[0][0][0][1], ... tables[i][j][k][l]``
     """
     return iter_at_depth(tables, 4)
 
 
-def enum_tables(tables: TablesList) -> Iterator[IndexedItem]:
-    """
-    Enumerate over ``tables[i]``
+def enum_tables(tables: Iterable[_T]) -> Iterator[tuple[tuple[int], _T]]:
+    """Enumerate over ``tables[i]``
 
     Analog of enum_at_depth(tables, 1)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return:
         ``((0, ), tables[0]) ... , ((i, ), tables[i])``
     """
     return enum_at_depth(tables, 1)
 
 
-def enum_rows(tables: TablesList) -> Iterator[IndexedItem]:
-    """
-    Enumerate over ``tables[:][j]``
+def enum_rows(tables: Iterable[Iterable[_T]]) -> Iterator[tuple[tuple[int, int], _T]]:
+    """Enumerate over ``tables[:][j]``
 
     Analog of enum_at_depth(tables, 2)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return:
         ``((0, 0), tables[0][0]) ... , ((i, j), tables[i][j])``
     """
     return enum_at_depth(tables, 2)
 
 
-def enum_cells(tables: TablesList) -> Iterator[IndexedItem]:
-    """
-    Enumerate over ``tables[:][:][k]``
+def enum_cells(
+    tables: Iterable[Iterable[Iterable[_T]]],
+) -> Iterator[tuple[tuple[int, int, int], _T]]:
+    """Enumerate over ``tables[:][:][k]``
 
     Analog of enum_at_depth(tables, 3)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return:
         ``((0, 0, 0), tables[0][0][0]) ... , ((i, j, k), tables[i][j][k])``
     """
     return enum_at_depth(tables, 3)
 
 
-def enum_paragraphs(tables: TablesList) -> Iterator[IndexedItem]:
-    """
-    Enumerate over ``tables[:][:][:][l]``
+def enum_paragraphs(
+    tables: Iterable[Iterable[Iterable[Iterable[_T]]]],
+) -> Iterator[tuple[tuple[int, int, int, int], _T]]:
+    """Enumerate over ``tables[:][:][:][l]``
 
     Analog of enum_at_depth(tables, 4)
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[Par]]]]``
     :return:
         ``((0, 0, 0, 0), tables[0][0][0][0]) ... , ((i, j, k, l), tables[i][j][k][l])``
     """
     return enum_at_depth(tables, 4)
 
 
-def get_html_map(tables: TablesList) -> str:
-    """
-    Create a visual map in html format.
+# TODO: track down callers for html map and see if they are calling with runs or pars
+def get_html_map(tables: TextTable) -> str:
+    """Create a visual map in html format.
 
-    :param tables: ``[[[["string"]]]]``
+    :param tables: ``[[[[["str"]]]]]``
     :return: html to show all strings with index tuples
 
     Create an html string that can be rendered in a browser to show the relative
@@ -334,9 +445,10 @@ def get_html_map(tables: TablesList) -> str:
     ``(0, 0, 0, 0) text``.
     """
     # prepend index tuple to each paragraph
-    tables_4deep = cast(List[List[List[List[str]]]], tables)
+    tables_4deep = cast(List[List[List[List[str]]]], copy.deepcopy(tables))
     for (i, j, k, m), paragraph in enum_at_depth(tables, 4):
-        tables_4deep[i][j][k][m] = " ".join([str((i, j, k, m)), paragraph])
+        par_text = "".join(paragraph)
+        tables_4deep[i][j][k][m] = " ".join([str((i, j, k, m)), par_text])
 
     # wrap each paragraph in <pre> tags
     tables_3deep = cast(List[List[List[str]]], tables_4deep)
