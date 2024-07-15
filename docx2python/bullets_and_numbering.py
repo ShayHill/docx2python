@@ -96,55 +96,113 @@ def _increment_list_counter(ilvl2count: defaultdict[str, int], ilvl: str) -> int
 
 
 class BulletGenerator:
-    """
-    Keep track of list counters and generate bullet strings.
+    """Keep track of list counters and generate bullet strings.
+
+    <w:p>
+        <w:pPr>
+            <w:numPr>
+                <w:ilvl w:val="0"/>   # indentation level
+                <w:numId w:val="9"/>  # index to (multi-level) list format
+            </w:numPr>
+        </wpPr>
+        <w:r>
+            <w:t>this text in numbered or bulleted list
+            </w:t>
+        </w:r>
+    </w:p>
     """
 
     def __init__(self, numId2numFmts: dict[str, list[str]]) -> None:
-        """
-        Set numId2numFmts. Initiate counters.
-        """
+        """Set numId2numFmts. Initiate counters."""
         self.numId2numFmts = numId2numFmts
         self.numId2count = _new_list_counter()
 
-    def get_bullet(self, paragraph: EtreeElement) -> str:
+    def _get_numPr(self, paragraph: EtreeElement) -> EtreeElement | None:
+        """Get the parent element of the numId and ilvl elements.
+
+        :param paragraph: <w:p> xml element
+        :return: <w:numPr> xml element or None if this fails.
         """
-        Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
+        # TODO: try skipping KeyError exception and run tests
+        try:
+            pPr = next(iterfind_by_qn(paragraph, "w:pPr"))
+            return next(iterfind_by_qn(pPr, "w:numPr"))
+        except (StopIteration, KeyError):
+            return None
+
+    def _get_numId(self, numPr: EtreeElement) -> str | None:
+        """Get the numId for the paragraph.
+
+        :param numPr: <w:numPr> xml element (see class docstring)
+        :return: numId as a string or None if this fails.
+
+        The numId is an integer (string of an integer) index to a list of multi-level
+        list formats. For each numId, there is a list of formats for each indentation
+        level.
+        """
+        try:
+            numId_element = next(iterfind_by_qn(numPr, "w:numId"))
+            return get_attrib_by_qn(numId_element, "w:val")
+        except (StopIteration, KeyError):
+            return None
+
+    def _get_ilvl(self, numPr: EtreeElement) -> str | None:
+        """Get the ilvl for the paragraph.
+
+        :param numPr: <w:numPr> xml element (see class docstring)
+        :return: ilvl as a string or None if this fails.
+
+        The ilvl is an integer (string of an integer) index of a multi-level list
+        formats. For each ilvl, there is a format.
+        """
+        try:
+            ilvl_element = next(iterfind_by_qn(numPr, "w:ilvl"))
+            return get_attrib_by_qn(ilvl_element, "w:val")
+        except (StopIteration, KeyError):
+            return None
+
+    def get_bullet_fmt(
+        self, paragraph: EtreeElement
+    ) -> tuple[str | None, str | None, int | None]:
+        """Expose the numId, ilvl, and number value of a numbered paragraph.
+
+        :param paragraph: <w:p> xml element
+        :return: numId (which list), ilvl (indentation level), number value
+
+        This will return None, None, None if the paragraph is not numbered.
+        """
+        numPr = self._get_numPr(paragraph)
+        if numPr is None:
+            return None, None, None
+        numId = self._get_numId(numPr)
+        ilvl = self._get_ilvl(numPr)
+        if numId is None or ilvl is None:
+            return numId, ilvl, None
+        return numId, ilvl, _increment_list_counter(self.numId2count[numId], str(ilvl))
+
+    def get_bullet(self, paragraph: EtreeElement) -> str:
+        """Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
 
         :param paragraph: <w:p> xml element
         :return: specified 'bullet' string or '' if paragraph is not numbered
 
-        <w:p>
-            <w:pPr>
-                <w:numPr>
-                    <w:ilvl w:val="0"/>
-                    <w:numId w:val="9"/>
-                </w:numPr>
-            </wpPr>
-            <w:r>
-                <w:t>this text in numbered or bulleted list
-                </w:t>
-            </w:r>
-        </w:p>
+        Get an index to a multi-level list format (numId) and the indentation level
+        (ilvl). If no numId or ilvl are defined, assume this is not a numbered list.
+        If these values to exist, look up a list format with
+        numId2numFmts[numId][ilvl]. If this fails, silently give up and use a bullet.
 
         bullet preceded by one tab for every indentation level.
         """
-        try:
-            pPr = next(iterfind_by_qn(paragraph, "w:pPr"))
-            numPr = next(iterfind_by_qn(pPr, "w:numPr"))
-
-            numIdElem = next(iterfind_by_qn(numPr, "w:numId"))
-            numId = get_attrib_by_qn(numIdElem, "w:val")
-            ilvlElem = next(iterfind_by_qn(numPr, "w:ilvl"))
-            ilvl = get_attrib_by_qn(ilvlElem, "w:val")
-            try:
-                numFmt = self.numId2numFmts[str(numId)][int(ilvl)]
-            except IndexError:
-                # give up and put a bullet
-                numFmt = "bullet"
-        except (StopIteration, KeyError):
-            # not a numbered paragraph
+        numId, ilvl, number = self.get_bullet_fmt(paragraph)
+        if any(x is None for x in (numId, ilvl, number)):
             return ""
+        assert numId is not None
+        assert ilvl is not None
+        assert number is not None
+        try:
+            numFmt = self.numId2numFmts[str(numId)][int(ilvl)]
+        except (KeyError, IndexError):
+            numFmt = "bullet"
 
         def format_bullet(bullet: str) -> str:
             """Indent, format and pad the bullet or number string.
@@ -156,6 +214,5 @@ class BulletGenerator:
                 bullet += ")"
             return "\t" * int(ilvl) + bullet + "\t"
 
-        number = _increment_list_counter(self.numId2count[numId], str(ilvl))
         get_unformatted_bullet_str = _get_bullet_function(numFmt)
         return format_bullet(get_unformatted_bullet_str(number))
