@@ -44,7 +44,7 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.10.0
+  rev: v1.10.1
   hooks:
   - id: mypy
     name: mypy
@@ -158,18 +158,19 @@ repos:
   # C901 function is too complex
   # PLR0912 too many branches
   # PLR0915 too many statements
-  rev: 'v0.4.10'
+  # PLR2004 Magic values
+  rev: 'v0.5.2'
   hooks:
     - id: ruff
       exclude: "tests"
       args:
       - --target-version=py38
       - --select=ALL
-      - --ignore=ANN101,ANN102,ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,S320,D212,D415,FBT001,FBT002,S101,D401,N803,ERA001,TD002,TD003,FIX002,D200,ARG005,B028,EM101,TRY003,ANN401,PYI036,TRY300,PYI019,PTH118,PTH119,PTH123,PTH120,D403,SIM108,RUF010,C901,PLR0912,PLR0915
+      - --ignore=ANN101,ANN102,ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,S320,D212,D415,FBT001,FBT002,S101,D401,N803,ERA001,TD002,TD003,FIX002,D200,ARG005,B028,EM101,TRY003,ANN401,PYI036,TRY300,PYI019,PTH118,PTH119,PTH123,PTH120,D403,SIM108,RUF010,C901,PLR0912,PLR0915,PLR2004
       # - --fix
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.369
+  rev: v1.1.372
   hooks:
     - id: pyright
