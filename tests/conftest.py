@@ -7,13 +7,10 @@
 
 from __future__ import annotations
 
-import os
-import sys
 from pathlib import Path
 from typing import Any
 
-project = os.path.abspath(os.path.join(__file__, "..", ".."))
-sys.path.append(project)
+_PROJECT = Path(__file__).parent.parent
 
 
 def pytest_assertrepr_compare(config: Any, op: str, left: str, right: str) -> list[str]:
@@ -24,4 +21,4 @@ def pytest_assertrepr_compare(config: Any, op: str, left: str, right: str) -> li
     return []
 
 
-RESOURCES = Path(project, "tests", "resources")
+RESOURCES = Path(_PROJECT, "tests", "resources")
