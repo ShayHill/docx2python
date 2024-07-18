@@ -12,7 +12,7 @@ Content in the extracted docx is found in the ``word`` folder:
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING, List, Sequence
+from typing import TYPE_CHECKING, List, Literal, Sequence, cast
 
 from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.bullets_and_numbering import BulletGenerator
@@ -34,7 +34,7 @@ TextTable = List[List[List[List[List[str]]]]]
 TablesList = List[List[List[List[str]]]]
 
 
-def _get_elem_depth(tree: EtreeElement) -> int | None:
+def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
     """What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
     :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
@@ -92,7 +92,7 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
         grandchildren = [list(x) for x in tree_]
         return search_at_depth([x for y in grandchildren for x in y], _depth + 1)
 
-    return search_at_depth([tree])
+    return cast(Literal[1, 2, 3, 4], search_at_depth([tree]))
 
 
 # TODO: remove root argument from _get_text_below

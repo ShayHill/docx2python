@@ -32,8 +32,19 @@ Pass out of package with depth_collector_instance.tree.
 from __future__ import annotations
 
 import dataclasses
+import itertools as it
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Iterable, Iterator, List, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Literal,
+    Tuple,
+    Union,
+    cast,
+)
 
 from docx2python.attribute_register import get_localname
 from docx2python.iterators import enum_at_depth
@@ -49,6 +60,10 @@ if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
     from docx2python.docx_reader import File
+
+
+MaybeStr = Union[str, None]
+Lineage = Tuple[Literal["document"], MaybeStr, MaybeStr, MaybeStr, MaybeStr]
 
 
 @dataclasses.dataclass
@@ -84,7 +99,7 @@ class Par:
 
     html_style: list[str]
     style: str
-    lineage: list[str | None]
+    lineage: Lineage
     runs: list[Run] = dataclasses.field(default_factory=list)
     list_position: tuple[str | None, list[int]] = dataclasses.field(init=False)
 
@@ -152,15 +167,22 @@ class DepthCollector:
             an item. E.g., item_depth = 3 => [[['item']]].
         """
         self._xml2html_format = file.context.xml2html_format
-        self._par_depth = 4
+        self._par_depth: Literal[1, 2, 3, 4] = 4
 
-        self._lineage = ["document", None, None, None, None]
+        self._lineage: Lineage = ("document", None, None, None, None)
         self._rightmost_branches: list[Any] = [[]]
 
         self.open_pars: list[Par] = []
         self.orphan_runs: list[Run] = []
 
         self.comment_ranges: dict[str, tuple[int, int]] = {}
+
+    def _set_in_lineage(self, index: Literal[1, 2, 3, 4], value: str | None):
+        """Set a value in the lineage tuple."""
+        prev = self._lineage[1:index]
+        aftr = self._lineage[index + 1 :]
+        tbl, row, cell, par = it.chain(prev, [value], aftr)
+        self._lineage = ("document", tbl, row, cell, par)
 
     @property
     def _runs_so_far(self) -> Iterator[str]:
@@ -290,13 +312,13 @@ class DepthCollector:
         return self._rightmost_branches[-1]
 
     @property
-    def caret_depth(self) -> int:
+    def caret_depth(self) -> Literal[1, 2, 3, 4]:
         """Depth of the lowest open child.
 
         :return: from 0 to _par_depth, the depth of the last-closed element in the
             tree.
         """
-        return len(self._rightmost_branches)
+        return cast(Literal[1, 2, 3, 4], len(self._rightmost_branches))
 
     @property
     def _open_runs(self) -> list[Run]:
@@ -338,7 +360,9 @@ class DepthCollector:
             raise CaretDepthError("will not raise caret above root")
         self._rightmost_branches = self._rightmost_branches[:-1]
 
-    def set_caret(self, depth: None | int, elem: EtreeElement | None = None) -> None:
+    def set_caret(
+        self, depth: None | Literal[1, 2, 3, 4], elem: EtreeElement | None = None
+    ) -> None:
         """
         Set caret at given depth.
 
@@ -351,12 +375,13 @@ class DepthCollector:
         if depth is None:
             return
         if self.caret_depth == depth:
-            self._lineage[depth] = None if elem is None else get_localname(elem)
+            lineage_at = None if elem is None else get_localname(elem)
+            self._set_in_lineage(depth, lineage_at)
             return
         if self.caret_depth < depth:
             self._drop_caret()
         elif self.caret_depth > depth:
-            self._lineage[self.caret_depth] = None
+            self._set_in_lineage(depth, None)
             self._raise_caret()
         self.set_caret(depth, elem)
 

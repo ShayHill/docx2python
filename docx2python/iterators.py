@@ -22,7 +22,9 @@ These functions help manipulate that deep nest without deep indentation.
 from __future__ import annotations
 
 import copy
+from contextlib import suppress
 from typing import (
+    TYPE_CHECKING,
     Any,
     Iterable,
     Iterator,
@@ -33,6 +35,9 @@ from typing import (
     cast,
     overload,
 )
+
+if TYPE_CHECKING:
+    from docx2python.depth_collector import Par
 
 TablesList = List[List[List[List[Any]]]]
 
@@ -415,6 +420,30 @@ def enum_paragraphs(
         ``((0, 0, 0, 0), tables[0][0][0][0]) ... , ((i, j, k, l), tables[i][j][k][l])``
     """
     return enum_at_depth(tables, 4)
+
+
+def is_tbl(possible_tbl: Iterable[Iterable[Iterable[Par]]]) -> bool:
+    """Determine is an item in output.attribute_pars is a table."""
+    with suppress(StopIteration):
+        first_par = next(iter_at_depth(possible_tbl, 3))
+        return first_par.lineage[1] == "tbl"
+    return False
+
+
+def is_tr(possible_tr: Iterable[Iterable[Par]]) -> bool:
+    """Determine is an item in output.attribute_pars[i] is a table row."""
+    with suppress(StopIteration):
+        first_par = next(iter_at_depth(possible_tr, 2))
+        return first_par.lineage[2] == "tr"
+    return False
+
+
+def is_tc(possible_tc: Iterable[Par]) -> bool:
+    """Determine is an item in output.attribute_pars[i][j] is a table cell."""
+    with suppress(StopIteration):
+        first_par = next(iter_at_depth(possible_tc, 1))
+        return first_par.lineage[3] == "tc"
+    return False
 
 
 # TODO: track down callers for html map and see if they are calling with runs or pars
