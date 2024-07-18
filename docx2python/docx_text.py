@@ -14,7 +14,7 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING, List, Sequence
 
-from docx2python.attribute_register import Tags, get_localname, get_prefixed_tag
+from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.bullets_and_numbering import BulletGenerator
 from docx2python.depth_collector import DepthCollector, Par, get_par_strings
 from docx2python.forms import get_checkBox_entry, get_ddList_entry
@@ -163,8 +163,11 @@ class TagRunner:
 
     def _open_paragraph(self, tree: EtreeElement) -> bool:
         """Open a paragraph."""
-        _ = self.tables.commence_paragraph(tree)
-        self.tables.insert_text_as_new_run(self.bullets.get_bullet(tree))
+        par = self.tables.commence_paragraph(tree)
+        bullet = self.bullets.get_bullet(tree)
+        position = self.bullets.get_list_position(tree)
+        self.tables.insert_text_as_new_run(bullet)
+        par.list_position = position
         return True
 
     def _open_run(self, tree: EtreeElement) -> bool:

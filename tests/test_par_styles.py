@@ -23,7 +23,7 @@ class TestParStyles:
         """
         with docx2python(RESOURCES / "example.docx") as extraction:
             document_pars = extraction.document_pars
-        styled = [(p.style, p.strings) for p in iter_at_depth(document_pars, 4)]
+        styled = [(p.style, p.run_strings) for p in iter_at_depth(document_pars, 4)]
         styled = [x for x in styled if x[1]]
         expect = [
             (

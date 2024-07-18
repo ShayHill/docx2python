@@ -70,15 +70,30 @@ class Run:
 
 @dataclasses.dataclass
 class Par:
-    """A text paragraph. Html styles and a list of run strings"""
+    """A text paragraph. Html styles and a list of run strings.
+
+    list_position is where a paragraph falls in a list, if it is in a list at all.
+
+    (None, []) means the paragraph is not in a list.
+    ("1", [1]) means the paragraph is the first item in list "1".
+    ("1", [1, 2]) means the paragraph is in list "1" here:
+        1. item 1
+            1. item (1, 1)
+            2. item (1, 2)  # this paragraph
+    """
 
     html_style: list[str]
     style: str
     lineage: list[str | None]
     runs: list[Run] = dataclasses.field(default_factory=list)
+    list_position: tuple[str | None, list[int]] = dataclasses.field(init=False)
+
+    def __post_init__(self) -> None:
+        """Set list_position to None"""
+        self.list_position = (None, [])
 
     @property
-    def strings(self) -> list[str]:
+    def run_strings(self) -> list[str]:
         """Return a list of strings from the runs
 
         :return: a string for each run with text content
@@ -105,7 +120,7 @@ def _nested_pars_to_nested_strings(nested_pars: NestedPars) -> NestedStrings:
     explicit type hints in the public function.
     """
     return [
-        x.strings if isinstance(x, Par) else _nested_pars_to_nested_strings(x)
+        x.run_strings if isinstance(x, Par) else _nested_pars_to_nested_strings(x)
         for x in nested_pars
     ]
 
@@ -157,7 +172,7 @@ class DepthCollector:
             if run_text:
                 yield cast(str, run_text)
         for par in self.open_pars:
-            yield from par.strings
+            yield from par.run_strings
         for run in self.orphan_runs:
             if run.text:
                 yield run.text

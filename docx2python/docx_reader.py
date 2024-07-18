@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
-    from docx2python.depth_collector import DepthCollector, Par
+    from docx2python.depth_collector import DepthCollector
 
 CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnotes"}
 

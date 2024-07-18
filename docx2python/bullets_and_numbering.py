@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import warnings
 from collections import defaultdict
+from contextlib import suppress
 from typing import TYPE_CHECKING, Callable
 
 from docx2python import numbering_formats as nums
@@ -117,6 +118,10 @@ class BulletGenerator:
         self.numId2numFmts = numId2numFmts
         self.numId2count = _new_list_counter()
 
+        # Only increment the number of a paragraph if that paragraph has not been
+        # seen. See docstring for self._get_par_number.
+        self._par2par_number: dict[EtreeElement, int | None] = {}
+
     def _get_numPr(self, paragraph: EtreeElement) -> EtreeElement | None:
         """Get the parent element of the numId and ilvl elements.
 
@@ -161,24 +166,79 @@ class BulletGenerator:
         except (StopIteration, KeyError):
             return None
 
-    def get_bullet_fmt(
-        self, paragraph: EtreeElement
-    ) -> tuple[str | None, str | None, int | None]:
-        """Expose the numId, ilvl, and number value of a numbered paragraph.
+    def get_bullet_fmt(self, paragraph: EtreeElement) -> tuple[str | None, str | None]:
+        """Expose the numId and ilvl of a numbered paragraph.
 
         :param paragraph: <w:p> xml element
-        :return: numId (which list), ilvl (indentation level), number value
+        :return: numId (which list), ilvl (indentation level)
 
         This will return None, None, None if the paragraph is not numbered.
         """
         numPr = self._get_numPr(paragraph)
         if numPr is None:
-            return None, None, None
+            return None, None
         numId = self._get_numId(numPr)
         ilvl = self._get_ilvl(numPr)
         if numId is None or ilvl is None:
-            return numId, ilvl, None
-        return numId, ilvl, _increment_list_counter(self.numId2count[numId], str(ilvl))
+            return numId, ilvl
+        return numId, ilvl
+
+    def get_par_number(self, paragraph: EtreeElement) -> int | None:
+        """Get the number (at the current indentation level) of a paragraph.
+
+        :param paragraph: <w:p> xml element
+        :return: number of the paragraph
+        :effects: increment self.numId2count[numId][ilvl] if the paragraph has not
+            been seen before.
+
+        E.g.,
+
+            1. paragraph  # called here, return 1
+                a. paragraph  # called here, return 1
+                b. paragraph  # called here, return 2
+            2. paragraph  # called here, return 2
+                a. paragraph  # called here, return 1
+                    1. paragraph  # called here, return 1
+
+        numId and ilvl should both be defined for a numbered paragraph, but I'm
+        testing both here to fail silently if that assumption is wrong.
+        """
+        with suppress(KeyError):
+            return self._par2par_number[paragraph]
+        numId, ilvl = self.get_bullet_fmt(paragraph)
+        if numId is None or ilvl is None:
+            par_number = None
+        else:
+            par_number = _increment_list_counter(self.numId2count[numId], ilvl)
+        self._par2par_number[paragraph] = par_number
+        return par_number
+
+    def get_list_position(
+        self, paragraph: EtreeElement
+    ) -> tuple[str | None, list[int]]:
+        """Get the current numbering values.
+
+        :return: numbering values as a tuple of integers
+
+        E.g.,
+
+            Not in a list  # called here, return ()
+
+            1. paragraph  # called here, return (numPr, 1)
+                a. paragraph  # called here, return (numPr, 1, 1)
+                b. paragraph  # called here, return (numPr, 1, 2)
+            2. paragraph  # called here, return (numPr, 2)
+                a. paragraph  # called here, return (numPr, 2, 1)
+                    1. paragraph  # called here, return (numPr, 2, 1, 1)
+
+        The numbering values are the current count at each indentation level.
+        """
+        numPr, _ = self.get_bullet_fmt(paragraph)
+        if numPr is None:
+            return (numPr, [])
+        # ensure the paragraph counter has been incremented
+        _ = self.get_par_number(paragraph)
+        return numPr, list(self.numId2count[numPr].values())
 
     def get_bullet(self, paragraph: EtreeElement) -> str:
         """Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
@@ -193,7 +253,8 @@ class BulletGenerator:
 
         bullet preceded by one tab for every indentation level.
         """
-        numId, ilvl, number = self.get_bullet_fmt(paragraph)
+        numId, ilvl = self.get_bullet_fmt(paragraph)
+        number = self.get_par_number(paragraph)
         if any(x is None for x in (numId, ilvl, number)):
             return ""
         assert numId is not None

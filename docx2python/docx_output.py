@@ -61,7 +61,6 @@ if TYPE_CHECKING:
 
     from docx2python.depth_collector import Par
     from docx2python.docx_reader import DocxReader
-    from docx2python.docx_text import TablesList
 
     ParsTable = List[List[List[List[Par]]]]
 
@@ -119,12 +118,21 @@ class DocxContent:
         Docx2Python v3 exposes Par and Run instances to the user, access these as
         header_pars, footer_pars, etc.
         """
-        if name in {"header", "footer", "body", "footnotes", "endnotes", "document"}:
+        if name in {
+            "header",
+            "footer",
+            "officeDocument",
+            "body",
+            "footnotes",
+            "endnotes",
+            "document",
+        }:
             runs = getattr(self, name + "_runs")
             return join_leaves("", runs, 4)
         if name in {
             "header_runs",
             "footer_runs",
+            "officeDocument_runs",
             "body_runs",
             "footnotes_runs",
             "endnotes_runs",
@@ -272,27 +280,28 @@ class DocxContent:
             self.docx2python_kwargs["image_folder"]
         )
 
-    @property
-    def document(self) -> TablesList:
-        """All docx "tables" concatenated.
+    # TODO: get rid of commented-out code in docx_output.py
+    # @property
+    # def document(self) -> TablesList:
+    #     """All docx "tables" concatenated.
 
-        :return: text paragraphs [[[str]]]
-        """
-        return self.header + self.body + self.footer + self.footnotes + self.endnotes
+    #     :return: text paragraphs [[[str]]]
+    #     """
+    #     return self.header + self.body + self.footer + self.footnotes + self.endnotes
 
-    @property
-    def document_runs(self) -> TablesList:
-        """All docx x_runs properties concatenated.
+    # @property
+    # def document_runs(self) -> TablesList:
+    #     """All docx x_runs properties concatenated.
 
-        :return: text runs [[[[str]]]]
-        """
-        return (
-            self.header_runs
-            + self.body_runs
-            + self.footer_runs
-            + self.footnotes_runs
-            + self.endnotes_runs
-        )
+    #     :return: text runs [[[[str]]]]
+    #     """
+    #     return (
+    #         self.header_runs
+    #         + self.body_runs
+    #         + self.footer_runs
+    #         + self.footnotes_runs
+    #         + self.endnotes_runs
+    #     )
 
     @property
     def text(self) -> str:

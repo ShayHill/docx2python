@@ -138,4 +138,4 @@ def get_headings(path_in: Path | str) -> Iterator[list[str]]:
     with docx2python(path_in, html=True) as extraction:
         for par in iter_at_depth(extraction.document_pars, 4):
             if re.match(heading_pattern, par.style):
-                yield par.strings
+                yield par.run_strings

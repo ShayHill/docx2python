@@ -89,7 +89,7 @@ def test_paragraphs_only() -> None:
     """Html tags inserted into text"""
     with docx2python(RESOURCES / "nested_paragraphs.docx", html=True) as extraction:
         document_pars = extraction.document_pars
-    styled = [(p.style, p.strings) for p in iter_at_depth(document_pars, 4)]
+    styled = [(p.style, p.run_strings) for p in iter_at_depth(document_pars, 4)]
     expect = [
         (
             "",

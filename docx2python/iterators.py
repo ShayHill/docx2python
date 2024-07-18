@@ -41,7 +41,6 @@ CollTL = List[Union[str, "CollTL"]]
 
 
 _T = TypeVar("_T")
-_U = TypeVar("_U")
 
 IndexedItem = str
 
@@ -109,36 +108,31 @@ def join_leaves(
 @overload
 def enum_at_depth(
     nested: Iterable[_T], depth: Literal[1]
-) -> Iterator[tuple[tuple[int,], _T]]:
-    ...
+) -> Iterator[tuple[tuple[int,], _T]]: ...
 
 
 @overload
 def enum_at_depth(
     nested: Iterable[Iterable[_T]], depth: Literal[2]
-) -> Iterator[tuple[tuple[int, int], _T]]:
-    ...
+) -> Iterator[tuple[tuple[int, int], _T]]: ...
 
 
 @overload
 def enum_at_depth(
     nested: Iterable[Iterable[Iterable[_T]]], depth: Literal[3]
-) -> Iterator[tuple[tuple[int, int, int], _T]]:
-    ...
+) -> Iterator[tuple[tuple[int, int, int], _T]]: ...
 
 
 @overload
 def enum_at_depth(
     nested: Iterable[Iterable[Iterable[Iterable[_T]]]], depth: Literal[4]
-) -> Iterator[tuple[tuple[int, int, int, int], _T]]:
-    ...
+) -> Iterator[tuple[tuple[int, int, int, int], _T]]: ...
 
 
 @overload
 def enum_at_depth(
     nested: Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]], depth: Literal[5]
-) -> Iterator[tuple[tuple[int, int, int, int, int], _T]]:
-    ...
+) -> Iterator[tuple[tuple[int, int, int, int, int], _T]]: ...
 
 
 def enum_at_depth(
@@ -205,67 +199,60 @@ def enum_at_depth(
     ((1, 0, 1, 1), 'h')
     """
     if depth == 1:
-        nested = cast(List[_T], nested)
-        yield from (((i,), x) for i, x in enumerate(nested))
+        nested = cast(Iterable[_T], nested)
+        yield from (((i,), x_1) for i, x_1 in enumerate(nested))
         return
     if depth == 2:
-        nested = cast(List[List[_T]], nested)
-        depth_minus_one = depth - 1
-        for i, x in enumerate(nested):
-            for j, y in enum_at_depth(x, depth_minus_one):
-                yield ((i, *j), y)
+        nested = cast(Iterable[Iterable[_T]], nested)
+        for i, x_2 in enumerate(nested):
+            for j_2, y_2 in enum_at_depth(x_2, 1):
+                yield ((i, *j_2), y_2)
     elif depth == 3:
-        nested = cast(List[List[List[_T]]], nested)
-        depth_minus_one = depth - 1
-        for i, x in enumerate(nested):
-            for j, y in enum_at_depth(x, depth_minus_one):
-                yield ((i, *j), y)
+        nested = cast(Iterable[Iterable[Iterable[_T]]], nested)
+        for i, x_3 in enumerate(nested):
+            for j_3, y_3 in enum_at_depth(x_3, 2):
+                yield ((i, *j_3), y_3)
     elif depth == 4:
-        nested = cast(List[List[List[List[_T]]]], nested)
-        depth_minus_one = depth - 1
-        for i, x in enumerate(nested):
-            for j, y in enum_at_depth(x, depth_minus_one):
-                yield ((i, *j), y)
+        nested = cast(Iterable[Iterable[Iterable[Iterable[_T]]]], nested)
+        for i, x_4 in enumerate(nested):
+            for j_4, y_4 in enum_at_depth(x_4, 3):
+                yield ((i, *j_4), y_4)
     elif depth == 5:
-        nested = cast(List[List[List[List[List[_T]]]]], nested)
-        depth_minus_one = depth - 1
-        for i, x in enumerate(nested):
-            for j, y in enum_at_depth(x, depth_minus_one):
-                yield ((i, *j), y)
+        nested = cast(Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]], nested)
+        for i, x_5 in enumerate(nested):
+            for j_5, y_5 in enum_at_depth(x_5, 4):
+                yield ((i, *j_5), y_5)
     else:
         msg = "depth argument must be 1, 2, 3, 4, or 5"
         raise ValueError(msg)
 
 
 @overload
-def iter_at_depth(nested: Iterable[_T], depth: Literal[1]) -> Iterator[_T]:
-    ...
+def iter_at_depth(nested: Iterable[_T], depth: Literal[1]) -> Iterator[_T]: ...
 
 
 @overload
-def iter_at_depth(nested: Iterable[Iterable[_T]], depth: Literal[2]) -> Iterator[_T]:
-    ...
+def iter_at_depth(
+    nested: Iterable[Iterable[_T]], depth: Literal[2]
+) -> Iterator[_T]: ...
 
 
 @overload
 def iter_at_depth(
     nested: Iterable[Iterable[Iterable[_T]]], depth: Literal[3]
-) -> Iterator[_T]:
-    ...
+) -> Iterator[_T]: ...
 
 
 @overload
 def iter_at_depth(
     nested: Iterable[Iterable[Iterable[Iterable[_T]]]], depth: Literal[4]
-) -> Iterator[_T]:
-    ...
+) -> Iterator[_T]: ...
 
 
 @overload
 def iter_at_depth(
     nested: Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]], depth: Literal[5]
-) -> Iterator[_T]:
-    ...
+) -> Iterator[_T]: ...
 
 
 def iter_at_depth(
