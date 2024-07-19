@@ -119,36 +119,25 @@ class Par:
 ParsTable = List[List[List[List[Par]]]]
 TextTable = List[List[List[List[List[str]]]]]
 
-# TODO: get rid of types NestedPars and NestedStrings
-NestedPars = List[Union[Par, "NestedPars"]]
-NestedStrings = List[Union[List[str], "NestedStrings"]]
-
-
-def _nested_pars_to_nested_strings(nested_pars: NestedPars) -> NestedStrings:
-    """Return a list of strings from the runs
-
-    :param par: a paragraph
-    :return: a string for each run with text content
-
-    Extract a list of sublists of strings from a list of sublists of Par instances.
-    This is the recursive part of `get_par_strings` split out so we can return
-    explicit type hints in the public function.
-    """
-    return [
-        x.run_strings if isinstance(x, Par) else _nested_pars_to_nested_strings(x)
-        for x in nested_pars
-    ]
-
 
 def get_par_strings(nested_pars: ParsTable) -> TextTable:
     """Convert DepthCollector's nested Par instances into a nested list of strings.
 
     :param nested_pars: a list of Par instances. These will be the first element in
-        the DepthCollector's tables list [[[Par]]]
-    :return: a list of strings from the runs [[[[str]]]]
+        the DepthCollector's tables list [[[[Par]]]]
+    :return: a list of strings from the runs [[[[[str]]]]]
     """
-    as_strings = _nested_pars_to_nested_strings(cast(NestedPars, nested_pars))
-    return cast(List[List[List[List[List[str]]]]], as_strings)
+    as_run_strings_lists: TextTable = []
+    for tbl in nested_pars:
+        as_run_strings_lists.append([])
+        for row in tbl:
+            as_run_strings_lists[-1].append([])
+            for cell in row:
+                as_run_strings_lists[-1][-1].append([])
+                for par in cell:
+                    as_run_strings_lists[-1][-1][-1].append(par.run_strings)
+
+    return as_run_strings_lists
 
 
 class CaretDepthError(Exception):
@@ -296,12 +285,11 @@ class DepthCollector:
 
     @property
     def tree_text(self) -> TextTable:
-        """All collected paragraphs as a lists of strings.
+        """All collected paragraphs as lists of strings.
 
         :return: a string of all text in the tree
         """
         return get_par_strings(self.tree)
-        # TODO: use this property for output instead of DocxOutput._get_runs
 
     @property
     def caret(self) -> list[str | list[str]]:

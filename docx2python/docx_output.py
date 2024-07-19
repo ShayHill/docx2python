@@ -220,56 +220,6 @@ class DocxContent:
             + self.endnotes_pars
         )
 
-    # @property
-    # def header_runs(self) -> TablesList:
-    #     """Get text runs for header files.
-
-    #     :return: text runs [[[[str]]]]
-    #     """
-    #     return self._get_runs("header")
-
-    # @property
-    # def footer_runs(self) -> TablesList:
-    #     """Get text runs for footer files.
-
-    #     :return: text runs [[[[str]]]]
-    #     """
-    #     return self._get_runs("footer")
-
-    # @property
-    # def officeDocument_runs(self) -> TablesList:
-    #     """Get text runs for the main officeDocument file.
-
-    #     :return: text runs [[[[str]]]]
-    #     """
-    #     return self._get_runs("officeDocument")
-
-    # @property
-    # def body_runs(self) -> TablesList:
-    #     """Get text runs for the main officeDocument file.
-
-    #     :return: text runs [[[[str]]]]
-
-    #     This is an alias for officeDocument_runs.
-    #     """
-    #     return self.officeDocument_runs
-
-    # @property
-    # def footnotes_runs(self) -> TablesList:
-    #     """Get text runs for footnotes files.
-
-    #     :return: text runs [[[[str]]]]
-    #     """
-    #     return self._get_runs("footnotes")
-
-    # @property
-    # def endnotes_runs(self) -> TablesList:
-    #     """Get text runs for endnotes files.
-
-    #     :return: text runs [[[[str]]]]
-    #     """
-    #     return self._get_runs("endnotes")
-
     @property
     def images(self) -> dict[str, bytes]:
         """Get bytestring of all images in the document.
@@ -279,29 +229,6 @@ class DocxContent:
         return self.docx_reader.pull_image_files(
             self.docx2python_kwargs["image_folder"]
         )
-
-    # TODO: get rid of commented-out code in docx_output.py
-    # @property
-    # def document(self) -> TablesList:
-    #     """All docx "tables" concatenated.
-
-    #     :return: text paragraphs [[[str]]]
-    #     """
-    #     return self.header + self.body + self.footer + self.footnotes + self.endnotes
-
-    # @property
-    # def document_runs(self) -> TablesList:
-    #     """All docx x_runs properties concatenated.
-
-    #     :return: text runs [[[[str]]]]
-    #     """
-    #     return (
-    #         self.header_runs
-    #         + self.body_runs
-    #         + self.footer_runs
-    #         + self.footnotes_runs
-    #         + self.endnotes_runs
-    #     )
 
     @property
     def text(self) -> str:

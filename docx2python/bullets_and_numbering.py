@@ -128,7 +128,6 @@ class BulletGenerator:
         :param paragraph: <w:p> xml element
         :return: <w:numPr> xml element or None if this fails.
         """
-        # TODO: try skipping KeyError exception and run tests
         try:
             pPr = next(iterfind_by_qn(paragraph, "w:pPr"))
             return next(iterfind_by_qn(pPr, "w:numPr"))

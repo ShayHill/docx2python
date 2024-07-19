@@ -30,9 +30,6 @@ if TYPE_CHECKING:
 ParsTable = List[List[List[List[Par]]]]
 TextTable = List[List[List[List[List[str]]]]]
 
-# TODO: factor out TablesList
-TablesList = List[List[List[List[str]]]]
-
 
 def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
     """What depth is this element in a nested list, relative to paragraphs (depth 4)?

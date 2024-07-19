@@ -25,7 +25,6 @@ import copy
 from contextlib import suppress
 from typing import (
     TYPE_CHECKING,
-    Any,
     Iterable,
     Iterator,
     List,
@@ -39,15 +38,10 @@ from typing import (
 if TYPE_CHECKING:
     from docx2python.depth_collector import Par
 
-TablesList = List[List[List[List[Any]]]]
-
-# A collapsed TablesList
 CollTL = List[Union[str, "CollTL"]]
 
 
 _T = TypeVar("_T")
-
-IndexedItem = str
 
 TextTable = List[List[List[List[List[str]]]]]
 
@@ -446,7 +440,6 @@ def is_tc(possible_tc: Iterable[Par]) -> bool:
     return False
 
 
-# TODO: track down callers for html map and see if they are calling with runs or pars
 def get_html_map(tables: TextTable) -> str:
     """Create a visual map in html format.
 
