@@ -291,7 +291,7 @@ class DocxReader:
         self,
         docx_filename: Path | str | BytesIO,
         html: bool = False,
-        duplicate_merged_cells: bool = False,
+        duplicate_merged_cells: bool = True,
     ) -> None:
         """Initialize DocxReader instance.
 

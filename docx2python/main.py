@@ -21,8 +21,9 @@ def docx2python(
     docx_filename: str | Path | BytesIO,
     image_folder: str | None = None,
     html: bool = False,
+    # TODO: remove extract_image argument
     extract_image: bool | None = None,
-    duplicate_merged_cells: bool = False,
+    duplicate_merged_cells: bool = True,
 ) -> DocxContent:
     """
     Unzip a docx file and extract contents.
@@ -35,7 +36,7 @@ def docx2python(
         paragraph. This will only be useful with ``*_runs`` attributes.
     :param extract_image: bool, extract images from document (default True)
     :param duplicate_merged_cells: bool, duplicate merged cells to return a mxn
-        nested list for each table (default False)
+        nested list for each table (default True)
     :return: DocxContent object
     """
     if extract_image is not None:
