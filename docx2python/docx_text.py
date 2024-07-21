@@ -92,7 +92,6 @@ def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
     return cast(Literal[1, 2, 3, 4], search_at_depth([tree]))
 
 
-# TODO: remove root argument from _get_text_below
 def _get_text_below(file: File, root: EtreeElement) -> str:
     """Return a string of all text below an element
 
@@ -377,10 +376,10 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
 
     branches(root)
 
+    # TODO: see if there are ever any orphan runs and what is inside them
     if tag_runner.tables.orphan_runs:
         _ = tag_runner.tables.commence_paragraph()
-    if tag_runner.tables.open_pars:
-        tag_runner.tables.conclude_paragraph()
+    tag_runner.tables.conclude_paragraph()
 
     return tag_runner.tables
 

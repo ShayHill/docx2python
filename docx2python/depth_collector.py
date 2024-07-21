@@ -161,7 +161,7 @@ class DepthCollector:
         self._lineage: Lineage = ("document", None, None, None, None)
         self._rightmost_branches: list[Any] = [[]]
 
-        self.open_pars: list[Par] = []
+        self._open_pars: list[Par] = []
         self.orphan_runs: list[Run] = []
 
         self.comment_ranges: dict[str, tuple[int, int]] = {}
@@ -182,7 +182,7 @@ class DepthCollector:
         for run_text in enum_at_depth(self.tree_text, 5):
             if run_text:
                 yield cast(str, run_text)
-        for par in self.open_pars:
+        for par in self._open_pars:
             yield from par.run_strings
         for run in self.orphan_runs:
             if run.text:
@@ -251,12 +251,15 @@ class DepthCollector:
             [*self.orphan_runs, Run([], html_open(html_style))],
         )
         self.orphan_runs = []
-        self.open_pars.append(new_par)
+        self._open_pars.append(new_par)
         return new_par
 
     def conclude_paragraph(self) -> None:
         """Close the current paragraph and add it to the tree."""
-        old_par = self.open_pars.pop()
+        try:
+            old_par = self._open_pars.pop()
+        except IndexError:
+            return
         old_par.runs.append(Run([], html_close(old_par.html_style)))
         self.insert(old_par)
 
@@ -315,7 +318,7 @@ class DepthCollector:
         :return: a list of runs
         """
         with suppress(IndexError):
-            return self.open_pars[-1].runs
+            return self._open_pars[-1].runs
         return self.orphan_runs
 
     @property
@@ -327,6 +330,23 @@ class DepthCollector:
         if not self._open_runs:
             self._open_runs.append(Run())
         return self._open_runs[-1]
+
+    @property
+    def _open_par(self) -> Par:
+        """The current paragraph.
+
+        A run will look for the last open paragraph to "live" in. There will always
+        be an open paragraph element wrapped arounda run *if* we're working from the
+        top of a tree, but function _get_content_below can look for text anywhere in
+        the tree, including starting froma run or text element. In those cases,
+        silently create a new paragraph.  This will never occur when working from the
+        top of a tree.
+
+        :return: a paragraph
+        """
+        if not self._open_pars:
+            return self.commence_paragraph()
+        return self._open_pars[-1]
 
     def _drop_caret(self) -> None:
         """Create a new branch under caret.
