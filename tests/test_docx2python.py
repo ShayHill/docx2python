@@ -67,6 +67,8 @@ class TestFormatting:
     def test_endnotes(self) -> None:
         """Endnotes extracted."""
         with docx2python(RESOURCES / "example.docx") as output:
+            with open("temp.py", "w") as f:
+                f.write(str(output.endnotes_runs))
             assert output.endnotes_runs == [
                 [
                     [

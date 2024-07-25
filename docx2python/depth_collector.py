@@ -33,7 +33,6 @@ from __future__ import annotations
 
 import dataclasses
 import itertools as it
-from contextlib import suppress
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -162,7 +161,7 @@ class DepthCollector:
         self._rightmost_branches: list[Any] = [[]]
 
         self._open_pars: list[Par] = []
-        self.orphan_runs: list[Run] = []
+        self.queued_runs: list[Run] = []
 
         self.comment_ranges: dict[str, tuple[int, int]] = {}
 
@@ -184,9 +183,6 @@ class DepthCollector:
                 yield cast(str, run_text)
         for par in self._open_pars:
             yield from par.run_strings
-        for run in self.orphan_runs:
-            if run.text:
-                yield run.text
 
     def _count_runs(self) -> int:
         """Count the number of runs seen so far in current and previous paragraphs."""
@@ -236,6 +232,8 @@ class DepthCollector:
         :param elem: the paragraph element (for extracting style information)
         :return: the new paragraph
         """
+        self.set_caret(self._par_depth, elem)
+
         html_style: list[str] = []
         if elem is not None:
             html_style = get_paragraph_formatting(elem, self._xml2html_format) or []
@@ -248,9 +246,9 @@ class DepthCollector:
             html_style,
             pStyle,
             self._lineage,
-            [*self.orphan_runs, Run([], html_open(html_style))],
+            [*self.queued_runs, Run([], html_open(html_style))],
         )
-        self.orphan_runs = []
+        self.queued_runs = []
         self._open_pars.append(new_par)
         return new_par
 
@@ -260,6 +258,8 @@ class DepthCollector:
             old_par = self._open_pars.pop()
         except IndexError:
             return
+        # TODO: do not call html_close here, call only when extracting run text.
+        # TODO: only call html_open when extracting run text.
         old_par.runs.append(Run([], html_close(old_par.html_style)))
         self.insert(old_par)
 
@@ -317,15 +317,20 @@ class DepthCollector:
 
         :return: a list of runs
         """
-        with suppress(IndexError):
-            return self._open_pars[-1].runs
-        return self.orphan_runs
+        return self._open_par.runs
 
     @property
     def _open_run(self) -> Run:
         """The last run in the current paragraph.
 
-        :return: a run
+        :return: the most recently opened Run instance
+
+        A text element will look for the last open run to "live" in. There will
+        always be an open run element wrapped around a text element *if* we're
+        working from the top of a tree, but function _get_content_below can look for
+        text anywhere in the tree, including starting from a text element. In those
+        cases, silently create a new run. This will never occur when working from the
+        top of a tree.
         """
         if not self._open_runs:
             self._open_runs.append(Run())
@@ -335,14 +340,14 @@ class DepthCollector:
     def _open_par(self) -> Par:
         """The current paragraph.
 
-        A run will look for the last open paragraph to "live" in. There will always
-        be an open paragraph element wrapped arounda run *if* we're working from the
-        top of a tree, but function _get_content_below can look for text anywhere in
-        the tree, including starting froma run or text element. In those cases,
-        silently create a new paragraph.  This will never occur when working from the
-        top of a tree.
+        :return: the most recently opened Par instance
 
-        :return: a paragraph
+        A run will look for the last open paragraph to "live" in. There will always
+        be an open paragraph element wrapped around a run *if* we're working from the
+        top of a tree, but function _get_content_below can look for text anywhere in
+        the tree, including starting from a run or text element. In those cases,
+        silently create a new paragraph. This will never occur when working from the
+        top of a tree.
         """
         if not self._open_pars:
             return self.commence_paragraph()
@@ -393,6 +398,7 @@ class DepthCollector:
             self._raise_caret()
         self.set_caret(depth, elem)
 
+    # TODO: this is only called once, from conclude_paragraph. Factor out.
     def insert(self, par: Par) -> None:
         """Add item at self._par_depth. Add branches if necessary to reach depth.
 
@@ -419,6 +425,8 @@ class DepthCollector:
             item = item.replace(">", "&gt;")
         self._open_run.text += item
 
+    # TODO: determine if this is necessary once html open and close functions are
+    # only called when extracting run text.
     def add_code_into_open_run(self, item: str) -> None:
         """
         Add text into previous run without escaping symbols.
@@ -452,3 +460,24 @@ class DepthCollector:
         open_style = self._open_run.html_style
         self._open_runs.append(Run([], item))
         self._open_runs.append(Run(open_style))
+
+    def queue_run_for_next_paragraph(self, text: str) -> None:
+        """Cache a run for the next paragraph.
+
+        :param text: text to cache
+
+        Docx2Python represents some elements *above* paragraphs as text. For example
+
+            <w:footnote>
+                <w:p>
+                    <w:r>
+                        <w:t/>
+                    </w:r>
+                </w:p>
+            </w:footnote>
+
+        Docx2Python captures that this is a footnote by inserting "footnote1" into
+        the *next* paragraph. Call this method to add text to the *next* paragraph to
+        be opened.
+        """
+        self.queued_runs.append(Run([], text))

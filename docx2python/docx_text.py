@@ -217,7 +217,7 @@ class TagRunner:
         """Open a footnote."""
         footnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in footnote_type:
-            self.tables.insert_text_as_new_run(
+            self.tables.queue_run_for_next_paragraph(
                 f"footnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
             )
         return True
@@ -226,7 +226,7 @@ class TagRunner:
         """Open an endnote."""
         endnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in endnote_type:
-            self.tables.insert_text_as_new_run(
+            self.tables.queue_run_for_next_paragraph(
                 f"endnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
             )
         return True
@@ -376,8 +376,7 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
 
     branches(root)
 
-    # TODO: see if there are ever any orphan runs and what is inside them
-    if tag_runner.tables.orphan_runs:
+    if tag_runner.tables.queued_runs:
         _ = tag_runner.tables.commence_paragraph()
     tag_runner.tables.conclude_paragraph()
 
