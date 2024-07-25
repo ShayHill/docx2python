@@ -18,8 +18,6 @@ files is accessible through the ``DocxContent`` class. This class holds file
 instances and decodes shared non-content in a docx file structure.
 """
 
-# TODO: factor out all TablesList type hints?
-
 from __future__ import annotations
 
 import copy
@@ -254,9 +252,9 @@ class File:
 
     @property
     def text(self) -> TextTable:
-        """Text extracted into a 6-layer-deep nested list of strings.
+        """Text extracted into a nested list of strings [[[[[str]]]]].
 
-        :return: Text extracted into a 6-layer-deep nested list of strings.
+        :return: Text extracted into a nested list of strings [[[[[str]]]]]
         """
         return self.get_text()
 
@@ -293,7 +291,7 @@ class DocxReader:
         self,
         docx_filename: Path | str | BytesIO,
         html: bool = False,
-        duplicate_merged_cells: bool = False,
+        duplicate_merged_cells: bool = True,
     ) -> None:
         """Initialize DocxReader instance.
 

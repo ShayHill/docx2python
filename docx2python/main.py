@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from warnings import warn
 
 from docx2python.docx_output import DocxContent
 from docx2python.docx_reader import DocxReader
@@ -21,8 +20,7 @@ def docx2python(
     docx_filename: str | Path | BytesIO,
     image_folder: str | None = None,
     html: bool = False,
-    extract_image: bool | None = None,
-    duplicate_merged_cells: bool = False,
+    duplicate_merged_cells: bool = True,
 ) -> DocxContent:
     """
     Unzip a docx file and extract contents.
@@ -35,17 +33,9 @@ def docx2python(
         paragraph. This will only be useful with ``*_runs`` attributes.
     :param extract_image: bool, extract images from document (default True)
     :param duplicate_merged_cells: bool, duplicate merged cells to return a mxn
-        nested list for each table (default False)
+        nested list for each table (default True)
     :return: DocxContent object
     """
-    if extract_image is not None:
-        warn(
-            "'extract_image' is no longer a valid argument for docx2python. If an "
-            + "image_folder is given as an argument to docx2python, images will be "
-            + "written to that folder. A folder can be provided later with "
-            + "``docx2python(filename).write_images(image_folder)``. Images files are "
-            + "available as before with ``docx2text(filename).images`` attribute."
-        )
     docx_context = DocxReader(docx_filename, html, duplicate_merged_cells)
     docx_content = DocxContent(docx_context, locals())
     if image_folder:

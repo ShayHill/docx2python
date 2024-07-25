@@ -22,8 +22,9 @@ These functions help manipulate that deep nest without deep indentation.
 from __future__ import annotations
 
 import copy
+from contextlib import suppress
 from typing import (
-    Any,
+    TYPE_CHECKING,
     Iterable,
     Iterator,
     List,
@@ -34,15 +35,13 @@ from typing import (
     overload,
 )
 
-TablesList = List[List[List[List[Any]]]]
+if TYPE_CHECKING:
+    from docx2python.depth_collector import Par
 
-# A collapsed TablesList
 CollTL = List[Union[str, "CollTL"]]
 
 
 _T = TypeVar("_T")
-
-IndexedItem = str
 
 TextTable = List[List[List[List[List[str]]]]]
 
@@ -417,7 +416,30 @@ def enum_paragraphs(
     return enum_at_depth(tables, 4)
 
 
-# TODO: track down callers for html map and see if they are calling with runs or pars
+def is_tbl(possible_tbl: Iterable[Iterable[Iterable[Par]]]) -> bool:
+    """Determine is an item in output.attribute_pars is a table."""
+    with suppress(StopIteration):
+        first_par = next(iter_at_depth(possible_tbl, 3))
+        return first_par.lineage[1] == "tbl"
+    return False
+
+
+def is_tr(possible_tr: Iterable[Iterable[Par]]) -> bool:
+    """Determine is an item in output.attribute_pars[i] is a table row."""
+    with suppress(StopIteration):
+        first_par = next(iter_at_depth(possible_tr, 2))
+        return first_par.lineage[2] == "tr"
+    return False
+
+
+def is_tc(possible_tc: Iterable[Par]) -> bool:
+    """Determine is an item in output.attribute_pars[i][j] is a table cell."""
+    with suppress(StopIteration):
+        first_par = next(iter_at_depth(possible_tc, 1))
+        return first_par.lineage[3] == "tc"
+    return False
+
+
 def get_html_map(tables: TextTable) -> str:
     """Create a visual map in html format.
 

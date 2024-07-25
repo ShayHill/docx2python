@@ -12,7 +12,7 @@ Content in the extracted docx is found in the ``word`` folder:
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING, List, Sequence
+from typing import TYPE_CHECKING, List, Literal, Sequence, cast
 
 from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.bullets_and_numbering import BulletGenerator
@@ -30,11 +30,8 @@ if TYPE_CHECKING:
 ParsTable = List[List[List[List[Par]]]]
 TextTable = List[List[List[List[List[str]]]]]
 
-# TODO: factor out TablesList
-TablesList = List[List[List[List[str]]]]
 
-
-def _get_elem_depth(tree: EtreeElement) -> int | None:
+def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
     """What depth is this element in a nested list, relative to paragraphs (depth 4)?
 
     :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
@@ -92,10 +89,9 @@ def _get_elem_depth(tree: EtreeElement) -> int | None:
         grandchildren = [list(x) for x in tree_]
         return search_at_depth([x for y in grandchildren for x in y], _depth + 1)
 
-    return search_at_depth([tree])
+    return cast(Literal[1, 2, 3, 4], search_at_depth([tree]))
 
 
-# TODO: remove root argument from _get_text_below
 def _get_text_below(file: File, root: EtreeElement) -> str:
     """Return a string of all text below an element
 
@@ -221,7 +217,7 @@ class TagRunner:
         """Open a footnote."""
         footnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in footnote_type:
-            self.tables.insert_text_as_new_run(
+            self.tables.queue_run_for_next_paragraph(
                 f"footnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
             )
         return True
@@ -230,7 +226,7 @@ class TagRunner:
         """Open an endnote."""
         endnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in endnote_type:
-            self.tables.insert_text_as_new_run(
+            self.tables.queue_run_for_next_paragraph(
                 f"endnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
             )
         return True
@@ -380,10 +376,9 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
 
     branches(root)
 
-    if tag_runner.tables.orphan_runs:
+    if tag_runner.tables.queued_runs:
         _ = tag_runner.tables.commence_paragraph()
-    if tag_runner.tables.open_pars:
-        tag_runner.tables.conclude_paragraph()
+    tag_runner.tables.conclude_paragraph()
 
     return tag_runner.tables
 

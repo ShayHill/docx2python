@@ -47,7 +47,7 @@ def test_checked_boxes() -> None:
     Other (describe):
 
     """
-    pars = docx2python(RESOURCES / "checked_boxes.docx")
+    pars = docx2python(RESOURCES / "checked_boxes.docx", duplicate_merged_cells=False)
     assert pars.body_runs[0][3:6] == [
         [
             [["\u2612", " Adult Protective Services"]],
@@ -93,7 +93,7 @@ def test_unchecked_boxes() -> None:
     All other checkboxes are unchecked
 
     """
-    pars = docx2python(RESOURCES / "checked_boxes.docx")
+    pars = docx2python(RESOURCES / "checked_boxes.docx", duplicate_merged_cells=False)
     all_text = "".join(iter_at_depth(pars.text, 5))
     assert all_text.count("\u2612") == 12
     assert all_text.count("\u2610") == 32
