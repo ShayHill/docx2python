@@ -39,7 +39,6 @@ KeyError: "There is no item named 'docProps/core.xml' in the archive"
 import pytest
 
 from docx2python import docx2python
-
 from tests.conftest import RESOURCES
 
 FILE_WITH_DOCPROPS = RESOURCES / "example.docx"

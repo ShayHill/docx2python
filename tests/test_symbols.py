@@ -19,7 +19,6 @@ Symbols are captured in the docx content files as ``<sym>`` elements.
 """
 
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 

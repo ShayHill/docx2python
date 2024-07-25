@@ -18,7 +18,6 @@ docx2text 1.19 would get the image, but not mark the image location in the outpu
 """
 
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 

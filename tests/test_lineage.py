@@ -4,18 +4,18 @@
 :created: 2024-07-14
 """
 
+from docx2python.iterators import (
+    is_tbl,
+    is_tc,
+    is_tr,
+    iter_cells,
+    iter_paragraphs,
+    iter_rows,
+    iter_tables,
+)
+from docx2python.main import docx2python
 
 from .conftest import RESOURCES
-from docx2python.main import docx2python
-from docx2python.iterators import (
-    iter_paragraphs,
-    is_tbl,
-    iter_tables,
-    is_tr,
-    iter_rows,
-    iter_cells,
-    is_tc,
-)
 
 
 class TestLineage:
@@ -46,6 +46,7 @@ class TestLineage:
 
 class TestTableIdentification:
     """Are tables identified correctly?"""
+
     def test_is_tbl(self):
         """Tables are identified correctly."""
         with docx2python(RESOURCES / "paragraphs_and_tables.docx") as extraction:
@@ -55,7 +56,7 @@ class TestTableIdentification:
             True,
             False,
             True,
-            False
+            False,
         ]
 
     def test_is_tr(self):
@@ -64,10 +65,15 @@ class TestTableIdentification:
             pars = extraction.document_pars
         assert [is_tr(tr) for tr in iter_rows(pars)] == [
             False,
-            True, True, True,
+            True,
+            True,
+            True,
             False,
-            True, True, True, True,
-            False
+            True,
+            True,
+            True,
+            True,
+            False,
         ]
 
     def test_is_tc(self):

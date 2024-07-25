@@ -12,7 +12,6 @@ import pytest
 from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.docx_reader import DocxReader
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 example_docx = RESOURCES / "example.docx"

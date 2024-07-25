@@ -9,7 +9,6 @@ import tempfile
 
 from docx2python.main import docx2python
 from docx2python.utilities import get_headings, get_links, replace_docx_text
-
 from tests.conftest import RESOURCES
 
 
@@ -23,9 +22,9 @@ class TestSearchReplace:
         html = False
         input_filename = RESOURCES / "apples_and_pears.docx"
         expect = (
-                "Apples and Pears\n\nPears and Apples\n\n"
-                "Apples and Pears\n\nPears and Apples"
-            )
+            "Apples and Pears\n\nPears and Apples\n\n"
+            "Apples and Pears\n\nPears and Apples"
+        )
         with docx2python(input_filename, html=html) as input_doc:
             result = input_doc.text
         assert result == expect

@@ -29,7 +29,6 @@ User Raiyan provided two docx files created in pages:
 """
 
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 

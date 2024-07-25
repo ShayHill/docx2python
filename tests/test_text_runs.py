@@ -4,21 +4,10 @@
 :created: 7/4/2019
 """
 
-from xml.etree import ElementTree
+from lxml import etree
 
 from docx2python.attribute_register import XML2HTML_FORMATTER
-from docx2python.text_runs import (
-    gather_Pr,
-    get_run_formatting,
-    html_close,
-    html_open,
-)
-
-from docx2python import docx2python
-from docx2python.docx_reader import DocxReader
-from tests.conftest import RESOURCES
-from lxml import  etree
-
+from docx2python.text_runs import gather_Pr, get_run_formatting, html_close, html_open
 from tests.helpers.utils import valid_xml
 
 ONE_TEXT_RUN = valid_xml(

@@ -2,7 +2,8 @@
 ci:
   skip: [pyright]
 
-exclude: 'scripts/.*|tests/.*'
+# exclude: 'scripts/.*|tests/.*'
+exclude: 'scripts/.*'
 
 repos:
 
@@ -34,9 +35,9 @@ repos:
     - id: fix-encoding-pragma
       args:
       - --remove
-    - id: name-tests-test
-      args:
-      - --pytest-test-first
+    # - id: name-tests-test
+    #   args:
+    #   - --pytest-test-first
     - id: no-commit-to-branch
     - id: pretty-format-json
       args: ['--autofix']

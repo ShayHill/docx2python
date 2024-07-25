@@ -8,7 +8,6 @@ always the case.
 """
 
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 

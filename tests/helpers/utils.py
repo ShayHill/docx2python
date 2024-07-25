@@ -63,7 +63,7 @@ def valid_xml(elements: str) -> bytes:
     if elements.startswith("<w:p"):
         pass
     elif elements.startswith("<w:r"):
-        beg +=  _BEG_PAR
+        beg += _BEG_PAR
         end = _END_PAR + end
     else:
         msg = f"No provision for inserting {elements[:10]} into valid_xml."

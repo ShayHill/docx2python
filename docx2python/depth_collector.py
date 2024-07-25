@@ -249,12 +249,7 @@ class DepthCollector:
         if elem is not None:
             pStyle = get_pStyle(elem)
 
-        new_par = Par(
-            html_style,
-            pStyle,
-            self._lineage,
-            [*self.queued_runs],
-        )
+        new_par = Par(html_style, pStyle, self._lineage, [*self.queued_runs])
         self.queued_runs = []
         self._open_pars.append(new_par)
         return new_par

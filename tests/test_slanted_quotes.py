@@ -1,7 +1,6 @@
 """Test that Word's tilted quotes and double quotes extract Docx2Python."""
 
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 

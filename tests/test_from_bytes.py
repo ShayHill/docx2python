@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
+"""Test loading a .docx from a buffer of raw bytes.
+
+:author: Shay Hill
+:created: 2024-07-25
+"""
 
 from io import BytesIO
 
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 example_docx = RESOURCES / "example.docx"

@@ -16,7 +16,6 @@ from docx2python.numbering_formats import (
     upper_letter,
     upper_roman,
 )
-
 from tests.helpers.utils import ARABIC_2_ROMAN
 
 

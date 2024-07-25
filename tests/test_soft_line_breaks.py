@@ -13,7 +13,6 @@ Docx2Python previously ignored <w:br/> elements:
 
 from docx2python import docx2python
 from docx2python.iterators import iter_paragraphs
-
 from tests.conftest import RESOURCES
 
 

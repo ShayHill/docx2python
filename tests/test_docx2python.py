@@ -12,7 +12,6 @@ from paragraphs import par
 
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 ALT_TEXT = par(
@@ -159,7 +158,8 @@ class TestFormatting:
                         "Heading 2",
                         "",
                         "----Image alt text---->A jellyfish in water\n\n"
-                        "Description automatically generated<----media/image2.jpg----",
+                        + "Description automatically generated"
+                        + "<----media/image2.jpg----",
                     ]
                 ]
             ]
@@ -216,6 +216,7 @@ class TestHtmlFormatting:
             ]
             result = html_output.body_runs[3]
             assert result == expect
+
 
 class TestImageDir:
     """Write images out to file given an image directory."""

@@ -15,10 +15,10 @@ from docx2python.docx_context import collect_numFmts
 from docx2python.docx_reader import DocxReader
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 example_docx = RESOURCES / "example.docx"
+
 
 class TestSaveDocx:
     def test_save_unchanged(self) -> None:
@@ -118,12 +118,12 @@ class TestPullImageFiles:
         """Copy image files to output path."""
         docx_context = DocxReader(example_docx)
         with tempfile.TemporaryDirectory() as image_folder:
-            docx_context.pull_image_files(image_folder)
+            _ = docx_context.pull_image_files(image_folder)
             assert set(os.listdir(image_folder)) == {"image1.png", "image2.jpg"}
 
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
         docx_context = DocxReader(RESOURCES / "basic.docx")
         with tempfile.TemporaryDirectory() as image_folder:
-            docx_context.pull_image_files(image_folder)
+            _ = docx_context.pull_image_files(image_folder)
             assert os.listdir(image_folder) == []

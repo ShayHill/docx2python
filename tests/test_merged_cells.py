@@ -5,7 +5,6 @@
 """
 
 from docx2python import docx2python
-
 from tests.conftest import RESOURCES
 
 

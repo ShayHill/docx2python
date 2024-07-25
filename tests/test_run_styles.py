@@ -33,7 +33,6 @@
 """
 
 from docx2python.main import docx2python
-
 from tests.conftest import RESOURCES
 
 
@@ -64,11 +63,11 @@ class TestParStyles:
                         ['<span style="text-transform:uppercase">All Caps</span>'],
                         [
                             '<span style="background-color:yellow">'
-                            "Highlighted yellow</span>"
+                            + "Highlighted yellow</span>"
                         ],
                         [
                             '<span style="background-color:green">'
-                            "Highlighted green</span>"
+                            + "Highlighted green</span>"
                         ],
                         ["<b>Consecutive</b>"],
                         ["<b>Bold</b>"],
@@ -76,13 +75,13 @@ class TestParStyles:
                         [
                             '<span style="font-size:24pt"><sub>Subscript </sub></span>',
                             '<span style="font-size:24pt;font-variant:small-caps">'
-                            "Small Caps </span>",
+                            + "Small Caps </span>",
                             '<span style="font-size:24pt;text-transform:uppercase">'
-                            "All Caps </span>",
+                            + "All Caps </span>",
                             '<span style="background-color:yellow;font-size:24pt">'
-                            "Highlighted yellow </span>",
+                            + "Highlighted yellow </span>",
                             '<span style="background-color:green;font-size:24pt">'
-                            "Highlighted green</span>",
+                            + "Highlighted green</span>",
                         ],
                         [],
                         [],

@@ -78,10 +78,10 @@ Paragraphs are returned in by the order in which they *close*.
 
 """
 
-from docx2python.main import docx2python
-from docx2python.iterators import iter_at_depth
-
 from paragraphs import par
+
+from docx2python.iterators import iter_at_depth
+from docx2python.main import docx2python
 from tests.conftest import RESOURCES
 
 
@@ -169,9 +169,7 @@ def test_paragraphs_only() -> None:
 
 def test_par_styles_not_in_text() -> None:
     """Par styles skipped in pure text export"""
-    pars = docx2python(
-        RESOURCES / "nested_paragraphs.docx", html=True
-    )
+    pars = docx2python(RESOURCES / "nested_paragraphs.docx", html=True)
     assert pars.text == par(
         """[Grab your reader’s attention with a great quote from the document or use
         this space to emphasize a key point. To place this text box anywhere on the

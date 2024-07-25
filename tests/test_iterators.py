@@ -4,8 +4,9 @@ author: Shay Hill
 created: 6/28/2019
 """
 
-import pytest
 import itertools as it
+
+import pytest
 
 from docx2python.iterators import (
     enum_at_depth,
