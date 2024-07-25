@@ -61,8 +61,8 @@ if TYPE_CHECKING:
     from docx2python.docx_reader import File
 
 
-MaybeStr = Union[str, None]
-Lineage = Tuple[Literal["document"], MaybeStr, MaybeStr, MaybeStr, MaybeStr]
+_MaybeStr = Union[str, None]
+_Lineage = Tuple[Literal["document"], _MaybeStr, _MaybeStr, _MaybeStr, _MaybeStr]
 
 
 @dataclasses.dataclass
@@ -98,7 +98,7 @@ class Par:
 
     html_style: list[str]
     style: str
-    lineage: Lineage
+    lineage: _Lineage
     runs: list[Run] = dataclasses.field(default_factory=list)
     list_position: tuple[str | None, list[int]] = dataclasses.field(init=False)
 
@@ -112,7 +112,14 @@ class Par:
 
         :return: a string for each run with text content
         """
-        return [x for x in (str(y) for y in self.runs) if x]
+        runs_as_text = [x for x in (str(y) for y in self.runs) if x]
+        if self.html_style:
+            return [
+                html_open(self.html_style),
+                *runs_as_text,
+                html_close(self.html_style),
+            ]
+        return runs_as_text
 
 
 ParsTable = List[List[List[List[Par]]]]
@@ -157,7 +164,7 @@ class DepthCollector:
         self._xml2html_format = file.context.xml2html_format
         self._par_depth: Literal[1, 2, 3, 4] = 4
 
-        self._lineage: Lineage = ("document", None, None, None, None)
+        self._lineage: _Lineage = ("document", None, None, None, None)
         self._rightmost_branches: list[Any] = [[]]
 
         self._open_pars: list[Par] = []
@@ -246,7 +253,7 @@ class DepthCollector:
             html_style,
             pStyle,
             self._lineage,
-            [*self.queued_runs, Run([], html_open(html_style))],
+            [*self.queued_runs],
         )
         self.queued_runs = []
         self._open_pars.append(new_par)
@@ -258,10 +265,8 @@ class DepthCollector:
             old_par = self._open_pars.pop()
         except IndexError:
             return
-        # TODO: do not call html_close here, call only when extracting run text.
-        # TODO: only call html_open when extracting run text.
-        old_par.runs.append(Run([], html_close(old_par.html_style)))
-        self.insert(old_par)
+        self.set_caret(self._par_depth)
+        self._rightmost_branches[-1].append(old_par)
 
     def commence_run(self, elem: EtreeElement | None = None) -> None:
         """Open a new run and add it to the current paragraph.
@@ -398,18 +403,6 @@ class DepthCollector:
             self._raise_caret()
         self.set_caret(depth, elem)
 
-    # TODO: this is only called once, from conclude_paragraph. Factor out.
-    def insert(self, par: Par) -> None:
-        """Add item at self._par_depth. Add branches if necessary to reach depth.
-
-        :param item: list of strings to insert at caret
-
-        This dumps the contents of the most recently closed paragraph into the
-        _rightmost_branches collector.
-        """
-        self.set_caret(self._par_depth)
-        self._rightmost_branches[-1].append(par)
-
     def add_text_into_open_run(self, item: str) -> None:
         """
         Add item into previous run.
@@ -425,8 +418,6 @@ class DepthCollector:
             item = item.replace(">", "&gt;")
         self._open_run.text += item
 
-    # TODO: determine if this is necessary once html open and close functions are
-    # only called when extracting run text.
     def add_code_into_open_run(self, item: str) -> None:
         """
         Add text into previous run without escaping symbols.

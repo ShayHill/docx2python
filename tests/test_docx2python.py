@@ -67,8 +67,6 @@ class TestFormatting:
     def test_endnotes(self) -> None:
         """Endnotes extracted."""
         with docx2python(RESOURCES / "example.docx") as output:
-            with open("temp.py", "w") as f:
-                f.write(str(output.endnotes_runs))
             assert output.endnotes_runs == [
                 [
                     [
@@ -195,9 +193,6 @@ class TestHtmlFormatting:
     def test_paragraph_formatting(self) -> None:
         """Text formatting converted to html."""
         with docx2python(RESOURCES / "example.docx", html=True) as html_output:
-            # body_pars = html_output.body_pars
-            # styled = [(par.pstyle, par.strings) for par in iter_at_depth(body_pars[3], 3)]
-            # breakpoint()
             expect = [
                 [
                     [
