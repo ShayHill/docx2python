@@ -30,8 +30,7 @@ def _is_mergeable(elem: EtreeElement) -> bool:
 
 
 def _elem_key(file: File, elem: EtreeElement) -> tuple[str, str, list[str]]:
-    """
-    Enough information to tell if two elements are more-or-less identically formatted.
+    """Return enough info to tell if two elements are closely formatted.
 
     :param elem: any element in an xml file.
     :return: A summary of attributes (if two adjacent elements return the same key,
@@ -74,8 +73,7 @@ def _is_text_or_text_math(elem: EtreeElement) -> bool:
 
 
 def merge_elems(file: File, tree: EtreeElement) -> None:
-    """
-    Recursively merge duplicate (as far as docx2python is concerned) elements.
+    """Recursively merge duplicate (as far as docx2python is concerned) elements.
 
     :param file: File instancce
     :param tree: root_element from an xml in File instance

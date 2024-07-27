@@ -32,7 +32,7 @@ TextTable = List[List[List[List[List[str]]]]]
 
 
 def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
-    """What depth is this element in a nested list, relative to paragraphs (depth 4)?
+    """Return depth in a nested list, relative to paragraphs (depth 4).
 
     :param tree: element in a docx content xml (header, footer, officeDocument, etc.)
 
@@ -77,7 +77,7 @@ def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
         return None
 
     def search_at_depth(tree_: Sequence[EtreeElement], _depth: int = 0) -> int | None:
-        """Width-first recursive search for Tags.PARAGRAPH
+        """Width-first recursive search for Tags.PARAGRAPH.
 
         :param tree_: a sequence of elements which may contain a paragraph
         :return: depth of the first paragraph found, or None if no paragraph found
@@ -93,7 +93,7 @@ def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
 
 
 def _get_text_below(file: File, root: EtreeElement) -> str:
-    """Return a string of all text below an element
+    """Return a string of all text below an element.
 
     :param file: an internal file element (e.g., header, footer, document))
     :param root: the root element of the document
@@ -360,8 +360,7 @@ def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCo
     tag_runner = TagRunner(file)
 
     def branches(tree: EtreeElement) -> None:
-        """
-        Recursively iterate over tree. Add text when found.
+        """Recursively iterate over tree. Add text when found.
 
         :param tree: An Element from an xml file (etree)
         :effect: Adds text cells to outer variable `tables`.

@@ -39,8 +39,7 @@ ROMAN_SUBS = [
 
 
 def lower_letter(n: int) -> str:
-    """
-    Convert a positive integer to a string of letters representing base 26.
+    """Convert a positive integer to a string of letters representing base 26.
 
     :param n: any positive integer
     :return: the kind of "numbering" used for numbered lists and excel columns.
@@ -55,7 +54,8 @@ def lower_letter(n: int) -> str:
         'aa'
     """
     if n < 1:
-        raise ValueError("0 and <1 are not defined for this numbering")
+        msg = f"0 and <1 are not defined for this numbering: {n}"
+        raise ValueError(msg)
     result = ""
     while n:
         n, remainder = divmod(n - 1, 26)
@@ -73,8 +73,7 @@ def upper_letter(n: int) -> str:
 
 
 def lower_roman(n: int) -> str:
-    """
-    Convert a positive integer to a lowercase Roman numeral
+    """Convert a positive integer to a lowercase Roman numeral.
 
     :param n: any positive integer
     :return: Roman number equivalent of n
@@ -116,7 +115,7 @@ def upper_roman(n: int) -> str:
 
 
 def decimal(n: int) -> str:
-    """Get int as a decimal number string
+    """Get int as a decimal number string.
 
     :param n: any integer
     :return: string such that int(decimal(n)) == n

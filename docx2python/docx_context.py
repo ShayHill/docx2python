@@ -1,4 +1,4 @@
-"""Content from files that aren't ``word/document.xml``
+"""Content from files that aren't ``word/document.xml``.
 
 :author: Shay Hill
 :created: 6/26/2019
@@ -23,8 +23,7 @@ if TYPE_CHECKING:
 
 
 def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
-    """
-    Collect abstractNum bullet formats into a dictionary
+    """Collect abstractNum bullet formats into a dictionary.
 
     :param numFmts_root: Root element of ``word/numbering.xml``.
     :return: numId mapped to numFmts (by ilvl)
@@ -91,8 +90,7 @@ def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
 
 
 def collect_rels(zipf: zipfile.ZipFile) -> dict[str, list[dict[str, str]]]:
-    """
-    Map file to relId to attrib
+    """Map file to relId to attrib.
 
     :param zipf: created by ``zipfile.ZipFile("docx_filename")``
     :return: a deep dictionary ``{filename: list of Relationships``
@@ -165,8 +163,7 @@ def collect_rels(zipf: zipfile.ZipFile) -> dict[str, list[dict[str, str]]]:
 
 
 def collect_docProps(root: EtreeElement) -> dict[str, str | None]:
-    """
-    Get author, modified, etc. from core-properties (should be docProps/core.xml)
+    """Get author, modified, etc. from core-properties (should be docProps/core.xml).
 
     :param root: root of the XML tree
     :return: document property names mapped to values

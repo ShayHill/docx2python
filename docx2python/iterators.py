@@ -260,7 +260,7 @@ def iter_at_depth(
 
 
 def iter_tables(tables: Iterable[_T]) -> Iterator[_T]:
-    """Iterate over ``tables[i]``
+    """Iterate over ``tables[i]``.
 
     Analog of iter_at_depth(tables, 1)
 
@@ -271,7 +271,7 @@ def iter_tables(tables: Iterable[_T]) -> Iterator[_T]:
 
 
 def iter_rows(tables: Iterable[Iterable[_T]]) -> Iterator[_T]:
-    """Iterate over ``tables[:][j]``
+    """Iterate over ``tables[:][j]``.
 
     Analog of iter_at_depth(tables, 2)
 
@@ -282,7 +282,7 @@ def iter_rows(tables: Iterable[Iterable[_T]]) -> Iterator[_T]:
 
 
 def iter_cells(tables: Iterable[Iterable[Iterable[_T]]]) -> Iterator[_T]:
-    """Iterate over ``tables[:][:][k]``
+    """Iterate over ``tables[:][:][k]``.
 
     Analog of iter_at_depth(tables, 3)
 
@@ -293,7 +293,7 @@ def iter_cells(tables: Iterable[Iterable[Iterable[_T]]]) -> Iterator[_T]:
 
 
 def iter_paragraphs(tables: Iterable[Iterable[Iterable[Iterable[_T]]]]) -> Iterator[_T]:
-    """Iterate over ``tables[:][:][:][l]``
+    """Iterate over ``tables[:][:][:][l]``.
 
     Analog of iter_at_depth(tables, 4)
 
@@ -304,7 +304,7 @@ def iter_paragraphs(tables: Iterable[Iterable[Iterable[Iterable[_T]]]]) -> Itera
 
 
 def enum_tables(tables: Iterable[_T]) -> Iterator[tuple[tuple[int], _T]]:
-    """Enumerate over ``tables[i]``
+    """Enumerate over ``tables[i]``.
 
     Analog of enum_at_depth(tables, 1)
 
@@ -316,7 +316,7 @@ def enum_tables(tables: Iterable[_T]) -> Iterator[tuple[tuple[int], _T]]:
 
 
 def enum_rows(tables: Iterable[Iterable[_T]]) -> Iterator[tuple[tuple[int, int], _T]]:
-    """Enumerate over ``tables[:][j]``
+    """Enumerate over ``tables[:][j]``.
 
     Analog of enum_at_depth(tables, 2)
 
@@ -330,7 +330,7 @@ def enum_rows(tables: Iterable[Iterable[_T]]) -> Iterator[tuple[tuple[int, int],
 def enum_cells(
     tables: Iterable[Iterable[Iterable[_T]]],
 ) -> Iterator[tuple[tuple[int, int, int], _T]]:
-    """Enumerate over ``tables[:][:][k]``
+    """Enumerate over ``tables[:][:][k]``.
 
     Analog of enum_at_depth(tables, 3)
 
@@ -344,7 +344,7 @@ def enum_cells(
 def enum_paragraphs(
     tables: Iterable[Iterable[Iterable[Iterable[_T]]]],
 ) -> Iterator[tuple[tuple[int, int, int, int], _T]]:
-    """Enumerate over ``tables[:][:][:][l]``
+    """Enumerate over ``tables[:][:][:][l]``.
 
     Analog of enum_at_depth(tables, 4)
 

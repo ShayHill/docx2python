@@ -54,9 +54,9 @@ if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
+# TODO: decide if this is still used and where it should be placed
 def qn(elem: EtreeElement, tag: str) -> str:
-    """
-    Turn a namespace-prefixed tag into a Clark-notation qualified tag.
+    """Turn a namespace-prefixed tag into a Clark-notation qualified tag.
 
     :param elem: lxml.etree._Element object
     :param tag: namespace-prefixed tag, e.g. ``w:p``
@@ -81,8 +81,7 @@ def qn(elem: EtreeElement, tag: str) -> str:
 
 
 def get_attrib_by_qn(elem: EtreeElement, tag: str) -> str:
-    """
-    Get the attribute of an element by a namespace-prefixed tag.
+    """Get the attribute of an element by a namespace-prefixed tag.
 
     :param elem: lxml.etree._Element object
     :param tag: namespace-prefixed tag, e.g. ``w:p``
@@ -92,8 +91,7 @@ def get_attrib_by_qn(elem: EtreeElement, tag: str) -> str:
 
 
 def find_by_qn(elem: EtreeElement, tag: str) -> EtreeElement | None:
-    """
-    Find all elements in the tree with a namespace-prefixed tag.
+    """Find all elements in the tree with a namespace-prefixed tag.
 
     :param elem: lxml.etree._Element object
     :param tag: namespace-prefixed tag, e.g. ``w:p``
@@ -103,8 +101,7 @@ def find_by_qn(elem: EtreeElement, tag: str) -> EtreeElement | None:
 
 
 def findall_by_qn(elem: EtreeElement, tag: str) -> list[EtreeElement]:
-    """
-    Find all elements in the tree with a namespace-prefixed tag.
+    """Find all elements in the tree with a namespace-prefixed tag.
 
     :param elem: lxml.etree._Element object
     :param tag: namespace-prefixed tag, e.g. ``w:p``
@@ -114,8 +111,7 @@ def findall_by_qn(elem: EtreeElement, tag: str) -> list[EtreeElement]:
 
 
 def iterfind_by_qn(elem: EtreeElement, tag: str) -> Iterator[EtreeElement]:
-    """
-    Iterate over all elements in the tree with a namespace-prefixed tag.
+    """Iterate over all elements in the tree with a namespace-prefixed tag.
 
     :param elem: lxml.etree._Element object
     :param tag: namespace-prefixed tag, e.g. ``w:p``

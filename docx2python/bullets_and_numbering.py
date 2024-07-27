@@ -45,18 +45,19 @@ def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
     }
     try:
         retval_: Callable[[int], str] = numFmt2bullet_function[numFmt]
-        return retval_
     except KeyError:
         warnings.warn(
             f"{numFmt} numbering format not implemented, "
-            + f"substituting '{nums.bullet()}'"
+            + f"substituting '{nums.bullet()}'",
+            stacklevel=2,
         )
         return nums.bullet
+    else:
+        return retval_
 
 
 def _new_list_counter() -> defaultdict[str, defaultdict[str, int]]:
-    """
-    A counter, starting at zero, for each numId
+    """Return a counter, starting at zero, for each numId.
 
     :return: {
         a_numId: 0,
@@ -69,8 +70,7 @@ def _new_list_counter() -> defaultdict[str, defaultdict[str, int]]:
 
 
 def _increment_list_counter(ilvl2count: defaultdict[str, int], ilvl: str) -> int:
-    """
-    Increase counter at ilvl, reset counter at deeper levels.
+    """Increase counter at ilvl, reset counter at deeper levels.
 
     :param ilvl2count: context['numId2count']
     :param ilvl: string representing an integer
@@ -240,7 +240,7 @@ class BulletGenerator:
         return numPr, list(self.numId2count[numPr].values())
 
     def get_bullet(self, paragraph: EtreeElement) -> str:
-        """Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ')
+        """Get bullet string if paragraph is numbered. (e.g, '--  ' or '1)  ').
 
         :param paragraph: <w:p> xml element
         :return: specified 'bullet' string or '' if paragraph is not numbered
@@ -254,11 +254,12 @@ class BulletGenerator:
         """
         numId, ilvl = self.get_bullet_fmt(paragraph)
         number = self.get_par_number(paragraph)
-        if any(x is None for x in (numId, ilvl, number)):
+        if numId is None:
             return ""
-        assert numId is not None
-        assert ilvl is not None
-        assert number is not None
+        if ilvl is None:
+            return ""
+        if number is None:
+            return ""
         try:
             numFmt = self.numId2numFmts[str(numId)][int(ilvl)]
         except (KeyError, IndexError):

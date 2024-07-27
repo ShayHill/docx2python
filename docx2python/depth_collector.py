@@ -1,4 +1,4 @@
-"""Collect xml text in a nested list
+"""Collect xml text in a nested list.
 
 :author: Shay Hill
 :created: 6/26/2019
@@ -67,13 +67,13 @@ _Lineage = Tuple[Literal["document"], _MaybeStr, _MaybeStr, _MaybeStr, _MaybeStr
 
 @dataclasses.dataclass
 class Run:
-    """A text run. Html styles and text content"""
+    """A text run. Html styles and text content."""
 
     html_style: list[str] = dataclasses.field(default_factory=list)
     text: str = ""
 
     def __str__(self) -> str:
-        """Return any text content in the run
+        """Return any text content in the run.
 
         :return: text content or "" if none
         """
@@ -103,12 +103,12 @@ class Par:
     list_position: tuple[str | None, list[int]] = dataclasses.field(init=False)
 
     def __post_init__(self) -> None:
-        """Set list_position to None"""
+        """Set list_position to None."""
         self.list_position = (None, [])
 
     @property
     def run_strings(self) -> list[str]:
-        """Return a list of strings from the runs
+        """Return a list of strings from the runs.
 
         :return: a string for each run with text content
         """
@@ -147,15 +147,14 @@ def get_par_strings(nested_pars: ParsTable) -> TextTable:
 
 
 class CaretDepthError(Exception):
-    """Caller attempted to raise or lower DepthCollector caret out of range"""
+    """Caller attempted to raise or lower DepthCollector caret out of range."""
 
 
 class DepthCollector:
     """Insert items into a tree at a consistent depth."""
 
     def __init__(self, file: File) -> None:
-        """
-        Record item depth and initiate data container.
+        """Record item depth and initiate data container.
 
         :param item_depth: content will only appear at this depth, though empty lists
             may appear above. I.e., this is how many brackets to open before inserting
@@ -213,7 +212,7 @@ class DepthCollector:
         self.comment_ranges[id_] = (beg, cruns)
 
     def view_branch(self, address: Iterable[int]) -> Any:
-        """Return the item at the given address
+        """Return the item at the given address.
 
         :param address: a tuple of indices to the item to be returned
         :return: the item at the address.
@@ -226,7 +225,7 @@ class DepthCollector:
 
     @staticmethod
     def _get_run_strings(runs: list[Run]) -> list[str]:
-        """Return a string for each run in the current open paragraph. Ignore ""
+        """Return a string for each run in the current open paragraph. Ignore "".
 
         :param runs: list of runs
         :return: a string for each run with text content
@@ -360,7 +359,8 @@ class DepthCollector:
         :return: None
         """
         if self.caret_depth >= self._par_depth:
-            raise CaretDepthError("will not lower caret beneath paragraph depth")
+            msg = "will not drop caret beneath paragraph depth"
+            raise CaretDepthError(msg)
         self._rightmost_branches[-1].append([])
         self._rightmost_branches.append(self._rightmost_branches[-1][-1])
 
@@ -370,14 +370,14 @@ class DepthCollector:
         :raise CaretDepthError: if there is no outside list to which to ascend
         """
         if self.caret_depth == 1:
-            raise CaretDepthError("will not raise caret above root")
+            msg = "will not raise caret above root"
+            raise CaretDepthError(msg)
         self._rightmost_branches = self._rightmost_branches[:-1]
 
     def set_caret(
         self, depth: None | Literal[1, 2, 3, 4], elem: EtreeElement | None = None
     ) -> None:
-        """
-        Set caret at given depth.
+        """Set caret at given depth.
 
         :param depth: depth level for caret (between 1 and item_depth inclusive)
             another at the same depth. This is how consecutive paragraphs avoid being
@@ -399,8 +399,7 @@ class DepthCollector:
         self.set_caret(depth, elem)
 
     def add_text_into_open_run(self, item: str) -> None:
-        """
-        Add item into previous run.
+        """Add item into previous run.
 
         :param item: string to insert into previous run
 
@@ -414,16 +413,14 @@ class DepthCollector:
         self._open_run.text += item
 
     def add_code_into_open_run(self, item: str) -> None:
-        """
-        Add text into previous run without escaping symbols.
+        """Add text into previous run without escaping symbols.
 
         :param item: string to insert into previous run
         """
         self._open_run.text += item
 
     def insert_text_as_new_run(self, item: str) -> None:
-        """
-        Close previous run, cache style, open and close new run, re-open cached style.
+        """Close previous run, cache style, open & close new run, re-open cached style.
 
         :param item: string to insert into new run
 

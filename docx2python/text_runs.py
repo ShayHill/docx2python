@@ -83,8 +83,7 @@ def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]
 
 
 def gather_Pr(element: EtreeElement) -> dict[str, str | None]:
-    """
-    Gather style values for a <w:r>, <w:tc>, or <w:p> element (maybe others)
+    """Gather style values for a <w:r>, <w:tc>, or <w:p> element (maybe others).
 
     :param element: any xml element. r and p elems typically have Pr values.
     :return: Style names ('b/', 'sz', etc.) mapped to values.
@@ -102,8 +101,7 @@ def gather_Pr(element: EtreeElement) -> dict[str, str | None]:
 
 
 def get_pStyle(paragraph_element: EtreeElement) -> str:
-    """
-    Collect and format paragraph -> pPr -> pStyle value.
+    """Collect and format paragraph -> pPr -> pStyle value.
 
     :param paragraph_element: a ``<w:p>`` xml element
 
@@ -117,8 +115,7 @@ def get_pStyle(paragraph_element: EtreeElement) -> str:
 def get_run_formatting(
     run_element: EtreeElement, xml2html: dict[str, HtmlFormatter]
 ) -> list[str]:
-    """
-    Get run-element formatting converted into html.
+    """Get run-element formatting converted into html.
 
     :param run_element: a ``<w:r>`` xml element
         create with::
@@ -146,8 +143,7 @@ def get_run_formatting(
 def get_paragraph_formatting(
     paragraph_element: EtreeElement, xml2html: dict[str, HtmlFormatter]
 ) -> list[str]:
-    """
-    Get paragraph-element formatting converted into html.
+    """Get paragraph-element formatting converted into html.
 
     :param paragraph_element: a ``<w:p>`` xml element
         create with::
@@ -175,8 +171,7 @@ def get_paragraph_formatting(
 def _format_Pr_into_html(
     Pr2val: dict[str, str | None], xml2html: dict[str, HtmlFormatter]
 ) -> list[str]:
-    """
-    Format tags and values into html strings.
+    """Format tags and values into html strings.
 
     :param Pr2val: tags mapped to values (extracted from xml)
         e.g., {'b': None, 'bCs': None}
@@ -227,8 +222,7 @@ def _format_Pr_into_html(
 def get_html_formatting(
     elem: EtreeElement, xml2html: dict[str, HtmlFormatter]
 ) -> list[str]:
-    """
-    Get style for an element (if available)
+    """Get style for an element (if available).
 
     :param elem: a run or paragraph element.
     :param xml2html: mapping to convert xml styles to html styles
@@ -246,8 +240,7 @@ def get_html_formatting(
 
 
 def html_open(style: Sequence[str]) -> str:
-    """
-    HTML tags to open a style.
+    """HTML tags to open a style.
 
     :param style: sequence of html tags without the '<' and '>'
     :return: opening html tags joined into a single string
@@ -260,8 +253,7 @@ def html_open(style: Sequence[str]) -> str:
 
 
 def html_close(style: list[str]) -> str:
-    """
-    HTML tags to close a style.
+    """HTML tags to close a style.
 
     :param style: sequence of html tags without the '<' and '>'
     :return: closing html tags joined into a single string

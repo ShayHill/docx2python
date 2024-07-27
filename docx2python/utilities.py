@@ -1,4 +1,4 @@
-"""Utility / example functions using new (as of 2.0.0 Docx2Python features)
+"""Utility / example functions using new (as of 2.0.0 Docx2Python features).
 
 :author: Shay Hill
 :created: 2021-12-21
@@ -48,7 +48,7 @@ def _new_br_element(elem: EtreeElement) -> EtreeElement:
 
 
 def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
-    """Replace :old: with :new: in all descendants of :root:
+    """Replace :old: with :new: in all descendants of :root:.
 
     :param root: an etree element presumably containing descendant text elements
     :param old: text to be replaced
@@ -107,7 +107,7 @@ def replace_docx_text(
 
 
 def get_links(path_in: Path | str) -> Iterator[tuple[str, str]]:
-    """Iter links inside a docx file as (href, text)
+    """Yield links inside a docx file as (href, text).
 
     :param path_in: path to input docx
     :yield: every link in the file as a tuple of (href, text)
@@ -124,7 +124,7 @@ def get_links(path_in: Path | str) -> Iterator[tuple[str, str]]:
 
 
 def get_headings(path_in: Path | str) -> Iterator[list[str]]:
-    """Iter paragraphs with 'Heading' patagraph_style
+    """Yield paragraphs with 'Heading' patagraph_style.
 
     :param path_in: path to input docx
     :yield: every paragraph with 'Heading' paragraph_style as a list of strings

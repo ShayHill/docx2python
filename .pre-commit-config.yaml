@@ -129,6 +129,7 @@ repos:
   # PLR0913 Too many arguments to function call
   #
   # ERA001 Found commented-out code
+  # N803 Argument name should be lowercase
   #
   # S320 Using `lxml` to parse untrusted data is known to be ... XML attacks
   # D212 [*] Multi-line docstring summary should start at the first line
@@ -137,7 +138,6 @@ repos:
   # FBT002 Boolean default positional argument in function definition
   # S101 Use of `assert` detected
   # D401 First line of docstring should be in imperative mood
-  # N803 Argument name should be lowercase
   # ERA001 Found commented-out code
   # D200 One-line docstring should fit on one line
   # ARG005 Unused lambda argument
@@ -166,7 +166,7 @@ repos:
       args:
       - --target-version=py38
       - --select=ALL
-      - --ignore=ANN101,ANN102,ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,ERA001
+      - --ignore=ANN101,ANN102,ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,ERA001,N803
 
         # ,S320,D212,D415,FBT001,FBT002,S101,D401,N803,ERA001,D200,ARG005,B028,EM101,TRY003,ANN401,PYI036,TRY300,PYI019,PTH118,PTH119,PTH123,PTH120,D403,SIM108,RUF010,C901,PLR0912,PLR0915,PLR2004
       # # - --fix

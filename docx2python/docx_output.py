@@ -115,7 +115,7 @@ class DocxContent:
     docx2python_kwargs: dict[str, Any]
 
     def close(self):
-        """Close the zipfile opened by DocxReader"""
+        """Close the zipfile opened by DocxReader."""
         self.docx_reader.close()
 
     def __enter__(self) -> Self:
@@ -131,7 +131,7 @@ class DocxContent:
         exc_value: Any,  # None | Exception, but py <= 3.9 doesn't like it.
         exc_traceback: Any,  # None | TracebackType, but py <= 3.9 doesn't like it.
     ) -> None:
-        """Close the zipfile opened by DocxReader
+        """Close the zipfile opened by DocxReader.
 
         :param exc_type: Python internal use
         :param exc_value: Python internal use
@@ -140,8 +140,7 @@ class DocxContent:
         self.close()
 
     def __getattr__(self, name: str) -> Any:
-        """
-        Create sub-attributes for docx content.
+        """Create sub-attributes for docx content.
 
         :param name: name of an internal docx xml file
         :return: extracted text from named file with runs joined together into

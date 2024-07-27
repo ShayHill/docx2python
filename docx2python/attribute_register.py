@@ -265,9 +265,7 @@ XML2HTML_FORMATTER = {
 
 
 class Tags(str, Enum):
-    """
-    These are the tags that provoke some action in docx2python.
-    """
+    """Tags that provoke some action in docx2python."""
 
     BODY = "w:body"
     BR = "w:br"
@@ -316,8 +314,7 @@ def _is_content(elem: EtreeElement) -> bool:
 
 
 def has_content(tree: EtreeElement) -> str | None:
-    """
-    Does the element have any descendent content elements?
+    """Determine if the element has any descendent content elements.
 
     :param tree: xml element
     :return: first content tag found or None if no content tags are found
@@ -332,7 +329,7 @@ def has_content(tree: EtreeElement) -> str | None:
     """
 
     def iter_content(tree_: EtreeElement) -> Iterator[str]:
-        """Yield all content elements in tree
+        """Yield all content elements in tree.
 
         :param tree_: xml element
         :yield: child content elements

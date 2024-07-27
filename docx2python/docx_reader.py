@@ -56,7 +56,7 @@ CONTENT_FILE_TYPES = {"officeDocument", "header", "footer", "footnotes", "endnot
 
 @dataclass
 class File:
-    """The attribute dict of a file in the docx, plus cached data
+    """The attribute dict of a file in the docx, plus cached data.
 
     The docx lists internal files in various _rels files. Each will be specified with a
     dict of, e.g.::
@@ -77,8 +77,7 @@ class File:
     """
 
     def __init__(self, context: DocxReader, attribute_dict: dict[str, str]) -> None:
-        """
-        Point to container DocxContext instance and store attributes as properties.
+        """Point to container DocxContext instance and store attributes as properties.
 
         :param context: The DocxContent object holding this instance
         :param attribute_dict: Attributes of this file found in the rels, plus 'dir' as
@@ -98,7 +97,7 @@ class File:
         self.__depth_collector: None | DepthCollector = None
 
     def __repr__(self) -> str:
-        """File with self.path
+        """File with self.path.
 
         :return: String representation
         """
@@ -106,7 +105,7 @@ class File:
 
     @property
     def path(self) -> str:
-        """Infer path/to/xml/file from instance attributes
+        """Infer path/to/xml/file from instance attributes.
 
         :return: path to xml file
 
@@ -166,7 +165,7 @@ class File:
 
     @property
     def rels(self) -> dict[str, str]:
-        """rIds mapped to values
+        """Get rIds mapped to values.
 
         :return: dict of rIds mapped to values
 
@@ -258,7 +257,7 @@ class File:
         return self.get_text()
 
     def get_content(self, root: EtreeElement | None = None) -> ParsTable:
-        """The same content as property 'content' with optional given root.
+        """Return the same content as property 'content' with optional given root.
 
         :param root: Extract content of file from root down.
             If root is not given, return full content of file.
@@ -269,7 +268,7 @@ class File:
         return get_file_content(self, root)
 
     def get_text(self, root: EtreeElement | None = None) -> TextTable:
-        """The same content as property 'text' with optional given root.
+        """Return the same content as property 'text' with optional given root.
 
         :param root: Extract content of file from root down.
             If root is not given, return full content of file.
@@ -280,9 +279,7 @@ class File:
 
 @dataclass
 class DocxReader:
-    """
-    Hold File instances and decode information shared between them (e.g., numFmts)
-    """
+    """Hold File instances and decode info shared between them (e.g., numFmts)."""
 
     def __init__(
         self,
@@ -313,14 +310,14 @@ class DocxReader:
 
     @property
     def zipf(self) -> zipfile.ZipFile:
-        """
-        Entire docx unzipped into bytes.
+        """Entire docx unzipped into bytes.
 
         :return: Entire docx unzipped into bytes.
         :raise ValueError: If DocxReader instance has been closed
         """
         if self.__closed:
-            raise ValueError("DocxReader instance has been closed.")
+            msg = "DocxReader instance has been closed."
+            raise ValueError(msg)
         if self.__zipf is None:
             self.__zipf = zipfile.ZipFile(self.docx_filename)
             return self.__zipf
@@ -357,8 +354,7 @@ class DocxReader:
 
     @property
     def files(self) -> list[File]:
-        """
-        Instantiate a File instance for every content file.
+        """Instantiate a File instance for every content file.
 
         :return: List of File instances, one per content file.
         """
@@ -373,8 +369,7 @@ class DocxReader:
 
     @property
     def comments(self) -> list[EtreeElement]:
-        """
-        Comments from the document.
+        """Comments from the document.
 
         :return: Comments from the document.
         """
@@ -386,8 +381,7 @@ class DocxReader:
 
     @property
     def numId2numFmts(self) -> dict[str, list[str]]:
-        """
-        numId referenced in xml to list of numFmt per indentation level
+        """Return numId referenced in xml to list of numFmt per indentation level.
 
         :return: numId referenced in xml to list of numFmt per indentation level
 
@@ -408,8 +402,7 @@ class DocxReader:
         return self.__numId2NumFmts
 
     def file_of_type(self, type_: str) -> File:
-        """
-        Return file instance attrib Type='http://.../type_'. Warn if more than one.
+        """Return file instance attrib Type='http://.../type_'. Warn if more than one.
 
         :param type_: this package looks for any of
             ("header", "officeDocument", "footer", "footnotes", "endnotes")
@@ -429,8 +422,7 @@ class DocxReader:
             ) from exc
 
     def files_of_type(self, type_: str | None = None) -> list[File]:
-        """
-        File instances with attrib Type='http://.../type_'
+        """List File instances with attrib Type='http://.../type_'.
 
         :param type_: this package looks for any of
             ("header", "officeDocument", "footer", "footnotes", "endnotes", "comments")
@@ -448,16 +440,14 @@ class DocxReader:
         )
 
     def content_files(self) -> list[File]:
-        """
-        Content files (contain displayed text) inside the docx.
+        """List content files (contain displayed text) inside the docx.
 
         :return: File instances of context files, sorted by path
         """
         return self.files_of_type()
 
     def save(self, filename: Path | str) -> None:
-        """
-        Save the (presumably altered) xml.
+        """Save the (presumably altered) xml.
 
         :param filename: path to output file (presumably *.docx)
 
@@ -472,8 +462,7 @@ class DocxReader:
                 zout.writestr(file.path, etree.tostring(file.root_element))
 
     def pull_image_files(self, image_directory: str | None = None) -> dict[str, bytes]:
-        """
-        Copy images from zip file.
+        """Copy images from zip file.
 
         :param image_directory: optional destination for copied images
         :return: Image names mapped to images in binary format.
@@ -503,8 +492,7 @@ def _copy_but(
     out_zip: zipfile.ZipFile,
     exclusions: set[str] | None = None,
 ) -> None:
-    """
-    Copy every file in a docx except those listed in exclusions.
+    """Copy every file in a docx except those listed in exclusions.
 
     :param in_zip: zipfile of origin xml file
     :param out_zip: zipfile of destination xml file
