@@ -1,12 +1,58 @@
+
+# New in docx2python Version 3
+
+* Better type hints for DocxOutput properties. You should never get an "or" or "Any" type hint for the nested lists returned by Docx2Python.
+* Support for "strict" namespaces. Word uses a superset of the standard Open Office XML format. Work can restrict itself to the standard by saving with the "strict" namespace. This is now supported.
+* Tables exported as nested lists are now always nxm (n rows, m columns). This will simplify converting tables to markdown or other data types. Where duplicate_merged_cells is True, the table will be filled to nxm with content from adjacent cells. Where false, the table will be filled to nxm with empty cells.
+* Tables can now be identified without guessing games (see Par Type).
+* Word's paragraph styles are now exposed (e.g., Heading 2, Subtitle, Subtle Emphasis - see Par Type). If html=True, these will be exported as html tags where an obvious mapping exists (e.g., Heading 1 -> h1).
+* A paragraphs's position in a nested list is now exposed (see Par Type).
+* Input boolean arguments 'html' (False) and 'duplicate_merged_cells' (True) are now keyword only.
+
+## Par Type
+
+New in Docx2Python Version 3, the Par type captures some paragraph properties.
+
+`html_style: list[str]`
+
+A list of html tags that will be applied to the paragraph if html=True.
+
+`style: str`
+
+The MS Word paragraph style (e.g., Heading 2, Subtitle, Subtle Emphasis), if any. This will facilitate finding headings, etc.
+
+`lineage: ("document", str | None, str | None, str | None, str | None)`
+
+Docx2Python partially flattens the xml spaghetti so that a paragraph is always at depth 4. This often means building structure where none exists, so the lineage [ostensibly (great-great-grandparent, great-grandparent, grandparent, parent, self)] is not always straightforward. But there are some patterns you can depend on. The most requested is that paragraphs in table cells will always have a lineage of ("document", "tbl", something, something, "p"). Use `iter_tables` and `is_tbl` from the docx2python.iterators module to find tables in your document. There is an example in `tests/test_tables_to_markdown.py`.
+
+`runs: list[Run]`
+
+A list of Run instances. Each Run instance has `html_style` and `text` attributes. This will facilitate finding and extracting text with specific formatting.
+
+`list_position: tuple[str | None, list[int]]`
+
+The address of a paragraph in a nested list. The first item in the tuple is a string identifier for the list. These are extracted from Word, and may look like indices, but they are not. List "2" might come before list "1" in the document. The second item is a list of indices to show where you are in that list.
+
+```
+1. paragraph  # list_position = ("list_id", [0])
+2. paragraph  # list_position = ("list_id", [1])
+   a. paragraph  # list_position = ("list_id", [1, 0])
+      i. paragraph  # list_position = ("list_id", [1, 0, 0])
+   b. paragraph  # list_position = ("list_id", [1, 1])
+3. paragraph  # list_position = ("list_id", [2])
+```
+
 # docx2python
 
-Extract docx headers, footers, text, footnotes, endnotes, properties, and images to a Python object.
+Extract docx headers, footers, text, footnotes, endnotes, properties, comments, and images to a Python object.
 
 `README_DOCX_FILE_STRUCTURE.md` may help if you'd like to extend docx2python.
 
 For a summary of what's new in docx2python 2, scroll down to **New in docx2python Version 2**
 
-The code is an expansion/contraction of [python-docx2txt](https://github.com/ankushshah89/python-docx2txt) (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.
+For a summary of what's new in docx2python 3, scroll up to **New in docx2python Version 3**
+
+The code began as an expansion/contraction of [python-docx2txt](https://github.com/ankushshah89/python-docx2txt) (Copyright (c) 2015 Ankush Shah). The original code is mostly gone, but some of the bones may still be here.
 
 __shared features__:
 * extracts text from docx files
@@ -21,8 +67,11 @@ __additions:__
 * inserts image placeholders in text (``'----image1.jpg----'``)
 * inserts plain text footnote and endnote references in text (``'----footnote1----'``)
 * (optionally) retains font size, font color, bold, italics, and underscore as html
-* extract math equations
-* extract user selections from checkboxes and dropdown menus
+* extracts math equations
+* extracts user selections from checkboxes and dropdown menus
+* extracts comments
+* extracts some paragraph properties (e.g., Heading 1)
+* tracks location within numbered lists
 
 __subtractions:__
 * no command-line interface
@@ -35,6 +84,8 @@ pip install docx2python
 ```
 
 ## Use
+
+`docx2python` opens a zipfile object and (lazily) reads it. Use context management (`with ... as`) to close this zipfile object or explicitly close with `docx_content.close()`.
 
 ``` python
 from docx2python import docx2python
@@ -56,8 +107,6 @@ with docx2python('path/to/file.docx', html=True) as docx_content:
     print(docx_content.text)
 ```
 
-`docx2python` opens a zipfile object and (lazily) reads it. Use context management (`with ... as`) to close this zipfile object or explicitly close with `docx_content.close()`.
-
 Note on html feature:
 * supports ``<i>``italic, ``<b>``bold, ``<u>``underline, ``<s>``strike, ``<sup>``superscript, ``<sub>``subscript, ``<span style="font-variant: small-caps">``small caps, ``<span style="text-transform:uppercase">``all caps, ``<span style="background-color: yellow">``highlighted, ``<span style="font-size:32">``font size, ``<span style="color:#ff0000">``colored text.
 * hyperlinks will always be exported as html (``<a href="http:/...">link text</a>``), even if ``html=False``, because I couldn't think of a more canonical representation.
@@ -68,17 +117,17 @@ Note on html feature:
 
 Function `docx2python` returns a DocxContent instance with several attributes.
 
-__header__ - contents of the docx headers in the return format described herein
+__header__ (\_runs, \_pars) - contents of the docx headers in the return format described herein
 
-__footer__ - contents of the docx footers in the return format described herein
+__footer__ (\_runs, \_pars) - contents of the docx footers in the return format described herein
 
-__body__ - contents of the docx in the return format described herein
+__body__ (\_runs, \_pars)- contents of the docx in the return format described herein
 
-__footnotes__ - contents of the docx in the return format described herein
+__footnotes__ (\_runs, \_pars) - contents of the docx in the return format described herein
 
-__endnotes__ - contents of the docx in the return format described herein
+__endnotes__ (\_runs, \_pars) - contents of the docx in the return format described herein
 
-__document__ - header  + body + footer (read only)
+__document__ (\_runs, \_pars) - header  + body + footer (read only)
 
 __text__ - all docx text as one string, similar to what you'd get from `python-docx2txt`
 
@@ -110,11 +159,10 @@ __docx_reader__ - a DocxReader (see `docx_reader.py`) instance with several meth
 
     def docx2python(
         docx_filename: str | os.PathLike[str] | BytesIO,
-        image_folder: str | None = None,
+        image_folder: str | os.PathLike[str] | None = None,
+        *,
         html: bool = False,
-        paragraph_styles: bool = False,
-        extract_image: bool | None = None,
-        duplicate_merged_cells: bool = False
+        duplicate_merged_cells: bool = True
     ) -> DocxContent:
         """
         Unzip a docx file and extract contents.
@@ -123,15 +171,15 @@ __docx_reader__ - a DocxReader (see `docx_reader.py`) instance with several meth
         :param image_folder: optionally specify an image folder
             (images in docx will be copied to this folder)
         :param html: bool, extract some formatting as html
-        :param paragraph_styles: prepend the paragraphs style (if any, else "") to each
-            paragraph. This will only be useful with ``*_runs`` attributes.
         :param duplicate_merged_cells: bool, duplicate merged cells to return a mxn
-            nested list for each table (default False)
+            nested list for each table (default True)
         :return: DocxContent object
         """
 
 
 ## Return Format
+
+### (header, footer, body, footnotes, endnotes, document)
 
 Some structure will be maintained. Text will be returned in a nested list, with paragraphs always at depth 4 (i.e., `output.body[i][j][k][l]` will be a paragraph).
 
@@ -160,13 +208,48 @@ If your docx has no tables, output.body will appear as one a table with all cont
 
 Table cells will appear as table cells. Text outside tables will appear as table cells.
 
+A docx document can be tables within tables within tables. Docx2Python flattens most of this to more easily navigate within the content.
 
-A docx document can be tables within tables within tables. Docx2Python flattens most of this to more easily navigate
-within the content.
+### (header_runs, footer_runs, body_runs, footnotes_runs, endnotes_runs, document_runs)
+
+Version2 intruduced _run attributes. Instead of a string for each paragraph, each run is a string. This is useful with html=True for picking out italic text or hyperlinks.
+
+```python
+[  # document
+    [  # table
+        [  # row
+            [  # cell
+                [  # paragraph
+                    "a text run", "<i>runs break when formatting changes</i>",
+                    "--", "runs break with bullets and special insertions",
+                ]
+            ]
+        ]
+     ]
+ ]
+```
+
+### (header_pars, footer_pars, body_pars, footnotes_pars, endnotes_pars, document_pars)
+
+Version3 introduced _par attributes. These return each paragraph as a Par instance. This is useful for extracting paragraph properties (e.g., Heading 1). See the Par Type heading.
+
+```python
+[  # document
+    [  # table
+        [  # row
+            [  # cell
+                Par instance,
+                Par instance,
+                Par instance
+            ]
+        ]
+     ]
+ ]
+```
 
 ## Working with output
 
-This package provides several documented helper functions in [the ``docx2python.iterators`` module](https://docx2python.readthedocs.io/en/latest/docx2python.html#module-iterators). Here are a few recipes possible with these functions:
+This package provides several documented helper functions in the ``docx2python.iterators`` module. Here are a few recipes possible with these functions:
 
 ```python
 from docx2python.iterators import enum_cells
@@ -238,8 +321,6 @@ def html_map(tables) -> str:
 </html>
 ```
 
-[See helper functions.](https://docx2python.readthedocs.io/en/latest/index.html)
-
 Some fine print about checkboxes:
 
 MS Word has checkboxes that can be checked any time, and others that can only be checked when the form is locked.
@@ -267,7 +348,6 @@ For each comment, this will return a tuple:
 ## merge consecutive runs with identical formatting
 
 MS Word will break up text runs arbitrarily, often in the middle of a word.
-
 
     <w:r>
         <w:t>work to im</w:t>
