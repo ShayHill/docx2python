@@ -6,6 +6,9 @@
 A lot of the information in a docx file isn't text or text attributes. Docx files
 record spelling errors, revision history, etc. Docx2Python will ignore (by design)
 much of this.
+
+This module defines which xml tags are implemented and how they are transformed into
+html tags.
 """
 
 from __future__ import annotations
@@ -17,6 +20,10 @@ from lxml import etree
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
+
+# ===============================================================================
+# Examine and reformat html tags
+# ===============================================================================
 
 
 def get_localname(elem: EtreeElement) -> str:
@@ -70,21 +77,28 @@ def get_prefixed_tag(elem: EtreeElement) -> str:
     return f"{elem.prefix}:{get_localname(elem)}"
 
 
-def _just_return_tag(tag: str, val: str) -> str:
-    """
-    A formatter that just returns the tag name.
+# ===============================================================================
+# Format xml tags as html tags
+#
+# Instances of the HtmlFormatter class define hot to format xml tags as html tags.
+# ===============================================================================
+
+
+def _format_just_return_tag(tag: str, val: str) -> str:
+    """Echo the name tag argument.
 
     :param tag: xml tag name
     :param val: xml attribute value
     :return: tag name
+
+    This is a formatter function for HtmlFormatter instances.
     """
     del val
     return tag
 
 
 class HtmlFormatter(NamedTuple):
-    """
-    The information needed to group and format html tags.
+    """The information needed to group and format html tags.
 
     If a text run has multiple span attributes, Docx2Python does not open multiple
     span elements.
@@ -107,9 +121,116 @@ class HtmlFormatter(NamedTuple):
     and element ``w:val`` attribute (here ``"32"``).
     """
 
-    formatter: Callable[[str, str], str] = _just_return_tag
+    formatter: Callable[[str, str], str] = _format_just_return_tag
     container: str | None = None  # e.g., 'span'
     property_: str | None = None  # e.g., 'style'
+
+
+def _format_strike(tag: str, val: str) -> str:
+    """Return 's' for the strike tag.
+
+    :param tag: xml tag name (strike)
+    :param val: xml attribute value ("")
+    :return: "s"
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del val
+    del tag
+    return "s"
+
+
+def _format_vertAlign(tag: str, val: str) -> str:
+    """Return the first three characters of the vertAlign value.
+
+    :param tag: xml tag name (vertAlign)
+    :param val: xml attribute value (superscript or subscript)
+    :return: first three characters of val (sub or sup)
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del tag
+    return val[:3]
+
+
+def _format_smallCaps(tag: str, val: str) -> str:
+    """Return 'font-variant:small-caps'.
+
+    :param tag: xml tag name (smallCaps)
+    :param val: xml attribute value ("")
+    :return: "font-variant:small-caps"
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del val
+    del tag
+    return "font-variant:small-caps"
+
+
+def _format_caps(tag: str, val: str) -> str:
+    """Return 'text-transform:uppercase'.
+
+    :param tag: xml tag name (caps)
+    :param val: xml attribute value ("")
+    :return: "text-transform:uppercase"
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del val
+    del tag
+    return "text-transform:uppercase"
+
+
+def _format_highlight(tag: str, val: str) -> str:
+    """Return 'background-color:val'.
+
+    :param tag: xml tag name (highlight)
+    :param val: xml attribute value (color)
+    :return: "background-color:val"
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del tag
+    return f"background-color:{val}"
+
+
+def _format_sz(tag: str, val: str) -> str:
+    """Return 'font-size:{val}pt'.
+
+    :param tag: xml tag name (sz)
+    :param val: xml attribute value (font size in points)
+    :return: "font-size:{val}pt"
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del tag
+    return f"font-size:{val}pt"
+
+
+def _format_color(tag: str, val: str) -> str:
+    """Return 'color:val'.
+
+    :param tag: xml tag name (color)
+    :param val: xml attribute value (color)
+    :return: "color:val"
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del tag
+    return f"color:{val}"
+
+
+def _format_heading(tag: str, val: str) -> str:
+    """Return 'h{val}'.
+
+    :param tag: xml tag name (Heading1, Heading2, ...)
+    :param val: xml attribute value ("")
+    :return: "h{val}"
+
+    This is a formatter function for HtmlFormatter instances.
+    """
+    del val
+    return f"h{tag[-1]}"
 
 
 # An HtmlFormatter instance for every xml format Docx2Python recognizes.
@@ -122,24 +243,25 @@ XML2HTML_FORMATTER = {
     "b": HtmlFormatter(),
     "i": HtmlFormatter(),
     "u": HtmlFormatter(),
-    "strike": HtmlFormatter(lambda tag, val: "s"),
-    "vertAlign": HtmlFormatter(lambda tag, val: val[:3]),  # subscript and superscript
-    "smallCaps": HtmlFormatter(
-        lambda tag, val: "font-variant:small-caps", "span", "style"
-    ),
-    "caps": HtmlFormatter(lambda tag, val: "text-transform:uppercase", "span", "style"),
-    "highlight": HtmlFormatter(
-        lambda tag, val: f"background-color:{val}", "span", "style"
-    ),
-    "sz": HtmlFormatter(lambda tag, val: f"font-size:{val}pt", "span", "style"),
-    "color": HtmlFormatter(lambda tag, val: f"color:{val}", "span", "style"),
-    "Heading1": HtmlFormatter(lambda tag, val: "h1"),
-    "Heading2": HtmlFormatter(lambda tag, val: "h2"),
-    "Heading3": HtmlFormatter(lambda tag, val: "h3"),
-    "Heading4": HtmlFormatter(lambda tag, val: "h4"),
-    "Heading5": HtmlFormatter(lambda tag, val: "h5"),
-    "Heading6": HtmlFormatter(lambda tag, val: "h6"),
+    "strike": HtmlFormatter(_format_strike),
+    "vertAlign": HtmlFormatter(_format_vertAlign),  # subscript and superscript
+    "smallCaps": HtmlFormatter(_format_smallCaps, "span", "style"),
+    "caps": HtmlFormatter(_format_caps, "span", "style"),
+    "highlight": HtmlFormatter(_format_highlight, "span", "style"),
+    "sz": HtmlFormatter(_format_sz, "span", "style"),
+    "color": HtmlFormatter(_format_color, "span", "style"),
+    "Heading1": HtmlFormatter(_format_heading),
+    "Heading2": HtmlFormatter(_format_heading),
+    "Heading3": HtmlFormatter(_format_heading),
+    "Heading4": HtmlFormatter(_format_heading),
+    "Heading5": HtmlFormatter(_format_heading),
+    "Heading6": HtmlFormatter(_format_heading),
 }
+
+
+# ===============================================================================
+# Tags that provoke some action in docx2python
+# ===============================================================================
 
 
 class Tags(str, Enum):
@@ -182,7 +304,7 @@ _CONTENT_TAGS = set(Tags) - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
 def _is_content(elem: EtreeElement) -> bool:
     """Is the element a content element?
 
-    sdf   :param elem: xml element
+    :param elem: xml element
     :return: True if the element is a content element
 
     Docx2Python ignores spell check, revision, and other elements. This function

@@ -7,5 +7,3 @@
 from docx2python.main import docx2python
 
 __all__ = ["docx2python"]
-
-# TODO: remove import cycles (turn back on in pyproject.toml)
