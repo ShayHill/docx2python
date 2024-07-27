@@ -285,6 +285,7 @@ class DocxReader:
     def __init__(
         self,
         docx_filename: str | os.PathLike[str] | BytesIO,
+        *,
         html: bool = False,
         duplicate_merged_cells: bool = True,
     ) -> None:

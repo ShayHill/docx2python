@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 def docx2python(
     docx_filename: str | os.PathLike[str] | BytesIO,
     image_folder: str | os.PathLike[str] | None = None,
+    *,
     html: bool = False,
     duplicate_merged_cells: bool = True,
 ) -> DocxContent:
@@ -32,7 +33,9 @@ def docx2python(
         nested list for each table (default True)
     :return: DocxContent object
     """
-    docx_context = DocxReader(docx_filename, html, duplicate_merged_cells)
+    docx_context = DocxReader(
+        docx_filename, html=html, duplicate_merged_cells=duplicate_merged_cells
+    )
     docx_content = DocxContent(docx_context, image_folder)
     if image_folder:
         _ = docx_content.images
