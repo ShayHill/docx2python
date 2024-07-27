@@ -130,8 +130,8 @@ class DocxContent:
 
     def __exit__(
         self,
-        exc_type: None | type[Exception],
-        exc_value: None | Exception,
+        exc_type: None | type[BaseException],
+        exc_value: None | BaseException,
         exc_traceback: None | TracebackType,
     ) -> None:
         """Close the zipfile opened by DocxReader.
@@ -296,6 +296,7 @@ class DocxContent:
             "DocxContent.properties is deprecated and will be removed in some future "
             + "version. Use DocxContent.core_properties.",
             FutureWarning,
+            stacklevel=2,
         )
         return self.core_properties
 
@@ -316,7 +317,8 @@ class DocxContent:
                 "Could not find core-properties file (should be in docProps/core.xml) "
                 + "in DOCX, so returning an empty core_properties dictionary. Docx "
                 + "files created in Google Docs do not have a core-properties file, "
-                + "so this may be expected."
+                + "so this may be expected.",
+                stacklevel=2,
             )
             return {}
 
@@ -336,7 +338,7 @@ class DocxContent:
                 "comment_ranges and comment_elements have different lengths. "
                 + "Failed to extract comments."
             )
-            warn(msg)
+            warn(msg, stacklevel=2)
             return []
 
         if not comment_elements:

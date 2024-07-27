@@ -219,7 +219,7 @@ class TagRunner:
         footnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in footnote_type:
             self.tables.queue_run_for_next_paragraph(
-                f"footnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
+                f"footnote{tree.attrib[qn(tree, 'w:id')]})\t"
             )
         return True
 
@@ -228,7 +228,7 @@ class TagRunner:
         endnote_type = str(tree.attrib.get(qn(tree, "w:type"), "")).lower()
         if "separator" not in endnote_type:
             self.tables.queue_run_for_next_paragraph(
-                f"endnote{str(tree.attrib[qn(tree, 'w:id')])})\t"
+                f"endnote{tree.attrib[qn(tree, 'w:id')]})\t"
             )
         return True
 
@@ -259,14 +259,14 @@ class TagRunner:
     def _open_footnote_reference(self, tree: EtreeElement) -> bool:
         """Open a footnote reference."""
         self.tables.insert_text_as_new_run(
-            f"----footnote{str(tree.attrib[qn(tree, 'w:id')])}----"
+            f"----footnote{tree.attrib[qn(tree, 'w:id')]}----"
         )
         return True
 
     def _open_endnote_reference(self, tree: EtreeElement) -> bool:
         """Open an endnote reference."""
         self.tables.insert_text_as_new_run(
-            f"----endnote{str(tree.attrib[qn(tree, 'w:id')])}----"
+            f"----endnote{tree.attrib[qn(tree, 'w:id')]}----"
         )
         return True
 
@@ -322,6 +322,7 @@ class TagRunner:
         this point. If duplicate_merged_cells is True, copy the cell to the left. If
         False, insert an empty cell.
         """
+        do_merge = self.file.context.duplicate_merged_cells
         pr = gather_Pr(tree)
         tree_depth: Literal[3] = 3  # table cell
         this_tbl = self.tables.tree[-1]
@@ -329,12 +330,11 @@ class TagRunner:
 
         # vertical merge. copy cell above. These will already exist as Par instances
         # with no text.
-        if self.file.context.duplicate_merged_cells:
-            if pr.get("vMerge", "Not None") is None:
-                self.tables.set_caret(tree_depth)
-                prev_tr = this_tbl[-2]
-                tc_idx = len(this_tr) - 1
-                this_tr[-1] = copy.deepcopy(prev_tr[tc_idx])
+        if do_merge and pr.get("vMerge", "Not None") is None:
+            self.tables.set_caret(tree_depth)
+            prev_tr = this_tbl[-2]
+            tc_idx = len(this_tr) - 1
+            this_tr[-1] = copy.deepcopy(prev_tr[tc_idx])
 
         # horizontal merge. copy cell to the left. These will not exist yet. If
         # self.file.context.duplicate_merged_cells is False, insert an empty cell.
@@ -342,7 +342,7 @@ class TagRunner:
         grid_span = pr.get("gridSpan") or 1
         for _ in range(int(grid_span) - 1):
             self.tables.set_caret(tree_depth)
-            if self.file.context.duplicate_merged_cells:
+            if do_merge:
                 this_tr.append(copy.deepcopy(this_tr[-1]))
             else:
                 this_tr.append([Par.new_empty_par()])

@@ -11,7 +11,6 @@ examples.
 from __future__ import annotations
 
 import copy
-import os
 import re
 from typing import TYPE_CHECKING, Iterator
 
@@ -21,7 +20,8 @@ from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
 if TYPE_CHECKING:
-    from pathlib import Path
+
+    import os
 
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
@@ -78,9 +78,9 @@ def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
 
             # replace the original element with the new elements
             parent = elem.getparent()
-            assert parent is not None
-            index = parent.index(elem)
-            parent[index : index + 1] = new_elems
+            if parent is not None:
+                index = parent.index(elem)
+                parent[index : index + 1] = new_elems
 
     recursive_text_replace(root)
 

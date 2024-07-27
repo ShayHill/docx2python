@@ -6,16 +6,14 @@
 
 from __future__ import annotations
 
-import os
-import sys
 from typing import TYPE_CHECKING
 
 from docx2python.docx_output import DocxContent
 from docx2python.docx_reader import DocxReader
 
 if TYPE_CHECKING:
+    import os
     from io import BytesIO
-    from pathlib import Path
 
 
 def docx2python(

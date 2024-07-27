@@ -22,14 +22,13 @@ from __future__ import annotations
 
 import copy
 import os
-import pathlib
 import zipfile
 from contextlib import suppress
 from dataclasses import dataclass
 from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, List
 from warnings import warn
 
 from lxml import etree
@@ -46,6 +45,7 @@ TextTable = List[List[List[List[List[str]]]]]
 
 if TYPE_CHECKING:
     from io import BytesIO
+    from types import TracebackType
 
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
@@ -85,7 +85,7 @@ class File:
         """
         self.context = context
         self.Id = str(attribute_dict["Id"])
-        self.Type = os.path.basename(attribute_dict["Type"])
+        self.Type = Path(attribute_dict["Type"]).name
         self.Target = attribute_dict["Target"]
         self.dir = attribute_dict["dir"]
 
@@ -128,9 +128,9 @@ class File:
         if self.__path is not None:
             return self.__path
 
-        dirs = [os.path.dirname(x) for x in (self.dir, self.Target)]
+        dirs = [Path(x).parent.name for x in (self.dir, self.Target)]
         dirname = "/".join([x for x in dirs if x])
-        filename = os.path.basename(self.Target)
+        filename = Path(self.Target).name
         self.__path = f"{dirname}/{filename}"
         return self.__path
 
@@ -223,7 +223,8 @@ class File:
                 warn(
                     "Attempt to merge consecutive elements in "
                     + f"{self.context.docx_filename} {self.path} resulted in "
-                    + f"{repr(ex)}. Moving on."
+                    + f"{ex!r}. Moving on.",
+                    stacklevel=2,
                 )
                 self.__root_element = root_
         self.__root_element = root
@@ -321,7 +322,6 @@ class DocxReader:
         if self.__zipf is None:
             self.__zipf = zipfile.ZipFile(self.docx_filename)
             return self.__zipf
-        assert self.__zipf is not None
         return self.__zipf
 
     def close(self):
@@ -339,9 +339,9 @@ class DocxReader:
 
     def __exit__(
         self,
-        exc_type: Any,  # None | Type[Exception], but py <= 3.9 doesn't like it.
-        exc_value: Any,  # None | Exception, but py <= 3.9 doesn't like it.
-        exc_traceback: Any,  # None | TracebackType, but py <= 3.9 doesn't like it.
+        exc_type: None | type[BaseException],
+        exc_value: None | BaseException,
+        exc_traceback: None | TracebackType,
     ) -> Self:
         """Close the zipfile.
 
@@ -363,7 +363,8 @@ class DocxReader:
 
         files: list[File] = []
         for k, v in collect_rels(self.zipf).items():
-            files += [File(self, {**x, "dir": os.path.dirname(k)}) for x in v]
+            dir_ = str(Path(k).parent)
+            files += [File(self, {**x, "dir": dir_}) for x in v]
         self.__files = files
         return self.__files
 
@@ -412,7 +413,9 @@ class DocxReader:
         """
         files_of_type = self.files_of_type(type_)
         if len(files_of_type) > 1:
-            warn("Multiple files of type '{type_}' found. Returning first.")
+            warn(
+                "Multiple files of type '{type_}' found. Returning first.", stacklevel=2
+            )
         try:
             return files_of_type[0]
         except IndexError as exc:
@@ -430,11 +433,7 @@ class DocxReader:
             types.
         :return: File instances of the requested type, sorted by path
         """
-        if type_ is None:
-            types = CONTENT_FILE_TYPES
-        else:
-            types = {type_}
-
+        types = CONTENT_FILE_TYPES if type_ is None else {type_}
         return sorted(
             (x for x in self.files if x.Type in types), key=attrgetter("path")
         )
@@ -480,11 +479,12 @@ class DocxReader:
         images: dict[str, bytes] = {}
         for image in self.files_of_type("image"):
             with suppress(KeyError):
-                images[os.path.basename(image.Target)] = self.zipf.read(image.path)
+                images[Path(image.Target).name] = self.zipf.read(image.path)
         if image_directory is not None:
-            pathlib.Path(image_directory).mkdir(parents=True, exist_ok=True)
+            image_directory = Path(image_directory)
+            image_directory.mkdir(parents=True, exist_ok=True)
             for file, image_bytes in images.items():
-                with open(os.path.join(image_directory, file), "wb") as image_copy:
+                with (image_directory / file).open("wb") as image_copy:
                     _ = image_copy.write(image_bytes)
         return images
 
