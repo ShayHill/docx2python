@@ -11,6 +11,7 @@ Content in the extracted docx is found in the ``word`` folder:
 
 from __future__ import annotations
 
+import copy
 from contextlib import suppress
 from typing import TYPE_CHECKING, List, Literal, Sequence, cast
 
@@ -311,27 +312,40 @@ class TagRunner:
     def _close_table_cell(self, tree: EtreeElement):
         """Close a table cell.
 
-        If the table cell is part of a merged cell, it will be equal to "" at this
-        point. In this case, copy the text from the adjacent merged cell.
+        Word treats vertically and horizontally merged cells differently.
+
+        If the table cell is part of a vertically merged cell, it will be a Par
+        instance with no text at this point. In this case, copy the Par from the
+        above cell.
+
+        If the table cell is part of a horizontally merged cell, it will not exist at
+        this point. If duplicate_merged_cells is True, copy the cell to the left. If
+        False, insert an empty cell.
         """
-        if not self.file.context.duplicate_merged_cells:
-            return
-
         pr = gather_Pr(tree)
-        tree_depth = _get_elem_depth(tree)
-        assert isinstance(tree_depth, int)
+        tree_depth: Literal[3] = 3  # table cell
+        this_tbl = self.tables.tree[-1]
+        this_tr = this_tbl[-1]
 
-        if pr.get("vMerge", "Not None") is None:
-            self.tables.set_caret(tree_depth)
-            cell_idx = len(self.tables.caret) - 1
-            prev_row_cell = self.tables.view_branch((tree_depth - 2, -2, cell_idx))
-            self.tables.caret[-1] = prev_row_cell
+        # vertical merge. copy cell above. These will already exist as Par instances
+        # with no text.
+        if self.file.context.duplicate_merged_cells:
+            if pr.get("vMerge", "Not None") is None:
+                self.tables.set_caret(tree_depth)
+                prev_tr = this_tbl[-2]
+                tc_idx = len(this_tr) - 1
+                this_tr[-1] = copy.deepcopy(prev_tr[tc_idx])
 
-        grid_span = pr.get("gridSpan", 1)
-        assert grid_span is not None
+        # horizontal merge. copy cell to the left. These will not exist yet. If
+        # self.file.context.duplicate_merged_cells is False, insert an empty cell.
+        # Else insert a copy of the cell to the left.
+        grid_span = pr.get("gridSpan") or 1
         for _ in range(int(grid_span) - 1):
             self.tables.set_caret(tree_depth)
-            self.tables.caret.append(self.tables.caret[-1])
+            if self.file.context.duplicate_merged_cells:
+                this_tr.append(copy.deepcopy(this_tr[-1]))
+            else:
+                this_tr.append([Par.new_empty_par()])
 
 
 def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCollector:

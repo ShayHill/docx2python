@@ -26,13 +26,13 @@ from docx2python.iterators import iter_at_depth
 from tests.conftest import RESOURCES
 
 
-def test_checked_boxes() -> None:
+def test_checked_boxes_explicit() -> None:
     """
     The following text boxes are checked. Remaining checkboxes are unchecked.
 
     Adult Protective Services
     Older Adult Mental Health
-    Prosecutor’s Office
+    ProsecutorΓÇÖs Office
     Regional Center
 
     Coroner/Medical Examiner
@@ -47,26 +47,52 @@ def test_checked_boxes() -> None:
 
     """
     pars = docx2python(RESOURCES / "checked_boxes.docx", duplicate_merged_cells=False)
-    assert pars.body_runs[0][3:6] == [
+    expect = [
         [
             [["\u2612", " Adult Protective Services"]],
+            [[]],
             [["\u2612", " Older Adult Mental Health"]],
+            [[]],
+            [[]],
+            [[]],
             [["\u2612", " Prosecutor’s Office"]],
+            [[]],
+            [[]],
+            [[]],
             [["\u2612", " Regional Center"]],
+            [[]],
         ],
         [
             [["\u2612", " Coroner/Medical Examiner"]],
+            [[]],
             [["\u2612", " Law Enforcement"]],
+            [[]],
+            [[]],
+            [[]],
             [["\u2612", " Civil Attorney/Legal Services"]],
+            [[]],
+            [[]],
+            [[]],
             [["\u2612", " Psychologist"]],
+            [[]],
         ],
         [
             [["\u2612", " Medical Practitioner"]],
+            [[]],
             [["\u2612", " LTC Ombudsman"]],
+            [[]],
+            [[]],
+            [[]],
             [["\u2612", " Public Guardian"]],
+            [[]],
+            [[]],
+            [[]],
             [["\u2612", " Other (describe):\u2002\u2002\u2002\u2002\u2002"]],
+            [[]],
         ],
     ]
+
+    assert pars.body_runs[0][3:6] == expect
     pars.close()
 
 
@@ -76,7 +102,7 @@ def test_unchecked_boxes() -> None:
 
     Adult Protective Services
     Older Adult Mental Health
-    Prosecutor’s Office
+    ProsecutorΓÇÖs Office
     Regional Center
 
     Coroner/Medical Examiner

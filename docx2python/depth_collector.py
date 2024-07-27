@@ -6,11 +6,11 @@
 ::
 
     [  # document
-        [  # table
-            [  # row
-                [  # cell
-                    [  # paragraph
-                        ""  # text run
+        [  # table (tbl)
+            [  # row (tr)
+                [  # cell (tc)
+                    [  # paragraph (p)
+                        ""  # text run (r)
                     ]
                 ]
             ]
@@ -121,6 +121,15 @@ class Par:
             ]
         return runs_as_text
 
+    @classmethod
+    def new_empty_par(cls) -> Par:
+        """Create a new empty paragraph.
+
+        :return: a new empty paragraph
+        """
+        lineage: _Lineage = ("document", "", "", "", "")
+        return cls([], "", lineage, [])
+
 
 ParsTable = List[List[List[List[Par]]]]
 TextTable = List[List[List[List[List[str]]]]]
@@ -211,18 +220,6 @@ class DepthCollector:
         beg = self.comment_ranges[id_][0]
         self.comment_ranges[id_] = (beg, cruns)
 
-    def view_branch(self, address: Iterable[int]) -> Any:
-        """Return the item at the given address.
-
-        :param address: a tuple of indices to the item to be returned
-        :return: the item at the address.
-            Returns a list of lists (of lists, ...) of strings
-        """
-        branch = self._rightmost_branches
-        for i in address:
-            branch = branch[i]
-        return branch
-
     @staticmethod
     def _get_run_strings(runs: list[Run]) -> list[str]:
         """Return a string for each run in the current open paragraph. Ignore "".
@@ -292,14 +289,6 @@ class DepthCollector:
         :return: a string of all text in the tree
         """
         return get_par_strings(self.tree)
-
-    @property
-    def caret(self) -> list[str | list[str]]:
-        """Lowest open child.
-
-        :return: the list where new content will be appended
-        """
-        return self._rightmost_branches[-1]
 
     @property
     def caret_depth(self) -> Literal[1, 2, 3, 4]:
