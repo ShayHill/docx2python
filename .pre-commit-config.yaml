@@ -45,7 +45,7 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.10.1
+  rev: v1.11.0
   hooks:
   - id: mypy
     name: mypy
@@ -135,35 +135,7 @@ repos:
   # C901 function is too complex  # for iter_at_depth
   # PLR0912 too many branches  # for iter_at_depth
   #
-  # S320 Using `lxml` to parse untrusted data is known to be ... XML attacks
-  # D212 [*] Multi-line docstring summary should start at the first line
-  # D415 First line should end with a period, question mark, or exclamation point
-  # FBT001 Boolean-typed positional argument in function definition
-  # FBT002 Boolean default positional argument in function definition
-  # S101 Use of `assert` detected
-  # D401 First line of docstring should be in imperative mood
-  # ERA001 Found commented-out code
-  # D200 One-line docstring should fit on one line
-  # ARG005 Unused lambda argument
-  # B028 No explicit `stacklevel` keyword argument found
-  # EM101 Exception must not use a string literal
-  # TRY003 Avoid specifying long messages outside the exception class
-  # ANN401 Dynimacally typed expressions (typing.Any) are disallowed
-  # PYI306 The nth argument in 'function' should be annotated with ...  py 3.8 can't handle some of these
-  # TRY300 Consider moving this statement to an 'else' block
-  # PYI019 Methods like `method` should return `typing.Self` (does not check version)
-  # PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
-  # PTH119 `os.path.basename()` should be replaced by `Path.name`
-  # PTH123 `open()` should be replaced by `Path.open()`
-  # PTH120 `os.path.dirname()` should be replaced by `Path.parent`
-  # D403 [*] First word of the first line should be capitalized
-  # SIM108 Use ternary operator instead of if then else
-  # RUF010 Use explicit conversion flag for warnings
-  # C901 function is too complex
-  # PLR0912 too many branches
-  # PLR0915 too many statements
-  # PLR2004 Magic values
-  rev: 'v0.5.2'
+  rev: 'v0.5.5'
   hooks:
     - id: ruff
       exclude: "tests"
@@ -171,12 +143,10 @@ repos:
       - --target-version=py38
       - --select=ALL
       - --ignore=ANN101,ANN102,ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,ERA001,N803,S320,PLR2004,C901,PLR0912
-
-        # ,S320,D212,D415,FBT001,FBT002,S101,D401,N803,ERA001,D200,ARG005,B028,EM101,TRY003,ANN401,PYI036,TRY300,PYI019,PTH118,PTH119,PTH123,PTH120,D403,SIM108,RUF010,C901,PLR0912,PLR0915,PLR2004
       # # - --fix
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.372
+  rev: v1.1.373
   hooks:
     - id: pyright

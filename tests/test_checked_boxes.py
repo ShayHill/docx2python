@@ -47,7 +47,7 @@ def test_checked_boxes_explicit() -> None:
 
     """
     pars = docx2python(RESOURCES / "checked_boxes.docx", duplicate_merged_cells=False)
-    expect = [
+    expect: list[list[list[list[str]]]] = [
         [
             [["\u2612", " Adult Protective Services"]],
             [[]],

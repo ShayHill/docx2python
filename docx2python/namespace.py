@@ -54,7 +54,6 @@ if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
-# TODO: decide if this is still used and where it should be placed
 def qn(elem: EtreeElement, tag: str) -> str:
     """Turn a namespace-prefixed tag into a Clark-notation qualified tag.
 

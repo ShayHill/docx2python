@@ -40,7 +40,7 @@ This is the format for default (no trailing "_runs", e.g ``header``) properties.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, List, cast
+from typing import TYPE_CHECKING, List, cast
 from warnings import warn
 
 from typing_extensions import Self
@@ -142,46 +142,6 @@ class DocxContent:
         """
         self.close()
 
-    def __getattr__(self, name: str) -> Any:
-        """Create sub-attributes for docx content.
-
-        :param name: name of an internal docx xml file
-        :return: extracted text from named file with runs joined together into
-            paragraphs.
-        :raise AttributeError: if "name" file cannot be found
-
-        For supported docx content file types (header, footer, body (officeDocument),
-        footnotes, endnotes, documents), return
-
-        * docx 1.0 style paragraphs [[[[str]]]]
-        * docx 2.0 style runs [[[[str]]]]
-        * docx 3.0 style Par instances [[[Par]]]
-        """
-        if name in {
-            "header",
-            "footer",
-            "officeDocument",
-            "body",
-            "footnotes",
-            "endnotes",
-            "document",
-        }:
-            runs = getattr(self, name + "_runs")
-            return _join_runs(runs)
-        if name in {
-            "header_runs",
-            "footer_runs",
-            "officeDocument_runs",
-            "body_runs",
-            "footnotes_runs",
-            "endnotes_runs",
-            "document_runs",
-        }:
-            pars = getattr(self, name[:-5] + "_pars")
-            return get_par_strings(pars)
-        msg = f"no attribute {name}"
-        raise AttributeError(msg)
-
     def _get_pars(self, type_: str) -> ParsTable:
         """Get Par instances for an internal document type.
 
@@ -260,6 +220,128 @@ class DocxContent:
         )
 
     @property
+    def header_runs(self) -> list[list[list[list[list[str]]]]]:
+        """Get nested run strings for header files.
+
+        :return: nested run strings [[[[[str]]]]]
+        """
+        return get_par_strings(self.header_pars)
+
+    @property
+    def footer_runs(self) -> list[list[list[list[list[str]]]]]:
+        """Get nested run strings for footer files.
+
+        :return: nested run strings [[[[[str]]]]]
+        """
+        return get_par_strings(self.footer_pars)
+
+    @property
+    def officeDocument_runs(self) -> list[list[list[list[list[str]]]]]:
+        """Get nested run strings for the main officeDocument file.
+
+        :return: nested run strings [[[[[str]]]]]
+        """
+        return get_par_strings(self.officeDocument_pars)
+
+    @property
+    def body_runs(self) -> list[list[list[list[list[str]]]]]:
+        """Get nested run strings for the main officeDocument file.
+
+        :return: nested run strings [[[[[str]]]]]
+
+        This is an alias for officeDocument_runs.
+        """
+        return self.officeDocument_runs
+
+    @property
+    def footnotes_runs(self) -> list[list[list[list[list[str]]]]]:
+        """Get nested run strings for footnotes files.
+
+        :return: nested run strings [[[[[str]]]]]
+        """
+        return get_par_strings(self.footnotes_pars)
+
+    @property
+    def endnotes_runs(self) -> list[list[list[list[list[str]]]]]:
+        """Get nested run strings for endnotes files.
+
+        :return: nested run strings [[[[[str]]]]]
+        """
+        return get_par_strings(self.endnotes_pars)
+
+    @property
+    def document_runs(self) -> list[list[list[list[list[str]]]]]:
+        """All docx x_runs properties concatenated.
+
+        :return: nested run strings [[[[[str]]]]]
+        """
+        return (
+            self.header_runs
+            + self.body_runs
+            + self.footer_runs
+            + self.footnotes_runs
+            + self.endnotes_runs
+        )
+
+    @property
+    def header(self) -> list[list[list[list[str]]]]:
+        """Get header text.
+
+        :return: nested paragraphs [[[[str]]]]
+        """
+        return _join_runs(self.header_runs)
+
+    @property
+    def footer(self) -> list[list[list[list[str]]]]:
+        """Get footer text.
+
+        :return: nested paragraphs [[[[str]]]]
+        """
+        return _join_runs(self.footer_runs)
+
+    @property
+    def officeDocument(self) -> list[list[list[list[str]]]]:
+        """Get officeDocument text.
+
+        :return: nested paragraphs [[[[str]]]]
+        """
+        return _join_runs(self.officeDocument_runs)
+
+    @property
+    def body(self) -> list[list[list[list[str]]]]:
+        """Get body text.
+
+        :return: nested paragraphs [[[[str]]]]
+
+        This is an alias for officeDocument.
+        """
+        return self.officeDocument
+
+    @property
+    def footnotes(self) -> list[list[list[list[str]]]]:
+        """Get footnotes text.
+
+        :return: nested paragraphs [[[[str]]]]
+        """
+        return _join_runs(self.footnotes_runs)
+
+    @property
+    def endnotes(self) -> list[list[list[list[str]]]]:
+        """Get endnotes text.
+
+        :return: nested paragraphs [[[[str]]]]
+        """
+        return _join_runs(self.endnotes_runs)
+
+    @property
+    def document(self) -> list[list[list[list[str]]]]:
+        """All docx x properties concatenated.
+
+        :return: nested paragraphs [[[[str]]]]
+        """
+        return self.header + self.body + self.footer + self.footnotes + self.endnotes
+
+    @property
     def images(self) -> dict[str, bytes]:
         """Get bytestring of all images in the document.
 
@@ -281,7 +363,7 @@ class DocxContent:
 
         :return: html to show all strings with index tuples
         """
-        return get_html_map(self.document)
+        return get_html_map(self.document_runs)
 
     @property
     def properties(self) -> dict[str, str | None]:
