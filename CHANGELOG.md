@@ -1,3 +1,57 @@
+## 3.0.0 (2024-07-27)
+
+### BREAKING CHANGE
+
+- The html and duplicate_merged_cells arguments to docx2python are now keyword only.
+- Inserts empty cells and whitespace into exported
+tables.
+- Removed IndexedItem class which was *probably* only used internally, but it was a part of the public interface.
+- Function get_text was a public function. It mirrored
+the identical flatten_text from the docx_text module.
+- This change breaks the way paragraph styles (internally
+pStyle) were handled. The input argument `do_pStyle` will no now raise
+an error.
+- This doesn't change the interface and doesn't break any
+of my tests, but it took a lot of refactoring to make this change and it
+may break some unofficial patches I've made for clients.
+
+### Feat
+
+- improve type hints for DocxContent properties
+- insert blank cells to match gridSpan
+- add list_position attribute for Par instances
+- explicate return types in iterators
+- use input file namespace
+
+### Fix
+
+- eliminate double html tags for paragraph styles
+
+### Refactor
+
+- make boolean args keyword only
+- use pathlib in lieu of os.path
+- remove Any types from DocxContent close method
+- convert HtmlFormatter lambdas to defs
+- specialize join_leaves into join_runs
+- insert html when extracting text
+- make queuing text outside paragraphs explicit
+- make _open_pars private
+- stop accepting extract_image bool argument
+- default duplicate_merged_cells to True
+- remove unused helper functions
+- use pathlib in conftest
+- expose numPr, ilvl, and number in BulletGenerator
+- remove redundant functions
+- remove do_pStyle argument from flatten_text
+- remove function get_text from iterators module
+- store content table as nested list of Par instances
+- move xml2html_format attrib from TagRunner to DepthCollector
+- factor out DepthCollector.item_depth param
+- make set_caret recursive
+- remove unused `styled` param from insert_text_as_new_run
+- remove relative imports in src modules
+
 ## 2.10.2 (2024-06-30)
 
 ### Refactor
