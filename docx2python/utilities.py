@@ -11,6 +11,7 @@ examples.
 from __future__ import annotations
 
 import copy
+import os
 import re
 from typing import TYPE_CHECKING, Iterator
 
@@ -85,8 +86,8 @@ def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
 
 
 def replace_docx_text(
-    path_in: Path | str,
-    path_out: Path | str,
+    path_in: str | os.PathLike[str],
+    path_out: str | os.PathLike[str],
     *replacements: tuple[str, str],
     html: bool = False,
 ) -> None:
@@ -106,7 +107,7 @@ def replace_docx_text(
     reader.close()
 
 
-def get_links(path_in: Path | str) -> Iterator[tuple[str, str]]:
+def get_links(path_in: str | os.PathLike[str]) -> Iterator[tuple[str, str]]:
     """Yield links inside a docx file as (href, text).
 
     :param path_in: path to input docx
@@ -123,7 +124,7 @@ def get_links(path_in: Path | str) -> Iterator[tuple[str, str]]:
     extraction.close()
 
 
-def get_headings(path_in: Path | str) -> Iterator[list[str]]:
+def get_headings(path_in: str | os.PathLike[str]) -> Iterator[list[str]]:
     """Yield paragraphs with 'Heading' patagraph_style.
 
     :param path_in: path to input docx

@@ -109,7 +109,7 @@ __docx_reader__ - a DocxReader (see `docx_reader.py`) instance with several meth
 ## Arguments
 
     def docx2python(
-        docx_filename: str | Path | BytesIO,
+        docx_filename: str | os.PathLike[str] | BytesIO,
         image_folder: str | None = None,
         html: bool = False,
         paragraph_styles: bool = False,

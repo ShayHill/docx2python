@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+import os
+import sys
 from typing import TYPE_CHECKING
 
 from docx2python.docx_output import DocxContent
@@ -17,8 +19,8 @@ if TYPE_CHECKING:
 
 
 def docx2python(
-    docx_filename: str | Path | BytesIO,
-    image_folder: str | None = None,
+    docx_filename: str | os.PathLike[str] | BytesIO,
+    image_folder: str | os.PathLike[str] | None = None,
     html: bool = False,
     duplicate_merged_cells: bool = True,
 ) -> DocxContent:
@@ -33,7 +35,7 @@ def docx2python(
     :return: DocxContent object
     """
     docx_context = DocxReader(docx_filename, html, duplicate_merged_cells)
-    docx_content = DocxContent(docx_context, locals())
+    docx_content = DocxContent(docx_context, image_folder)
     if image_folder:
         _ = docx_content.images
     return docx_content

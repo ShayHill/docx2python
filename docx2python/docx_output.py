@@ -52,9 +52,11 @@ from docx2python.iterators import enum_at_depth, get_html_map, iter_at_depth
 from docx2python.namespace import get_attrib_by_qn
 
 if TYPE_CHECKING:
+    import os
+    from types import TracebackType
+
     from docx2python.depth_collector import Par
     from docx2python.docx_reader import DocxReader
-    from types import TracebackType
 
     ParsTable = List[List[List[List[Par]]]]
     TextTable = List[List[List[List[List[str]]]]]
@@ -113,7 +115,7 @@ class DocxContent:
     """Holds return values for docx content."""
 
     docx_reader: DocxReader
-    docx2python_kwargs: dict[str, Any]
+    image_folder: str | os.PathLike[str] | None
 
     def close(self):
         """Close the zipfile opened by DocxReader."""
@@ -263,9 +265,7 @@ class DocxContent:
 
         :return: dict {image_name: image_bytes}
         """
-        return self.docx_reader.pull_image_files(
-            self.docx2python_kwargs["image_folder"]
-        )
+        return self.docx_reader.pull_image_files(self.image_folder)
 
     @property
     def text(self) -> str:

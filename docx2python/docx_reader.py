@@ -283,7 +283,7 @@ class DocxReader:
 
     def __init__(
         self,
-        docx_filename: Path | str | BytesIO,
+        docx_filename: str | os.PathLike[str] | BytesIO,
         html: bool = False,
         duplicate_merged_cells: bool = True,
     ) -> None:
@@ -446,7 +446,7 @@ class DocxReader:
         """
         return self.files_of_type()
 
-    def save(self, filename: Path | str) -> None:
+    def save(self, filename: str | os.PathLike[str]) -> None:
         """Save the (presumably altered) xml.
 
         :param filename: path to output file (presumably *.docx)
@@ -461,7 +461,9 @@ class DocxReader:
             for file in content_files:
                 zout.writestr(file.path, etree.tostring(file.root_element))
 
-    def pull_image_files(self, image_directory: str | None = None) -> dict[str, bytes]:
+    def pull_image_files(
+        self, image_directory: str | os.PathLike[str] | None = None
+    ) -> dict[str, bytes]:
         """Copy images from zip file.
 
         :param image_directory: optional destination for copied images
