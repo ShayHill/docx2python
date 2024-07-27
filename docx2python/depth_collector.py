@@ -33,17 +33,7 @@ from __future__ import annotations
 
 import dataclasses
 import itertools as it
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Iterable,
-    Iterator,
-    List,
-    Literal,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Iterator, List, Literal, Tuple, Union, cast
 
 from docx2python.attribute_register import get_localname
 from docx2python.iterators import enum_at_depth

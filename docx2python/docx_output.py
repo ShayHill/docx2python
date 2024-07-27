@@ -54,6 +54,7 @@ from docx2python.namespace import get_attrib_by_qn
 if TYPE_CHECKING:
     from docx2python.depth_collector import Par
     from docx2python.docx_reader import DocxReader
+    from types import TracebackType
 
     ParsTable = List[List[List[List[Par]]]]
     TextTable = List[List[List[List[List[str]]]]]
@@ -127,9 +128,9 @@ class DocxContent:
 
     def __exit__(
         self,
-        exc_type: Any,  # None | Type[Exception], but py <= 3.9 doesn't like it.
-        exc_value: Any,  # None | Exception, but py <= 3.9 doesn't like it.
-        exc_traceback: Any,  # None | TracebackType, but py <= 3.9 doesn't like it.
+        exc_type: None | type[Exception],
+        exc_value: None | Exception,
+        exc_traceback: None | TracebackType,
     ) -> None:
         """Close the zipfile opened by DocxReader.
 
