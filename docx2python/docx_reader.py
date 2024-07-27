@@ -243,40 +243,37 @@ class File:
 
     @property
     def content(self) -> ParsTable:
-        # TODO: fix type hint and docstring for File.content
-        """Text extracted into a 5-layer-deep nested list of strings.
+        """Text extracted into a 4-deep nested list of Par instances.
 
-        :return: Text extracted into a 5-layer-deep nested list of strings.
+        :return: [[[[Par]]]]
         """
         return self.get_content()
 
     @property
     def text(self) -> TextTable:
-        """Text extracted into a nested list of strings [[[[[str]]]]].
+        """Text extracted into a 5-deep list of strings [[[[[str]]]]].
 
         :return: Text extracted into a nested list of strings [[[[[str]]]]]
         """
         return self.get_text()
 
     def get_content(self, root: EtreeElement | None = None) -> ParsTable:
-        """
-        The same content as property 'content' with optional given root.
+        """The same content as property 'content' with optional given root.
 
         :param root: Extract content of file from root down.
             If root is not given, return full content of file.
-        :return: Text extracted into a 5-layer-deep nested list of strings.
+        :return: Text extracted into [[[[Par]]]]
         """
         if root is None:
             return self.depth_collector.tree
         return get_file_content(self, root)
 
     def get_text(self, root: EtreeElement | None = None) -> TextTable:
-        """
-        The same content as property 'text' with optional given root.
+        """The same content as property 'text' with optional given root.
 
         :param root: Extract content of file from root down.
             If root is not given, return full content of file.
-        :return: Text extracted into a 5-layer-deep nested list of strings.
+        :return: Text extracted into [[[[[str]]]]]
         """
         return depth_collector.get_par_strings(self.get_content(root))
 

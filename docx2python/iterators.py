@@ -30,7 +30,6 @@ from typing import (
     List,
     Literal,
     TypeVar,
-    Union,
     cast,
     overload,
 )
@@ -38,70 +37,10 @@ from typing import (
 if TYPE_CHECKING:
     from docx2python.depth_collector import Par
 
-CollTL = List[Union[str, "CollTL"]]
+    TextTable = List[List[List[List[List[str]]]]]
 
 
 _T = TypeVar("_T")
-
-TextTable = List[List[List[List[List[str]]]]]
-
-
-# TODO: remove depth argument from join_leaves. Make it join_runs
-def join_leaves(
-    joint: str, str_tree: CollTL, to_depth: int, _depth: int = 0
-) -> CollTL | str:
-    """Join the leaves of a nested list of strings at a certain depth.
-
-    :param joint: string to join leaves
-    :param str_tree: a nested list of strings with all strings at the same depth
-    :param to_depth: depth at which to join strings. This has to be explicit, because
-        all strings are at the same depth, but this depth cannot necessarily be
-        inferred, because the tree may have no leaves at all. The `to_depth` argument
-        is the depth the tree will be collapsed TO. So, if `to_depth` is 0, the tree
-        will be collapsed to a single string. If `to_depth` is 1, the tree will be
-        collapsed to a list of strings. If `to_depth` is 2, the tree will be
-        collapsed to a list of lists of strings, etc.
-
-        You can only collapse one depth, and that depth must be explicated. Remember
-        that in a tree, the depth is the shortest path from the root to a leaf. So
-        the top node is at depth 0, its children are at depth 1, their children are
-        at depth 2, etc.
-    :param _depth: for recursion. Do not enter this argument.
-
-    The most common use in this project will be to collapse nested lists of runs into
-    nested lists of paragraphs.
-
-    runs = [
-        [
-            [
-                [
-                    [
-                        "run1", "run2"
-                    ],
-                    [
-                        "run3", "run4"
-                    ]
-                ]
-            ]
-        ]
-    ]
-
-    `_join_leaves("", runs, 3)` =>
-
-    [
-        [
-            [
-                [
-                    "run1run2",
-                    "run3run4"
-                ]
-            ]
-        [
-    ]
-    """
-    if _depth == to_depth:
-        return joint.join(cast(List[str], str_tree))
-    return [join_leaves(joint, cast(CollTL, b), to_depth, _depth + 1) for b in str_tree]
 
 
 @overload

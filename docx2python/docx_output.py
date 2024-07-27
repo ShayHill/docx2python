@@ -40,7 +40,7 @@ This is the format for default (no trailing "_runs", e.g ``header``) properties.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, List, cast
 from warnings import warn
 
 from typing_extensions import Self
@@ -48,21 +48,63 @@ from typing_extensions import Self
 from docx2python.depth_collector import get_par_strings
 from docx2python.docx_context import collect_docProps
 from docx2python.docx_text import flatten_text, new_depth_collector
-from docx2python.iterators import (
-    enum_at_depth,
-    get_html_map,
-    iter_at_depth,
-    join_leaves,
-)
+from docx2python.iterators import enum_at_depth, get_html_map, iter_at_depth
 from docx2python.namespace import get_attrib_by_qn
 
 if TYPE_CHECKING:
-    from typing import List
-
     from docx2python.depth_collector import Par
     from docx2python.docx_reader import DocxReader
 
     ParsTable = List[List[List[List[Par]]]]
+    TextTable = List[List[List[List[List[str]]]]]
+
+
+def _join_runs(tables: TextTable) -> list[list[list[list[str]]]]:
+    """Join the leaves of a 5-deep nested list of strings.
+
+    :param str_tree: a 5-deep nested list of strings [[[[["a", "b"]]]]]
+    :return: a 4-deep nexted list of strings [[[["ab"]]]]
+
+    Collapse nested lists of run strings into nested lists of paragraph strings.
+
+    runs = [
+        [
+            [
+                [
+                    [
+                        "run1", "run2"
+                    ],
+                    [
+                        "run3", "run4"
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    `join_runs(runs)` =>
+
+    [
+        [
+            [
+                [
+                    "run1run2",
+                    "run3run4"
+                ]
+            ]
+        [
+    ]
+    """
+    result: list[list[list[list[str]]]] = []
+    for tbl in tables:
+        result.append(cast(List[List[List[str]]], []))
+        for row in tbl:
+            result[-1].append(cast(List[List[str]], []))
+            for cell in row:
+                result[-1][-1].append(cast(List[str], []))
+                for par in cell:
+                    result[-1][-1][-1].append("".join(par))
+    return result
 
 
 @dataclass
@@ -107,16 +149,11 @@ class DocxContent:
         :raise AttributeError: if "name" file cannot be found
 
         For supported docx content file types (header, footer, body (officeDocument),
-        footnotes, endnotes, documents), return docx 1.0 style paragraphs [[[str]]],
-        attribute_runs [[[[str]]]] or attribute_pars [[[Par]]] as appropriate.
+        footnotes, endnotes, documents), return
 
-        Docx2Python v1 joined runs into paragraphs [[[str]]] earlier in the code.
-
-        Docx2Python v2 exposes runs [[[[str]]]] to the user, but still returns
-        paragraphs by default.
-
-        Docx2Python v3 exposes Par and Run instances to the user, access these as
-        header_pars, footer_pars, etc.
+        * docx 1.0 style paragraphs [[[[str]]]]
+        * docx 2.0 style runs [[[[str]]]]
+        * docx 3.0 style Par instances [[[Par]]]
         """
         if name in {
             "header",
@@ -128,7 +165,7 @@ class DocxContent:
             "document",
         }:
             runs = getattr(self, name + "_runs")
-            return join_leaves("", runs, 4)
+            return _join_runs(runs)
         if name in {
             "header_runs",
             "footer_runs",
