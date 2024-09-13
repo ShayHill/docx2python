@@ -2,7 +2,7 @@
 # New in docx2python Version 3
 
 * Better type hints for DocxOutput properties. You should never get an "or" or "Any" type hint for the nested lists returned by Docx2Python.
-* Support for "strict" namespaces. Word uses a superset of the standard Open Office XML format. Work can restrict itself to the standard by saving with the "strict" namespace. This is now supported.
+* Support for "strict" namespaces. Word uses a superset of the standard Open Office XML format. Word can restrict itself to the standard by saving with the "strict" namespace. This is now supported.
 * Tables exported as nested lists are now always nxm (n rows, m columns). This will simplify converting tables to markdown or other data types. Where duplicate_merged_cells is True, the table will be filled to nxm with content from adjacent cells. Where false, the table will be filled to nxm with empty cells.
 * Tables can now be identified without guessing games (see Par Type).
 * Word's paragraph styles are now exposed (e.g., Heading 2, Subtitle, Subtle Emphasis - see Par Type). If html=True, these will be exported as html tags where an obvious mapping exists (e.g., Heading 1 -> h1).
