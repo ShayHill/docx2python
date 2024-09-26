@@ -38,27 +38,27 @@ jobs:
       run: |
         pytest
 
-  # If the tests pass, try to bump the version number. If no bump is warranted,
-  # pass silently.
-  bump_version:
-    runs-on: ubuntu-latest
-    name: "Bump version and create changelog with commitizen"
-    continue-on-error: false
-    needs: [tests]
-    if: github.ref == 'refs/heads/dev'
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: "${{ secrets.COMMITIZEN_BUMP }}"
-      - id: cz
-        name: Create bump and changelog
-        uses: commitizen-tools/commitizen-action@master
-        with:
-          github_token: ${{ secrets.COMMITIZEN_BUMP }}
-      - name: Print Version
-        run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+  # # If the tests pass, try to bump the version number. If no bump is warranted,
+  # # pass silently.
+  # bump_version:
+  #   runs-on: ubuntu-latest
+  #   name: "Bump version and create changelog with commitizen"
+  #   continue-on-error: false
+  #   needs: [tests]
+  #   if: github.ref == 'refs/heads/dev'
+  #   steps:
+  #     - name: Check out
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #         token: "${{ secrets.COMMITIZEN_BUMP }}"
+  #     - id: cz
+  #       name: Create bump and changelog
+  #       uses: commitizen-tools/commitizen-action@master
+  #       with:
+  #         github_token: ${{ secrets.COMMITIZEN_BUMP }}
+  #     - name: Print Version
+  #       run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
 
   # Deploy on test.pypi when branch is dev and commit message starts with 'bump'
   deploy-on-testpypi:
