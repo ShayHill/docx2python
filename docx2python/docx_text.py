@@ -330,7 +330,7 @@ class TagRunner:
 
         # vertical merge. copy cell above. These will already exist as Par instances
         # with no text.
-        if do_merge and pr.get("vMerge", "Not None") is None:
+        if do_merge and pr.get("vMerge", "Not None") is None and len(this_tbl) > 1:
             self.tables.set_caret(tree_depth)
             prev_tr = this_tbl[-2]
             tc_idx = len(this_tr) - 1
