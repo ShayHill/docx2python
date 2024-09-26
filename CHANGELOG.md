@@ -1,3 +1,9 @@
+## 4.0.0 (2024-09-26)
+
+### Fix
+
+- ignore first row vMerge flags in tbl
+
 ## 3.0.0 (2024-07-27)
 
 ### BREAKING CHANGE
