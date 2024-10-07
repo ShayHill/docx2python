@@ -8,7 +8,7 @@ exclude: 'scripts/.*'
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
     - id: check-added-large-files
     - id: check-ast
@@ -135,7 +135,7 @@ repos:
   # C901 function is too complex  # for iter_at_depth
   # PLR0912 too many branches  # for iter_at_depth
   #
-  rev: 'v0.6.8'
+  rev: 'v0.6.9'
   hooks:
     - id: ruff
       exclude: "tests"
@@ -147,6 +147,6 @@ repos:
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.382.post0
+  rev: v1.1.383
   hooks:
     - id: pyright
