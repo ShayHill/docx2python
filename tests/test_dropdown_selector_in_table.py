@@ -13,9 +13,8 @@ request in the first row of any table.
 :created: 2024-09-26
 """
 
-from tests.conftest import RESOURCES
-
 from docx2python import docx2python
+from tests.conftest import RESOURCES
 
 test_file = RESOURCES / "list_index_a.docx"
 
