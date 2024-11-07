@@ -22,6 +22,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Callable
 
 from docx2python import numbering_formats as nums
+from docx2python.docx_context import NumIdAttrs
 from docx2python.namespace import get_attrib_by_qn, iterfind_by_qn
 
 if TYPE_CHECKING:
@@ -113,9 +114,9 @@ class BulletGenerator:
     </w:p>
     """
 
-    def __init__(self, numId2numFmts: dict[str, list[str]]) -> None:
+    def __init__(self, numId2Attrs: dict[str, list[NumIdAttrs]]) -> None:
         """Set numId2numFmts. Initiate counters."""
-        self.numId2numFmts = numId2numFmts
+        self.numId2Attrs = numId2Attrs
         self.numId2count = _new_list_counter()
 
         # Only increment the number of a paragraph if that paragraph has not been
@@ -209,6 +210,7 @@ class BulletGenerator:
             par_number = None
         else:
             par_number = _increment_list_counter(self.numId2count[numId], ilvl)
+            par_number += self.numId2Attrs[numId][int(ilvl)].start - 1
         self._par2par_number[paragraph] = par_number
         return par_number
 
@@ -261,7 +263,7 @@ class BulletGenerator:
         if number is None:
             return ""
         try:
-            numFmt = self.numId2numFmts[str(numId)][int(ilvl)]
+            numFmt = self.numId2Attrs[str(numId)][int(ilvl)].fmt
         except (KeyError, IndexError):
             numFmt = "bullet"
 

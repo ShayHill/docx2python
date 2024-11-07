@@ -113,7 +113,7 @@ class TagRunner:
         """Gather context information necessary to perform some methods."""
         self.file = file
         self.tables = DepthCollector(file)
-        self.bullets = BulletGenerator(file.context.numId2numFmts)
+        self.bullets = BulletGenerator(file.context.numId2Attrs)
 
     def open(self, tree: EtreeElement) -> bool:
         """Open an output string or list then add element text to it.
