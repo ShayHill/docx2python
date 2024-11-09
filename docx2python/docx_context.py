@@ -9,9 +9,10 @@ numbering formats, images, and font styles from *other* files in a decompressed 
 
 from __future__ import annotations
 
+import dataclasses
 from typing import TYPE_CHECKING
 
-from lxml import etree
+from lxml import etree  # type: ignore
 
 from docx2python.attribute_register import get_localname
 from docx2python.namespace import find_by_qn, findall_by_qn, get_attrib_by_qn
@@ -22,8 +23,16 @@ if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
-def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
-    """Collect abstractNum bullet formats into a dictionary.
+@dataclasses.dataclass
+class NumIdAttrs:
+    """NumIdAttrs represents numbering attributes, such as format and start index."""
+
+    fmt: str | None
+    start: int | None
+
+
+def collect_numAttrs(numFmts_root: EtreeElement) -> dict[str, list[NumIdAttrs]]:
+    """Collect abstractNum bullet attributes into a dictionary.
 
     :param numFmts_root: Root element of ``word/numbering.xml``.
     :return: numId mapped to numFmts (by ilvl)
@@ -59,24 +68,30 @@ def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
 
         {
             # -----ilvl=0------ilvl=1------ilvl=2---
-            "1": ["decimal", "lowerLetter", ...],
+            "1": [ NumIdAttrs(fmt:"decimal",start:2),
+                NumIdAttrs(fmt:"lowerLetter",start:1), ...],
             "2": ...
         }
     """
-    abstractNumId2numFmts: dict[str, list[str]] = {}
+    abstractNumId2Attrs: dict[str, list[NumIdAttrs]] = {}
 
     for abstractNum in findall_by_qn(numFmts_root, "w:abstractNum"):
         id_ = str(get_attrib_by_qn(abstractNum, "w:abstractNumId"))
 
-        abstractNumId2numFmts[id_] = []
+        abstractNumId2Attrs[id_] = []
         for lvl in findall_by_qn(abstractNum, "w:lvl"):
-            numFmt = find_by_qn(lvl, "w:numFmt")
-            if numFmt is not None:
-                abstractNumId2numFmts[id_].append(
-                    str(get_attrib_by_qn(numFmt, "w:val"))
-                )
+            numFmtEl = find_by_qn(lvl, "w:numFmt")
+            fmt = None
+            if numFmtEl is not None:
+                fmt = str(get_attrib_by_qn(numFmtEl, "w:val"))
+            startEl = find_by_qn(lvl, "w:start")
+            start = None
+            if startEl is not None:
+                qn = get_attrib_by_qn(startEl, "w:val")
+                start = int(qn)
+            abstractNumId2Attrs[id_].append(NumIdAttrs(fmt=fmt, start=start))
 
-    numId2numFmts: dict[str, list[str]] = {}
+    numId2attrs: dict[str, list[NumIdAttrs]] = {}
     num: EtreeElement
     for num in findall_by_qn(numFmts_root, "w:num"):
         numId = get_attrib_by_qn(num, "w:numId")
@@ -84,9 +99,9 @@ def collect_numFmts(numFmts_root: EtreeElement) -> dict[str, list[str]]:
         if abstractNumId is None:
             continue
         abstractNumIdval = get_attrib_by_qn(abstractNumId, "w:val")
-        numId2numFmts[str(numId)] = abstractNumId2numFmts[str(abstractNumIdval)]
+        numId2attrs[str(numId)] = abstractNumId2Attrs[str(abstractNumIdval)]
 
-    return numId2numFmts
+    return numId2attrs
 
 
 def collect_rels(zipf: zipfile.ZipFile) -> dict[str, list[dict[str, str]]]:

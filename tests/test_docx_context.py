@@ -8,10 +8,10 @@ import os
 import tempfile
 import zipfile
 
-from lxml import etree
+from lxml import etree  # type:ignore
 
 from docx2python.attribute_register import Tags, get_prefixed_tag
-from docx2python.docx_context import collect_numFmts
+from docx2python.docx_context import collect_numAttrs
 from docx2python.docx_reader import DocxReader
 from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
@@ -50,9 +50,10 @@ class TestSaveDocx:
         assert "BULLET" in output_text
 
 
-class TestCollectNumFmts:
+class TestCollectNumAttrs:
     """Test strip_text.collect_numFmts"""
 
+    # TODO test start indices
     def test_gets_formats(self) -> None:
         """Retrieves formats from example.docx
 
@@ -63,10 +64,10 @@ class TestCollectNumFmts:
         numbering formats are represented.
         """
         zipf = zipfile.ZipFile(example_docx)
-        numId2numFmts = collect_numFmts(
+        numId2Attrs = collect_numAttrs(
             etree.fromstring(zipf.read("word/numbering.xml"))
         )
-        formats = {x for y in numId2numFmts.values() for x in y}
+        formats = {x.fmt for y in numId2Attrs.values() for x in y}
         assert formats == {
             "lowerLetter",
             "upperLetter",
@@ -98,17 +99,17 @@ class TestCollectDocProps:
 class TestGetContext:
     """Text strip_text.get_context"""
 
-    def test_numId2numFmts(self) -> None:
+    def test_numId2Attrs(self) -> None:
         """All targets mapped"""
         docx_context = DocxReader(example_docx)
-        assert docx_context.numId2numFmts == collect_numFmts(
+        assert docx_context.numId2Attrs == collect_numAttrs(
             etree.fromstring(docx_context.zipf.read("word/numbering.xml"))
         )
 
     def test_lists(self) -> None:
         """Pass silently when no numbered or bulleted lists."""
         docx_context = DocxReader(RESOURCES / "basic.docx")
-        assert docx_context.numId2numFmts == {}
+        assert docx_context.numId2Attrs == {}
 
 
 class TestPullImageFiles:

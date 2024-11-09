@@ -61,7 +61,12 @@ reportPropertyTypeMismatch = true
 reportUninitializedInstanceVariable = true
 reportUnnecessaryTypeIgnoreComment = true
 reportUnusedCallResult = true
+reportUnknownArgumentType = false
 reportUnknownLambdaType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+reportUntypedFunctionDecorator = false
 
 venvPath = "."
 venv = "./venv"

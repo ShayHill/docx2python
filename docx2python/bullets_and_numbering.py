@@ -27,6 +27,8 @@ from docx2python.namespace import get_attrib_by_qn, iterfind_by_qn
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
+    from docx2python.docx_context import NumIdAttrs
+
 
 def _get_bullet_function(numFmt: str) -> Callable[[int], str]:
     """Select a bullet or numbering format function from xml numFmt.
@@ -113,9 +115,9 @@ class BulletGenerator:
     </w:p>
     """
 
-    def __init__(self, numId2numFmts: dict[str, list[str]]) -> None:
+    def __init__(self, numId2Attrs: dict[str, list[NumIdAttrs]]) -> None:
         """Set numId2numFmts. Initiate counters."""
-        self.numId2numFmts = numId2numFmts
+        self.numId2Attrs = numId2Attrs
         self.numId2count = _new_list_counter()
 
         # Only increment the number of a paragraph if that paragraph has not been
@@ -208,9 +210,20 @@ class BulletGenerator:
         if numId is None or ilvl is None:
             par_number = None
         else:
-            par_number = _increment_list_counter(self.numId2count[numId], ilvl)
+            counter = _increment_list_counter(self.numId2count[numId], ilvl)
+            par_number = counter + self.get_start_value_zero_based(numId, ilvl)
         self._par2par_number[paragraph] = par_number
         return par_number
+
+    def get_start_value_zero_based(self, numId: str | None, ilvl: str | None) -> int:
+        """Get the start value, 0-based, for numbering sequence at particular level.
+
+        :return: start index if present for a particular numId and ilvl, 0 otherwise
+        """
+        attrs = self.__get_num_fmt_attributes(numId, ilvl)
+        if not attrs or not attrs.start:
+            return 0
+        return attrs.start - 1  # subtract 1 to have 0-based result
 
     def get_list_position(
         self, paragraph: EtreeElement
@@ -260,10 +273,8 @@ class BulletGenerator:
             return ""
         if number is None:
             return ""
-        try:
-            numFmt = self.numId2numFmts[str(numId)][int(ilvl)]
-        except (KeyError, IndexError):
-            numFmt = "bullet"
+        attrs = self.__get_num_fmt_attributes(numId, ilvl)
+        numFmt = attrs.fmt if attrs and attrs.fmt else "bullet"
 
         def format_bullet(bullet: str) -> str:
             """Indent, format and pad the bullet or number string.
@@ -277,3 +288,15 @@ class BulletGenerator:
 
         get_unformatted_bullet_str = _get_bullet_function(numFmt)
         return format_bullet(get_unformatted_bullet_str(number))
+
+    def __get_num_fmt_attributes(
+        self, numId: str | None, ilvl: str | None
+    ) -> NumIdAttrs | None:
+        if numId is None:
+            return None
+        if ilvl is None:
+            return None
+        try:
+            return self.numId2Attrs[str(numId)][int(ilvl)]
+        except (KeyError, IndexError, ValueError):
+            return None

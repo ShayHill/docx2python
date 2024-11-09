@@ -31,12 +31,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, List
 from warnings import warn
 
-from lxml import etree
+from lxml import etree  # type: ignore
 from typing_extensions import Self
 
 from docx2python import depth_collector
 from docx2python.attribute_register import XML2HTML_FORMATTER
-from docx2python.docx_context import collect_numFmts, collect_rels
+from docx2python.docx_context import NumIdAttrs, collect_numAttrs, collect_rels
 from docx2python.docx_text import get_file_content, new_depth_collector
 from docx2python.merge_runs import merge_elems
 
@@ -307,7 +307,7 @@ class DocxReader:
         # cached properties and a flag (__closed)
         self.__zipf: None | zipfile.ZipFile = None
         self.__files: None | list[File] = None
-        self.__numId2NumFmts: None | dict[str, list[str]] = None
+        self.__numId2Attrs: None | dict[str, list[NumIdAttrs]] = None
         self.__closed = False
 
     @property
@@ -382,26 +382,26 @@ class DocxReader:
         return list(comment_file.root_element)
 
     @property
-    def numId2numFmts(self) -> dict[str, list[str]]:
-        """Return numId referenced in xml to list of numFmt per indentation level.
+    def numId2Attrs(self) -> dict[str, list[NumIdAttrs]]:
+        """Return numId referenced in xml to list of NumIdAttrs per indentation level.
 
-        :return: numId referenced in xml to list of numFmt per indentation level
+        :return: numId referenced in xml to list of NumIdAttrs per indentation level
 
-        See docstring for collect_numFmts
+        See docstring for collect_numAttrs
 
         Returns an empty dictionary if word/numbering.xml cannot be found.
         Ultimately, this will result in any lists (there should NOT be any lists if
         there is no word/numbering.xml) being "numbered" with "--".
         """
-        if self.__numId2NumFmts is not None:
-            return self.__numId2NumFmts
+        if self.__numId2Attrs is not None:
+            return self.__numId2Attrs
 
         try:
             numFmts_root = etree.fromstring(self.zipf.read("word/numbering.xml"))
-            self.__numId2NumFmts = collect_numFmts(numFmts_root)
+            self.__numId2Attrs = collect_numAttrs(numFmts_root)
         except KeyError:
-            self.__numId2NumFmts = {}
-        return self.__numId2NumFmts
+            self.__numId2Attrs = {}
+        return self.__numId2Attrs
 
     def file_of_type(self, type_: str) -> File:
         """Return file instance attrib Type='http://.../type_'. Warn if more than one.
