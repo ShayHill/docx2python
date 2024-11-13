@@ -13,8 +13,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TypedDict
 
-import pytest  # type:ignore
-from lxml import etree  # type:ignore
+import pytest
+from lxml import etree
 
 from docx2python.bullets_and_numbering import BulletGenerator, _increment_list_counter
 from docx2python.docx_context import NumIdAttrs

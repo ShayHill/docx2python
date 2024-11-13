@@ -8,7 +8,7 @@ import os
 import tempfile
 import zipfile
 
-from lxml import etree  # type:ignore
+from lxml import etree
 
 from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.docx_context import collect_numAttrs

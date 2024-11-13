@@ -25,13 +25,12 @@ import os
 import zipfile
 from contextlib import suppress
 from dataclasses import dataclass
-from io import BytesIO
 from operator import attrgetter
 from pathlib import Path
 from typing import TYPE_CHECKING, List
 from warnings import warn
 
-from lxml import etree  # type: ignore
+from lxml import etree
 from typing_extensions import Self
 
 from docx2python import depth_collector

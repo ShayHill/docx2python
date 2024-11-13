@@ -12,7 +12,7 @@ from __future__ import annotations
 import dataclasses
 from typing import TYPE_CHECKING
 
-from lxml import etree  # type: ignore
+from lxml import etree
 
 from docx2python.attribute_register import get_localname
 from docx2python.namespace import find_by_qn, findall_by_qn, get_attrib_by_qn
@@ -20,7 +20,7 @@ from docx2python.namespace import find_by_qn, findall_by_qn, get_attrib_by_qn
 if TYPE_CHECKING:
     import zipfile
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import _Element as EtreeElement
 
 
 @dataclasses.dataclass
