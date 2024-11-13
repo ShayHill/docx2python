@@ -105,6 +105,24 @@ class TestFormatting:
                 "\tA)\tThis should be A), not C)",
             ]
 
+    def test_numbered_lists_with_custom_start_index(self) -> None:
+        """Sublists start from non-default index. Expected formatting."""
+        with docx2python(RESOURCES / "example_numbering.docx") as output:
+            assert output.body[0][0][0] == [
+                "II)\texpect II",
+                "C)\texpect C",
+                "D)\texpect D",
+                "4)\texpect 4",
+                "e)\texpect e",
+                "f)\texpect f",
+                "6)\texpect 6",
+                "f)\texpect f",
+                "viii)\texpect viii",
+                "ix)\texpect ix",
+                "",
+                "",
+            ]
+
     def test_bullets(self) -> None:
         """Expected bullet format and indent."""
         with docx2python(RESOURCES / "example.docx") as output:
