@@ -18,6 +18,7 @@ from docx2python.main import docx2python
 from tests.conftest import RESOURCES
 
 example_docx = RESOURCES / "example.docx"
+example_numbering_docx = RESOURCES / "example_numbering.docx"
 
 
 class TestSaveDocx:
@@ -53,7 +54,28 @@ class TestSaveDocx:
 class TestCollectNumAttrs:
     """Test strip_text.collect_numFmts"""
 
-    # TODO test start indices
+    def test_gets_start_indexes(self) -> None:
+        """Retrieves start indexes from example_numbering.docx
+
+        This test files contains lists starting from non-default value:
+        II. expect II
+            C. expect C
+            D. expect D
+                4. expect 4
+                    e. expect e
+                    f. expect f
+                        6) expect 6
+                            f) expect f
+                                (viii) expect viii
+                                (ix) expect ix
+        """
+        zipf = zipfile.ZipFile(example_numbering_docx, "r")
+        numId2Attrs = collect_numAttrs(
+            etree.fromstring(zipf.read("word/numbering.xml"))
+        )
+        starts = {x.start for y in numId2Attrs.values() for x in y}
+        assert starts == {1, 2, 3, 4, 5, 6, 8}
+
     def test_gets_formats(self) -> None:
         """Retrieves formats from example.docx
 
