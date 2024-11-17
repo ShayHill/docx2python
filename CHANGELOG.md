@@ -1,19 +1,28 @@
+
+## 3.2.1 (2024-11-17)
+
+### Feat
+
+- add an `elem` attribute to `Par` instances, returning the xml element from
+  which the paragraph was generated
+
 ## 3.0.0 (2024-07-27)
 
 ### BREAKING CHANGE
 
-- The html and duplicate_merged_cells arguments to docx2python are now keyword only.
+- The html and duplicate_merged_cells arguments to docx2python are now keyword
+  only.
 - Inserts empty cells and whitespace into exported
-tables.
-- Removed IndexedItem class which was *probably* only used internally, but it was a part of the public interface.
-- Function get_text was a public function. It mirrored
-the identical flatten_text from the docx_text module.
-- This change breaks the way paragraph styles (internally
-pStyle) were handled. The input argument `do_pStyle` will no now raise
-an error.
-- This doesn't change the interface and doesn't break any
-of my tests, but it took a lot of refactoring to make this change and it
-may break some unofficial patches I've made for clients.
+  tables.
+- Removed IndexedItem class which was *probably* only used internally, but it
+  was a part of the public interface.
+- Function get_text was a public function. It mirrored the identical
+  flatten_text from the docx_text module.
+- This change breaks the way paragraph styles (internally pStyle) were handled.
+  The input argument `do_pStyle` will no now raise an error.
+- This doesn't change the interface and doesn't break any of my tests, but it
+  took a lot of refactoring to make this change and it may break some
+  unofficial patches I've made for clients.
 
 ### Feat
 
