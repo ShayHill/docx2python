@@ -50,6 +50,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterator
 
+from docx2python.attribute_register import get_prefixed_tag
+
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
@@ -90,11 +92,11 @@ def get_attrib_by_qn(elem: EtreeElement, tag: str) -> str:
 
 
 def find_by_qn(elem: EtreeElement, tag: str) -> EtreeElement | None:
-    """Find all elements in the tree with a namespace-prefixed tag.
+    """Find next element in the tree with a namespace-prefixed tag.
 
     :param elem: lxml.etree._Element object
     :param tag: namespace-prefixed tag, e.g. ``w:p``
-    :return: list of elements with the namespace-prefixed tag
+    :return: next element with the namespace-prefixed tag
     """
     return elem.find(qn(elem, tag))
 
@@ -107,6 +109,20 @@ def findall_by_qn(elem: EtreeElement, tag: str) -> list[EtreeElement]:
     :return: list of elements with the namespace-prefixed tag
     """
     return elem.findall(qn(elem, tag))
+
+
+def find_parent_by_qn(elem: EtreeElement | None, tag: str) -> EtreeElement | None:
+    """Find the parent element in the tree with a namespace-prefixed tag.
+
+    :param elem: lxml.etree._Element object
+    :param tag: namespace-prefixed tag, e.g. ``w:p``
+    :return: parent element with the namespace-prefixed tag
+    """
+    if elem is None:
+        return None
+    if get_prefixed_tag(elem) == tag:
+        return elem
+    return find_parent_by_qn(elem.getparent(), tag)
 
 
 def iterfind_by_qn(elem: EtreeElement, tag: str) -> Iterator[EtreeElement]:

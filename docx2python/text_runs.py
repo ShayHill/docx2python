@@ -19,7 +19,7 @@ from docx2python.attribute_register import (
     get_localname,
     get_prefixed_tag,
 )
-from docx2python.namespace import qn
+from docx2python.namespace import find_parent_by_qn, qn
 
 if TYPE_CHECKING:
     from lxml.etree import _Element as EtreeElement  # type: ignore
@@ -82,10 +82,11 @@ def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]
     return sub_vals
 
 
-def gather_Pr(element: EtreeElement) -> dict[str, str | None]:
+def gather_Pr(element: EtreeElement, tag: str | None = None) -> dict[str, str | None]:
     """Gather style values for a <w:r>, <w:tc>, or <w:p> element (maybe others).
 
     :param element: any xml element. r and p elems typically have Pr values.
+    :param tag: optionally specify a tag to search for, e.g., 'w:sdt'
     :return: Style names ('b/', 'sz', etc.) mapped to values.
 
     These elements often have a subelement ``<w:pPr>`` or ``<w:rPr>`` which contains
@@ -96,8 +97,28 @@ def gather_Pr(element: EtreeElement) -> dict[str, str | None]:
 
     Call this with any element. Runs and Paragraphs may have a Pr element. Most
     elements will not, but the function will will quietly return an empty dict.
+
+    **Optional tag argument**
+
+    The properties element is a child of the element it describes. With the default
+    tag=None argument, this function will return that child. Given a tag, the
+    function will first search up for a matching tag, then return the properties
+    element of that tag. This allows simple access to, for example, the pPr element
+    from a descendent `w:t` or `w:r` element.
+
+    ```
+    <w:p>
+        <w:pPr> </wpPr>
+        <w:r>
+            <w:t> </w:t>
+        </w:r>
+    </w:p>
+    ```
     """
-    return _gather_sub_vals(element, element.tag + "Pr")
+    parent = element if tag is None else find_parent_by_qn(element, tag)
+    if parent is None:
+        return {}
+    return _gather_sub_vals(parent, parent.tag + "Pr")
 
 
 def get_pStyle(paragraph_element: EtreeElement) -> str:
