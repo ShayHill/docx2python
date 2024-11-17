@@ -86,6 +86,7 @@ class Par:
             2. item (1, 2)  # this paragraph
     """
 
+    elem: EtreeElement | None
     html_style: list[str]
     style: str
     lineage: _Lineage
@@ -112,13 +113,14 @@ class Par:
         return runs_as_text
 
     @classmethod
-    def new_empty_par(cls) -> Par:
+    def new_empty_par(cls, elem: EtreeElement | None) -> Par:
         """Create a new empty paragraph.
 
+        :param elem: the paragraph element
         :return: a new empty paragraph
         """
         lineage: _Lineage = ("document", "", "", "", "")
-        return cls([], "", lineage, [])
+        return cls(elem, [], "", lineage, [])
 
 
 ParsTable = List[List[List[List[Par]]]]
@@ -235,7 +237,7 @@ class DepthCollector:
         if elem is not None:
             pStyle = get_pStyle(elem)
 
-        new_par = Par(html_style, pStyle, self._lineage, [*self.queued_runs])
+        new_par = Par(elem, html_style, pStyle, self._lineage, [*self.queued_runs])
         self.queued_runs = []
         self._open_pars.append(new_par)
         return new_par

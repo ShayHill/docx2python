@@ -287,6 +287,8 @@ class Tags(str, Enum):
     PAR_PROPERTIES = "w:pPr"
     RUN = "w:r"
     RUN_PROPERTIES = "w:rPr"
+    SDT = "w:sdt"
+    SDT_PROPERTIES = "w:sdtPr"
     SYM = "w:sym"
     TAB = "w:tab"
     TABLE = "w:tbl"
@@ -296,7 +298,11 @@ class Tags(str, Enum):
     TEXT_MATH = "m:t"
 
 
-_CONTENT_TAGS = set(Tags) - {Tags.RUN_PROPERTIES, Tags.PAR_PROPERTIES}
+_CONTENT_TAGS = set(Tags) - {
+    Tags.RUN_PROPERTIES,
+    Tags.PAR_PROPERTIES,
+    Tags.SDT_PROPERTIES,
+}
 
 
 def _is_content(elem: EtreeElement) -> bool:

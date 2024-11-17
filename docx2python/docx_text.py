@@ -345,7 +345,7 @@ class TagRunner:
             if do_merge:
                 this_tr.append(copy.deepcopy(this_tr[-1]))
             else:
-                this_tr.append([Par.new_empty_par()])
+                this_tr.append([Par.new_empty_par(None)])
 
 
 def new_depth_collector(file: File, root: EtreeElement | None = None) -> DepthCollector:
