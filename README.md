@@ -13,6 +13,10 @@
 
 New in Docx2Python Version 3, the Par type captures some paragraph properties.
 
+`elem: lxml.etree._Element`
+
+A pointer to the xml element from which the paragraph was extracted. This is useful for fishing around in the xml from a known location. See `tests.test_content_control_block_properties.py` for an example of how this can be used.
+
 `html_style: list[str]`
 
 A list of html tags that will be applied to the paragraph if html=True.
