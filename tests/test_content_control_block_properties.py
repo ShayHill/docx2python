@@ -18,7 +18,7 @@ description of the sdt context in xml and how to access it.
 :created: 2024-11-17
 """
 
-from typing import Union
+from __future__ import annotations
 
 from lxml.etree import _Element as EtreeElement  # type: ignore
 
@@ -31,7 +31,7 @@ from tests.conftest import RESOURCES
 _DOCX = RESOURCES / "ControlTest.docx"
 
 
-def get_sdt_tag(elem: EtreeElement) -> Union[str, None]:
+def get_sdt_tag(elem: EtreeElement) -> str | None:
     """If elem is or is inside a <w:sdt> element, try to find the sdt props tag value.
 
     :param elem: lxml.etree._Element object
