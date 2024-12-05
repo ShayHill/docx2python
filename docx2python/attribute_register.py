@@ -13,8 +13,10 @@ html tags.
 
 from __future__ import annotations
 
+import uuid
 from enum import Enum
 from typing import TYPE_CHECKING, Callable, Iterator, NamedTuple
+import warnings
 
 from lxml import etree
 
@@ -38,8 +40,21 @@ def get_localname(elem: EtreeElement) -> str:
     ...
 
     return `p`.
+
+    ---
+
+    Some converted Word documents have bad tags due to a conversion in the error.
+    These will raise a ValueError when passed to `etree.QName`. If a file with tags
+    like this is opened in Word and saved again, any element with a bad tag will be
+    stripped. Docx2Python does the same thing.  For any tag that raises a ValueError
+    in `etree.QName`, this function will return a random string, and docx2python will
+    silently ignore the element with the bad tag.
     """
-    qname = etree.QName(elem.tag)
+    try:
+        qname = etree.QName(elem.tag)
+    except ValueError:
+        warnings.warn(f"skipping invalid tag name '{elem.tag}'")
+        return f"FAILED-{uuid.uuid4()}"
     return qname.localname
 
 
