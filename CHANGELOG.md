@@ -1,4 +1,11 @@
 
+## 3.3.0 (2024-12-05)
+
+### Feat
+
+- skip elements with invalid tags. Issue a warning. These are usually the
+  result of faulty conversion software.
+
 ## 3.2.1 (2024-11-17)
 
 ### Feat
