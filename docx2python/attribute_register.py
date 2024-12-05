@@ -14,9 +14,9 @@ html tags.
 from __future__ import annotations
 
 import uuid
+import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Callable, Iterator, NamedTuple
-import warnings
 
 from lxml import etree
 
@@ -53,7 +53,7 @@ def get_localname(elem: EtreeElement) -> str:
     try:
         qname = etree.QName(elem.tag)
     except ValueError:
-        warnings.warn(f"skipping invalid tag name '{elem.tag}'")
+        warnings.warn(f"skipping invalid tag name '{elem.tag}'", stacklevel=2)
         return f"FAILED-{uuid.uuid4()}"
     return qname.localname
 

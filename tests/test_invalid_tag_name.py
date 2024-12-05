@@ -21,8 +21,7 @@ class TestInvalidTagName:
     """Confirming this works with v1.25"""
 
     def test_invalid_tag_name(self) -> None:
-        """Pass if no ValueError is raised.
-        """
+        """Pass if no ValueError is raised."""
         extraction = docx2python(RESOURCES / "invalid_tag_name.docx")
         with pytest.warns(UserWarning, match="skipping invalid tag name"):
             _ = extraction.text
