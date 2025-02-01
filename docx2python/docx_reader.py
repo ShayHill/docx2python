@@ -451,10 +451,11 @@ class DocxReader:
         :param filename: path to output file (presumably *.docx)
 
         xml (root_element) attributes are cached, so these can be altered and saved.
-        This allows saving a copy of the input docx after the ``merge_elems`` operation.
-        Also allows some light editing like search and replace.
+        This allows saving a copy of the input docx after the ``merge_elems``
+        operation. Also allows some light editing like search and replace.
         """
-        content_files = [x for x in self.files if x.Type in CONTENT_FILE_TYPES]
+        overwrite = [*CONTENT_FILE_TYPES, "relationships"]
+        content_files = [x for x in self.files if x.Type in overwrite]
         with zipfile.ZipFile(f"{filename}", mode="w") as zout:
             _copy_but(self.zipf, zout, {x.path for x in content_files})
             for file in content_files:
