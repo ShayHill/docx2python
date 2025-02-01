@@ -1,4 +1,4 @@
-""" Test that passing `more_html = True` collects paragraph styles
+"""Test that passing `more_html = True` collects paragraph styles
 
 :author: Shay Hill
 :created: 11/5/2020

@@ -357,7 +357,7 @@ def has_content(tree: EtreeElement) -> str | None:
         :return: None
         """
         if _is_content(tree_):
-            yield tree_.tag
+            yield str(tree_.tag)
         for branch in tree_:
             yield from iter_content(branch)
 

@@ -63,7 +63,7 @@ Here is another paragraph between the first and second tables.
 """
 
 
-def test_tables_to_markdown():
+def test_tables_to_markdown() -> None:
     with docx2python(RESOURCES / "paragraphs_and_tables.docx") as extraction:
         tables = extraction.document_pars
 

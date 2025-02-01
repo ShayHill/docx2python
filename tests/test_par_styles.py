@@ -1,4 +1,4 @@
-""" Par styles converted to flags
+"""Par styles converted to flags
 
 :author: Shay Hill
 :created: 3/18/2021

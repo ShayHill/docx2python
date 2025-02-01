@@ -1,4 +1,4 @@
-""" Testing Table of Contents support as requested by user leboni
+"""Testing Table of Contents support as requested by user leboni
 
 :author: Shay Hill
 :created: 8/19/2020

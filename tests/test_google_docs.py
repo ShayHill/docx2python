@@ -1,4 +1,4 @@
-""" Test corrections for google docs docx files
+"""Test corrections for google docs docx files
 
 :author: Shay Hill
 :created: 11/2/2020

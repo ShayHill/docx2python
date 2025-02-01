@@ -1,4 +1,4 @@
-""" Libreoffice conversions from doc to docx raise CaretDepthError
+"""Libreoffice conversions from doc to docx raise CaretDepthError
 
 :author: Shay Hill
 :created: 8/11/2021

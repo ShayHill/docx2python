@@ -1,4 +1,4 @@
-""" Fix bullets in pages created in Pages
+"""Fix bullets in pages created in Pages
 
 :author: Shay Hill
 :created: 10/5/2020

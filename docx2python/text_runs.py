@@ -118,7 +118,7 @@ def gather_Pr(element: EtreeElement, tag: str | None = None) -> dict[str, str | 
     parent = element if tag is None else find_parent_by_qn(element, tag)
     if parent is None:
         return {}
-    return _gather_sub_vals(parent, parent.tag + "Pr")
+    return _gather_sub_vals(parent, str(parent.tag) + "Pr")
 
 
 def get_pStyle(paragraph_element: EtreeElement) -> str:

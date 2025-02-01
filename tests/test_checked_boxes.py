@@ -1,4 +1,4 @@
-""" Identify checked boxes in user-submitted file
+"""Identify checked boxes in user-submitted file
 
 :author: Shay Hill
 :created: 2021-12-17

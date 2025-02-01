@@ -51,7 +51,7 @@ def _elem_key(file: File, elem: EtreeElement) -> tuple[str, str, list[str]]:
     different but point to the same address.
 
     """
-    tag = elem.tag
+    tag = str(elem.tag)
     if not _is_mergeable(elem):
         return tag, "", []
 

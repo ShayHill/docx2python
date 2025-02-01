@@ -1,4 +1,4 @@
-""" Test that consecutive links pointing to the same address are merged.
+"""Test that consecutive links pointing to the same address are merged.
 
 :author: Shay Hill
 :created: 3/17/2021
