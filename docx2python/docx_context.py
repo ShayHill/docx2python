@@ -170,10 +170,18 @@ def collect_rels(zipf: zipfile.ZipFile) -> dict[str, list[dict[str, str]]]:
     """
     path2rels: dict[str, list[dict[str, str]]] = {}
     for rels in (x for x in zipf.namelist() if x[-5:] == ".rels"):
+        rels_elem = etree.fromstring(zipf.read(rels))
         path2rels[rels] = [
-            {str(y): str(z) for y, z in x.attrib.items()}
-            for x in etree.fromstring(zipf.read(rels))
+            {str(y): str(z) for y, z in x.attrib.items()} for x in rels_elem
         ]
+        path2rels[rels].append(
+            {
+                "Id": "none",
+                "Type": etree.QName(rels_elem.tag).namespace or "",
+                "Target": rels,
+            }
+        )
+
     return path2rels
 
 
