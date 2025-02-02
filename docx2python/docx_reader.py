@@ -163,6 +163,18 @@ class File:
         return self.__rels_path
 
     @property
+    def rels_element(self) -> EtreeElement | None:
+        """Root element of the rels file.
+
+        :return: Root element of the rels file.
+        :raise KeyError: If the rels file is not found
+        """
+        rels_files = [x for x in self.context.files if x.Target == self._rels_path]
+        if len(rels_files) == 1:
+            return rels_files[0].root_element
+        return None
+
+    @property
     def rels(self) -> dict[str, str]:
         """Get rIds mapped to values.
 
@@ -189,16 +201,10 @@ class File:
         Not every xml file with have a rels file. Return an empty dictionary if the
         rels file is not found.
         """
-        if self.__rels is not None:
-            return self.__rels
-
-        try:
-            unzipped = self.context.zipf.read(self._rels_path)
-            tree = etree.fromstring(unzipped)
-            self.__rels = {str(x.attrib["Id"]): str(x.attrib["Target"]) for x in tree}
-        except KeyError:
-            self.__rels = {}
-        return self.__rels
+        rels_element = self.rels_element
+        if rels_element:
+            return {str(x.attrib["Id"]): str(x.attrib["Target"]) for x in rels_element}
+        return {}
 
     @property
     def root_element(self) -> EtreeElement:
