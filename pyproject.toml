@@ -1,7 +1,7 @@
 
 [project]
 name = "docx2python"
-version = "3.3.1"
+version = "3.4.0"
 description = "Extract content from docx files"
 authors = [{ name = "Shay Hill", email = "shay_public@hotmail.com" }]
 license = {text = "MIT"}
@@ -19,7 +19,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "3.3.1"
+version = "3.4.0"
 tag_format = "$version"
 major-version-zero = true
 version_files = ["pyproject.toml:^version"]

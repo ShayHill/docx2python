@@ -1,4 +1,13 @@
 
+## 3.4.0 (2025-02-01)
+
+### Feat
+
+- edit and save rels files. You can now access the `rels_element` attribute of
+  File instances to update hyperlink urls and other values. These will be saves
+  on DocxReader.save(). This is an advanced feature and will not change text
+  extraction.
+
 ## 3.3.0 (2024-12-05)
 
 ### Feat
