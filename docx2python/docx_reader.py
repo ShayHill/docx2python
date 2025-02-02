@@ -202,7 +202,7 @@ class File:
         rels file is not found.
         """
         rels_element = self.rels_element
-        if rels_element:
+        if rels_element is not None:
             return {str(x.attrib["Id"]): str(x.attrib["Target"]) for x in rels_element}
         return {}
 
