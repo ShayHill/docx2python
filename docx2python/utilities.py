@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING
 
 from lxml import etree
 
@@ -20,8 +20,8 @@ from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 
 if TYPE_CHECKING:
-
     import os
+    from collections.abc import Iterator
 
     from lxml.etree import _Element as EtreeElement  # type: ignore
 

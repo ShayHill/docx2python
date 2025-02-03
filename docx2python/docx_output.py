@@ -40,7 +40,7 @@ This is the format for default (no trailing "_runs", e.g ``header``) properties.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, cast
+from typing import TYPE_CHECKING, cast
 from warnings import warn
 
 from typing_extensions import Self
@@ -58,8 +58,8 @@ if TYPE_CHECKING:
     from docx2python.depth_collector import Par
     from docx2python.docx_reader import DocxReader
 
-    ParsTable = List[List[List[List[Par]]]]
-    TextTable = List[List[List[List[List[str]]]]]
+    ParsTable = list[list[list[list[Par]]]]
+    TextTable = list[list[list[list[list[str]]]]]
 
 
 def _join_runs(tables: TextTable) -> list[list[list[list[str]]]]:
@@ -100,11 +100,11 @@ def _join_runs(tables: TextTable) -> list[list[list[list[str]]]]:
     """
     result: list[list[list[list[str]]]] = []
     for tbl in tables:
-        result.append(cast(List[List[List[str]]], []))
+        result.append(cast(list[list[list[str]]], []))
         for row in tbl:
-            result[-1].append(cast(List[List[str]], []))
+            result[-1].append(cast(list[list[str]], []))
             for cell in row:
-                result[-1][-1].append(cast(List[str], []))
+                result[-1][-1].append(cast(list[str], []))
                 for par in cell:
                     result[-1][-1][-1].append("".join(par))
     return result

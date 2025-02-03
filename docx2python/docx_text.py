@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import copy
 from contextlib import suppress
-from typing import TYPE_CHECKING, List, Literal, Sequence, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from docx2python.attribute_register import Tags, get_prefixed_tag
 from docx2python.bullets_and_numbering import BulletGenerator
@@ -24,12 +24,14 @@ from docx2python.namespace import qn
 from docx2python.text_runs import gather_Pr
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
     from docx2python.docx_reader import File
 
-ParsTable = List[List[List[List[Par]]]]
-TextTable = List[List[List[List[List[str]]]]]
+ParsTable = list[list[list[list[Par]]]]
+TextTable = list[list[list[list[list[str]]]]]
 
 
 def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:

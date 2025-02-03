@@ -16,11 +16,13 @@ from __future__ import annotations
 import uuid
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, Iterator, NamedTuple
+from typing import TYPE_CHECKING, Callable, NamedTuple
 
 from lxml import etree
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
 # ===============================================================================

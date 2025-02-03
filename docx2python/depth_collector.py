@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import dataclasses
 import itertools as it
-from typing import TYPE_CHECKING, Any, Iterator, List, Literal, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Literal, Union, cast
 
 from docx2python.attribute_register import get_localname
 from docx2python.iterators import enum_at_depth
@@ -46,13 +46,15 @@ from docx2python.text_runs import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
     from docx2python.docx_reader import File
 
 
 _MaybeStr = Union[str, None]
-_Lineage = Tuple[Literal["document"], _MaybeStr, _MaybeStr, _MaybeStr, _MaybeStr]
+_Lineage = tuple[Literal["document"], _MaybeStr, _MaybeStr, _MaybeStr, _MaybeStr]
 
 
 @dataclasses.dataclass
@@ -123,8 +125,8 @@ class Par:
         return cls(elem, [], "", lineage, [])
 
 
-ParsTable = List[List[List[List[Par]]]]
-TextTable = List[List[List[List[List[str]]]]]
+ParsTable = list[list[list[list[Par]]]]
+TextTable = list[list[list[list[list[str]]]]]
 
 
 def get_par_strings(nested_pars: ParsTable) -> TextTable:

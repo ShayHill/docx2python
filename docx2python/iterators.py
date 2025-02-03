@@ -22,22 +22,14 @@ These functions help manipulate that deep nest without deep indentation.
 from __future__ import annotations
 
 import copy
+from collections.abc import Iterable, Iterator
 from contextlib import suppress
-from typing import (
-    TYPE_CHECKING,
-    Iterable,
-    Iterator,
-    List,
-    Literal,
-    TypeVar,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Literal, TypeVar, cast, overload
 
 if TYPE_CHECKING:
     from docx2python.depth_collector import Par
 
-    TextTable = List[List[List[List[List[str]]]]]
+    TextTable = list[list[list[list[list[str]]]]]
 
 
 _T = TypeVar("_T")
@@ -241,19 +233,19 @@ def iter_at_depth(
     ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     """
     if depth == 1:
-        nested = cast(List[_T], nested)
+        nested = cast(list[_T], nested)
         return (x for _, x in enum_at_depth(nested, depth))
     if depth == 2:
-        nested = cast(List[List[_T]], nested)
+        nested = cast(list[list[_T]], nested)
         return (x for _, x in enum_at_depth(nested, depth))
     if depth == 3:
-        nested = cast(List[List[List[_T]]], nested)
+        nested = cast(list[list[list[_T]]], nested)
         return (x for _, x in enum_at_depth(nested, depth))
     if depth == 4:
-        nested = cast(List[List[List[List[_T]]]], nested)
+        nested = cast(list[list[list[list[_T]]]], nested)
         return (x for _, x in enum_at_depth(nested, depth))
     if depth == 5:
-        nested = cast(List[List[List[List[List[_T]]]]], nested)
+        nested = cast(list[list[list[list[list[_T]]]]], nested)
         return (x for _, x in enum_at_depth(nested, depth))
     msg = "depth argument must be 1, 2, 3, 4, or 5"
     raise ValueError(msg)
@@ -393,24 +385,24 @@ def get_html_map(tables: TextTable) -> str:
     ``(0, 0, 0, 0) text``.
     """
     # prepend index tuple to each paragraph
-    tables_4deep = cast(List[List[List[List[str]]]], copy.deepcopy(tables))
+    tables_4deep = cast(list[list[list[list[str]]]], copy.deepcopy(tables))
     for (i, j, k, m), paragraph in enum_at_depth(tables, 4):
         par_text = "".join(paragraph)
         tables_4deep[i][j][k][m] = " ".join([str((i, j, k, m)), par_text])
 
     # wrap each paragraph in <pre> tags
-    tables_3deep = cast(List[List[List[str]]], tables_4deep)
+    tables_3deep = cast(list[list[list[str]]], tables_4deep)
     for (i, j, k), cell in enum_at_depth(tables_4deep, 3):
         cell_strs = (str(x) for x in cell)
         tables_3deep[i][j][k] = "".join([f"<pre>{x}</pre>" for x in cell_strs])
 
     # wrap each cell in <td> tags
-    tables_2deep = cast(List[List[str]], tables_3deep)
+    tables_2deep = cast(list[list[str]], tables_3deep)
     for (i, j), row in enum_at_depth(tables_3deep, 2):
         tables_2deep[i][j] = "".join([f"<td>{x}</td>" for x in row])
 
     # wrap each row in <tr> tags
-    tables_1deep = cast(List[str], tables_2deep)
+    tables_1deep = cast(list[str], tables_2deep)
     for (i,), table in enum_at_depth(tables_2deep, 1):
         tables_1deep[i] = "".join(f"<tr>{x}</tr>" for x in table)
 

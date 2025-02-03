@@ -27,7 +27,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from operator import attrgetter
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from warnings import warn
 
 from lxml import etree
@@ -39,8 +39,8 @@ from docx2python.docx_context import NumIdAttrs, collect_numAttrs, collect_rels
 from docx2python.docx_text import get_file_content, new_depth_collector
 from docx2python.merge_runs import merge_elems
 
-ParsTable = List[List[List[List[depth_collector.Par]]]]
-TextTable = List[List[List[List[List[str]]]]]
+ParsTable = list[list[list[list[depth_collector.Par]]]]
+TextTable = list[list[list[list[list[str]]]]]
 
 if TYPE_CHECKING:
     from io import BytesIO

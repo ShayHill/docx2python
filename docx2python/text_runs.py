@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from contextlib import suppress
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from docx2python.attribute_register import (
     HtmlFormatter,
@@ -22,6 +22,8 @@ from docx2python.attribute_register import (
 from docx2python.namespace import find_parent_by_qn, qn
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
 

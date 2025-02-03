@@ -48,11 +48,13 @@ If you extend docx2text with other tags, additional NSMAP entries may be necessa
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING
 
 from docx2python.attribute_register import get_prefixed_tag
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
 
