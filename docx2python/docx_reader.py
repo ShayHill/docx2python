@@ -113,24 +113,34 @@ class File:
         the specified xml file.
 
         E.g.,
-        from     self.dir = '_rels'       self.Target = 'word/document.xml
-                    dirname ''          +       dirname 'word/'
-                                        +       filename =   'document.xml'
+        from     self.dir = '_rels'                   self.Target = 'word/document.xml
+                    dirname ''               +              dirname 'word/'
+                                             +        filename =         'document.xml'
         return `word/document`
 
         E.g.,
-        from     self.dir = 'word/_rels'       self.Target = 'header1.xml
-                    dirname 'word'      +            dirname ''
-                                        +       filename =   'header1.xml'
+        from     self.dir = 'word/_rels'               self.Target = 'header1.xml
+                    dirname 'word'           +               dirname ''
+                                             +         filename =    'header1.xml'
+        return `word/header1.xml`
+
+        E.g.,
+        from     self.dir = 'word/glossary/_rels'       self.Target = 'header1.xml
+                    dirname 'word/glossary'  +                dirname ''
+                                             +          filename =    'header1.xml'
         return `word/header1.xml`
         """
         if self.__path is not None:
             return self.__path
 
-        dirs = [Path(x).parent.name for x in (self.dir, self.Target)]
-        dirname = "/".join([x for x in dirs if x])
-        filename = Path(self.Target).name
-        self.__path = f"{dirname}/{filename}"
+        dir_ = Path(self.dir).parent
+        target = Path(self.Target)
+        if target.is_relative_to(dir_):
+            dirs = dir_ / target.relative_to(dir_)
+        else:
+            dirs = dir_ / target
+        self.__path = dirs.as_posix().lstrip("/.")
+
         return self.__path
 
     @property
