@@ -6,7 +6,7 @@ description = "Extract content from docx files"
 authors = [{ name = "Shay Hill", email = "shay_public@hotmail.com" }]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.8.0"
+requires-python = ">=3.9.0"
 dependencies = ["lxml", "paragraphs", "typing_extensions", "types-lxml"]
 
 [project.optional-dependencies]
@@ -32,7 +32,7 @@ profile = "black"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{312,311,310,39,38}
+envlist = py{312,311,310,39}
 
 [testenv]
 deps = pytest
@@ -49,7 +49,7 @@ log_cli = 1
 include = ["src"]
 exclude = ["**/__pycache__.py"]
 
-pythonVersion = "3.8"
+pythonVersion = "3.9"
 pythonPlatform = "Any"
 
 typeCheckingMode = "strict"

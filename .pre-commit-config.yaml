@@ -77,7 +77,7 @@ repos:
   rev: v3.19.1
   hooks:
   - args:
-    - --py38-plus
+    - --py39-plus
     id: pyupgrade
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
@@ -111,8 +111,6 @@ repos:
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # ignores
-  # ANN101 Missing type annotation for self in method
-  # ANN102 Missing type annotation for cls in classmethod
   # ANN201 Missing return type annotation for public function
   # ANN202 Missing return type annotation for private function (wants -> None everywhere)
   # B905 zip() without an explicit strict= parameter
@@ -142,7 +140,7 @@ repos:
       args:
       - --target-version=py38
       - --select=ALL
-      - --ignore=ANN101,ANN102,ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,ERA001,N803,S320,PLR2004,C901,PLR0912
+      - --ignore=ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,ERA001,N803,S320,PLR2004,C901,PLR0912
       # # - --fix
 
 # reads pyproject.toml for additional config
