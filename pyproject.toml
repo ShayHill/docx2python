@@ -32,7 +32,7 @@ profile = "black"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{312,311,310,39}
+envlist = py{313,312,311,310,39}
 
 [testenv]
 deps = pytest

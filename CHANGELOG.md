@@ -1,4 +1,13 @@
 
+## 3.5.0 (2025-02-03)
+
+### Feat
+
+- Remove Python 3.8 support.
+- Refactor File.path inference to support rare files with rels in a
+  `word/glossary` directory.
+- Test Python 3.13 support.
+
 ## 3.4.0 (2025-02-01)
 
 ### Feat
