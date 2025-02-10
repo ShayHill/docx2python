@@ -45,7 +45,7 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.14.1
+  rev: v1.15.0
   hooks:
   - id: mypy
     name: mypy
@@ -133,7 +133,7 @@ repos:
   # C901 function is too complex  # for iter_at_depth
   # PLR0912 too many branches  # for iter_at_depth
   #
-  rev: 'v0.9.4'
+  rev: 'v0.9.6'
   hooks:
     - id: ruff
       exclude: "tests"
