@@ -436,8 +436,10 @@ class DocxContent:
         for comment in comment_elements:
             id_ = get_attrib_by_qn(comment, "w:id")
             author = get_attrib_by_qn(comment, "w:author")
-            date = get_attrib_by_qn(comment, "w:date")
-
+            try:
+                date = get_attrib_by_qn(comment, "w:date")
+            except KeyError:
+                date = ""
             tree = new_depth_collector(comments_file, comment).tree_text
             tree_pars = ["".join(x) for x in iter_at_depth(tree, 4)]
             comment_text = "\n\n".join(tree_pars)
