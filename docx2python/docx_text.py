@@ -92,7 +92,7 @@ def _get_elem_depth(tree: EtreeElement) -> Literal[1, 2, 3, 4] | None:
         grandchildren = [list(x) for x in tree_]
         return search_at_depth([x for y in grandchildren for x in y], _depth + 1)
 
-    return cast(Literal[1, 2, 3, 4], search_at_depth([tree]))
+    return cast("Literal[1, 2, 3, 4]", search_at_depth([tree]))
 
 
 def _get_text_below(file: File, root: EtreeElement) -> str:

@@ -174,12 +174,11 @@ def collect_rels(zipf: zipfile.ZipFile) -> dict[str, list[dict[str, str]]]:
         path2rels[rels] = [
             {str(y): str(z) for y, z in x.attrib.items()} for x in rels_elem
         ]
+        tag = rels_elem.tag
+        if isinstance(tag, bytearray):  # for type checkers
+            tag = tag.decode("utf-8")
         path2rels[rels].append(
-            {
-                "Id": "none",
-                "Type": etree.QName(rels_elem.tag).namespace or "",
-                "Target": rels,
-            }
+            {"Id": "none", "Type": etree.QName(tag).namespace or "", "Target": rels}
         )
 
     return path2rels

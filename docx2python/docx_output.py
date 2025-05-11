@@ -100,11 +100,11 @@ def _join_runs(tables: TextTable) -> list[list[list[list[str]]]]:
     """
     result: list[list[list[list[str]]]] = []
     for tbl in tables:
-        result.append(cast(list[list[list[str]]], []))
+        result.append(cast("list[list[list[str]]]", []))
         for row in tbl:
-            result[-1].append(cast(list[list[str]], []))
+            result[-1].append(cast("list[list[str]]", []))
             for cell in row:
-                result[-1][-1].append(cast(list[str], []))
+                result[-1][-1].append(cast("list[str]", []))
                 for par in cell:
                     result[-1][-1][-1].append("".join(par))
     return result
