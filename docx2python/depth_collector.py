@@ -189,7 +189,7 @@ class DepthCollector:
         """
         for run_text in enum_at_depth(self.tree_text, 5):
             if run_text:
-                yield cast(str, run_text)
+                yield cast("str", run_text)
         for par in self._open_pars:
             yield from par.run_strings
 
@@ -291,7 +291,7 @@ class DepthCollector:
         :return: from 0 to _par_depth, the depth of the last-closed element in the
             tree.
         """
-        return cast(Literal[1, 2, 3, 4], len(self._rightmost_branches))
+        return cast("Literal[1, 2, 3, 4]", len(self._rightmost_branches))
 
     @property
     def _open_runs(self) -> list[Run]:

@@ -52,8 +52,11 @@ def get_localname(elem: EtreeElement) -> str:
     in `etree.QName`, this function will return a random string, and docx2python will
     silently ignore the element with the bad tag.
     """
+    tag = elem.tag
+    if isinstance(tag, bytearray):  # just for type checking
+        tag = tag.decode("utf-8")
     try:
-        qname = etree.QName(elem.tag)
+        qname = etree.QName(tag)
     except ValueError:
         warnings.warn(f"skipping invalid tag name '{elem.tag}'", stacklevel=2)
         return f"FAILED-{uuid.uuid4()}"
