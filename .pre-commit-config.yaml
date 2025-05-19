@@ -133,7 +133,7 @@ repos:
   # C901 function is too complex  # for iter_at_depth
   # PLR0912 too many branches  # for iter_at_depth
   #
-  rev: 'v0.11.9'
+  rev: 'v0.11.10'
   hooks:
     - id: ruff
       exclude: "tests"
