@@ -45,7 +45,7 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.15.0
+  rev: v1.16.0
   hooks:
   - id: mypy
     name: mypy
@@ -74,7 +74,7 @@ repos:
     args: ["--skip-magic-trailing-comma"]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.19.1
+  rev: v3.20.0
   hooks:
   - args:
     - --py39-plus
@@ -133,7 +133,7 @@ repos:
   # C901 function is too complex  # for iter_at_depth
   # PLR0912 too many branches  # for iter_at_depth
   #
-  rev: 'v0.11.9'
+  rev: 'v0.11.12'
   hooks:
     - id: ruff
       exclude: "tests"
@@ -145,6 +145,6 @@ repos:
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.400
+  rev: v1.1.401
   hooks:
     - id: pyright
