@@ -19,12 +19,14 @@ from __future__ import annotations
 import warnings
 from collections import defaultdict
 from contextlib import suppress
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from docx2python import numbering_formats as nums
 from docx2python.namespace import get_attrib_by_qn, iterfind_by_qn
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from lxml.etree import _Element as EtreeElement  # type: ignore
 
     from docx2python.docx_context import NumIdAttrs
