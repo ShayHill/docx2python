@@ -30,28 +30,22 @@ def test_comments() -> None:
     pars.close()
     assert comments == [
         (
-            par(
-                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
-            ),
+            par("""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "COMMENT",
         ),
         (
-            par(
-                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
-            ),
+            par("""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "RESPONSE",
         ),
         (
-            par(
-                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
-            ),
+            par("""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""),
             "Shay Hill",
             "2024-03-29T12:10:00Z",
             "Response from Shay Hill",
@@ -63,28 +57,22 @@ def test_comments() -> None:
             "Comment on subset starting with tempor",
         ),
         (
-            par(
-                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
-            ),
+            par("""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "COMMENT on par 5",
         ),
         (
-            par(
-                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
-            ),
+            par("""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""),
             "Randy Bartels",
             "2024-03-28T17:22:00Z",
             "RESPONSE to comment on par 5",
         ),
         (
-            par(
-                """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua."""
-            ),
+            par("""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua."""),
             "Shay Hill",
             "2024-03-29T12:10:00Z",
             "Response from Shay Hill on par 5",
@@ -190,8 +178,7 @@ class TestAdditionalComments:
             "Amet ",
             "Randy Bartels",
             "2024-04-02T17:00:00Z",
-            par(
-                """Comment 6 with a long comment.\n\nmagna fringilla urna porttitor
+            par("""Comment 6 with a long comment.\n\nmagna fringilla urna porttitor
                 rhoncus dolor purus non enim praesent elementum facilisis leo vel
                 fringilla est ullamcorper eget nulla facilisi etiam dignissim diam
                 quis enim lobortis scelerisque fermentum dui faucibus in ornare quam
@@ -201,8 +188,7 @@ class TestAdditionalComments:
                 vitae congue eu consequat ac felis donec et odio pellentesque diam
                 volutpat commodo sed egestas egestas fringilla phasellus faucibus
                 scelerisque eleifend donec pretium vulputate sapien nec sagittis
-                aliquam malesuada bibendum"""
-            ),
+                aliquam malesuada bibendum"""),
         )
 
     def test_comment_7(
@@ -226,8 +212,7 @@ class TestAdditionalComments:
             "suspendisse ",
             "Randy Bartels",
             "2024-04-02T17:00:00Z",
-            par(
-                """Long response: magna fringilla urna porttitor rhoncus dolor purus
+            par("""Long response: magna fringilla urna porttitor rhoncus dolor purus
                 non enim praesent elementum facilisis leo vel fringilla est
                 ullamcorper eget nulla facilisi etiam dignissim diam quis enim
                 lobortis scelerisque fermentum dui faucibus in ornare quam viverra
@@ -237,8 +222,7 @@ class TestAdditionalComments:
                 congue eu consequat ac felis donec et odio pellentesque diam volutpat
                 commodo sed egestas egestas fringilla phasellus faucibus scelerisque
                 eleifend donec pretium vulputate sapien nec sagittis aliquam
-                malesuada bibendum"""
-            ),
+                malesuada bibendum"""),
         )
 
     def comment_8(

@@ -93,30 +93,21 @@ def test_paragraphs_only() -> None:
     expect = [
         (
             "",
-            [
-                par(
-                    """[Grab your reader’s attention with a great quote from the
+            [par("""[Grab your reader’s attention with a great quote from the
                     document or use this space to emphasize a key point. To place
-                    this text box anywhere on the page, just drag it.]"""
-                )
-            ],
+                    this text box anywhere on the page, just drag it.]""")],
         ),
         (
             "",
-            [
-                par(
-                    """[Grab your reader’s attention with a great quote from the
+            [par("""[Grab your reader’s attention with a great quote from the
                     document or use this space to emphasize a key point. To place
-                    this text box anywhere on the page, just drag it.]"""
-                )
-            ],
+                    this text box anywhere on the page, just drag it.]""")],
         ),
         (
             "Heading1",
             [
                 "<h1>",
-                par(
-                    """aaa aab aac aad aae aaf aag aah aai aaj aak aal aam aan aao
+                par("""aaa aab aac aad aae aaf aag aah aai aaj aak aal aam aan aao
                     aap aaq aar aas aat aau aav aaw aax aay aaz aba abb abc abd abe
                     abf abg abh abi abj abk abl abm abn abo abp abq abr abs abt abu
                     abv abw abx aby abz aca acb acc acd ace acf acg ach aci acj ack
@@ -158,8 +149,7 @@ def test_paragraphs_only() -> None:
                     axz aya ayb ayc ayd aye ayf ayg ayh ayi ayj ayk ayl aym ayn ayo
                     ayp ayq ayr ays ayt ayu ayv ayw ayx ayy ayz aza azb azc azd aze
                     azf azg azh azi azj azk azl azm azn azo azp azq azr azs azt azu
-                    azv azw azx azy azz"""
-                ),
+                    azv azw azx azy azz"""),
                 "</h1>",
             ],
         ),

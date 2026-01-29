@@ -14,10 +14,8 @@ from docx2python.iterators import iter_at_depth
 from docx2python.main import docx2python
 from tests.conftest import RESOURCES
 
-ALT_TEXT = par(
-    """----Image alt text---->A close up of a logo\n\n
-        Description automatically generated<"""
-)
+ALT_TEXT = par("""----Image alt text---->A close up of a logo\n\n
+        Description automatically generated<""")
 
 
 class TestFormatting:
@@ -52,10 +50,8 @@ class TestFormatting:
                             [
                                 "footnote2)\t",
                                 " Second footnote",
-                                par(
-                                    """----Image alt text---->A close up of a
-                                    logo\n\nDescription automatically generated<"""
-                                ),
+                                par("""----Image alt text---->A close up of a
+                                    logo\n\nDescription automatically generated<"""),
                                 "----media/image1.png----",
                             ]
                         ],
@@ -76,10 +72,8 @@ class TestFormatting:
                             [
                                 "endnote2)\t",
                                 " Second endnote",
-                                par(
-                                    """----Image alt text---->A close up of a
-                                    logo\n\nDescription automatically generated<"""
-                                ),
+                                par("""----Image alt text---->A close up of a
+                                    logo\n\nDescription automatically generated<"""),
                                 "----media/image1.png----",
                             ]
                         ],
@@ -202,10 +196,8 @@ class TestHtmlFormatting:
                 '<span style="color:FF0000">Colored</span>',
                 '<span style="color:FF0000;font-size:40pt">Large Colored</span>',
                 '<span style="font-size:40pt"><b>Large Bold</b></span>',
-                par(
-                    """<span style="font-size:40pt"><b><i><u>Large Bold Italics
-                    Underlined</u></i></b></span>"""
-                ),
+                par("""<span style="font-size:40pt"><b><i><u>Large Bold Italics
+                    Underlined</u></i></b></span>"""),
             ]
 
     def test_paragraph_formatting(self) -> None:
@@ -223,10 +215,8 @@ class TestHtmlFormatting:
                         ["<h2>", "Heading 2", "</h2>"],
                         [],
                         [
-                            par(
-                                """----Image alt text---->A jellyfish in
-                                water\n\nDescription automatically generated<"""
-                            ),
+                            par("""----Image alt text---->A jellyfish in
+                                water\n\nDescription automatically generated<"""),
                             "----media/image2.jpg----",
                         ],
                     ]
