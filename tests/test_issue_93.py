@@ -10,7 +10,7 @@ The issue was caused by trying to copy a cell from a previous row when the previ
 did not have enough cells. This is not a recoverable issue, because Word destroys
 table-geometry information when cells are merged or when tables are inserted into other
 tables. Docx2Python makes a good guess at the original geometry, but that guess is not
-100%. Addressed the issue by suppressing the IndexError if the guiss is wrong. In the
+100%. Addressed the issue by suppressing the IndexError if the guess is wrong. In the
 test case, this did not lose any data, but it is conceivable some cell data would be
 extracted but not copied into all positions in a shared cell.
 
