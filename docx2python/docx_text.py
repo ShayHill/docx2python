@@ -336,7 +336,8 @@ class TagRunner:
             self.tables.set_caret(tree_depth)
             prev_tr = this_tbl[-2]
             tc_idx = len(this_tr) - 1
-            this_tr[-1] = copy.deepcopy(prev_tr[tc_idx])
+            with suppress(IndexError):
+                this_tr[-1] = copy.deepcopy(prev_tr[tc_idx])
 
         # horizontal merge. copy cell to the left. These will not exist yet. If
         # self.file.context.duplicate_merged_cells is False, insert an empty cell.
