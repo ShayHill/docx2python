@@ -38,7 +38,7 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.19.1
+  rev: v2.3.0
   hooks:
   - id: mypy
     name: mypy
@@ -54,13 +54,13 @@ repos:
     # files: ^(src/|tests/)
 
 - repo: https://github.com/PyCQA/isort
-  rev: 7.0.0
+  rev: 9.0.0b1
   hooks:
   - id: isort
     args: ["--profile", "black", "--filter-files", "--combine-as", "honor--noqa"]
 
-- repo: https://github.com/psf/black
-  rev: 26.1.0
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 26.5.1
   hooks:
   - id: black
     language_version: python3.10
@@ -126,7 +126,7 @@ repos:
   # C901 function is too complex  # for iter_at_depth
   # PLR0912 too many branches  # for iter_at_depth
   #
-  rev: 'v0.14.14'
+  rev: 'v0.16.1'
   hooks:
     - id: ruff
       exclude: "tests"
@@ -138,6 +138,6 @@ repos:
 
 # reads pyproject.toml for additional config
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.408
+  rev: v1.1.411
   hooks:
     - id: pyright
