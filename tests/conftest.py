@@ -1,24 +1,24 @@
-"""
+"""See full diffs in pytest.
 
 :author: Shay Hill
-:created: 7/2/2019
-
+:created: 2019-07-02
 """
 
-from __future__ import annotations
-
 from pathlib import Path
-from typing import Any
+
+import pytest
 
 _PROJECT = Path(__file__).parent.parent
 
 
-def pytest_assertrepr_compare(config: Any, op: str, left: str, right: str) -> list[str]:
+def pytest_assertrepr_compare(
+    config: pytest.Config, op: str, left: str, right: str
+) -> list[str] | None:
     """See full error diffs"""
     del config
     if op in ("==", "!="):
         return [f"{left} {op} {right}"]
-    return []
+    return None
 
 
-RESOURCES = Path(_PROJECT, "tests", "resources")
+RESOURCES = _PROJECT / "tests" / "resources"

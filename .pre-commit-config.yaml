@@ -1,9 +1,7 @@
-
 ci:
   skip: [pyright]
 
-# exclude: 'scripts/.*|tests/.*'
-exclude: 'scripts/.*'
+exclude: "typings|tests"
 
 repos:
 
@@ -31,6 +29,9 @@ repos:
     - id: mixed-line-ending
     - id: requirements-txt-fixer
     - id: trailing-whitespace
+    - id: name-tests-test
+      args:
+      - --pytest-test-first
     - id: no-commit-to-branch
     - id: pretty-format-json
       args: ['--autofix']
@@ -38,12 +39,9 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.19.1
+  rev: v2.3.0
   hooks:
   - id: mypy
-    name: mypy
-    language: python
-    language_version: python3.12
     types: [python]
     require_serial: true
     verbose: true
@@ -52,19 +50,6 @@ repos:
     # args:
     # - --ignore-missing-imports
     # files: ^(src/|tests/)
-
-- repo: https://github.com/PyCQA/isort
-  rev: 7.0.0
-  hooks:
-  - id: isort
-    args: ["--profile", "black", "--filter-files", "--combine-as", "honor--noqa"]
-
-- repo: https://github.com/psf/black
-  rev: 26.1.0
-  hooks:
-  - id: black
-    language_version: python3.10
-    args: ["--skip-magic-trailing-comma"]
 
 - repo: https://github.com/asottile/pyupgrade
   rev: v3.21.2
@@ -78,66 +63,18 @@ repos:
   hooks:
   - id: remove-tabs
 
-# - repo: https://github.com/commitizen-tools/commitizen
-#   rev: v2.40.0
-#   hooks:
-#   - id: commitizen
 
-# pylint still broken in python 3.12
-# - repo: https://github.com/pre-commit/mirrors-pylint
-#   rev: v3.0.0a5
-#   hooks:
-#   - id: pylint
-#     exclude: "tests"
-#     name: pylint
-#     args:
-#     - --good-names=i,j,_,f
-#     - --disable=protected-access
-#     - --disable=no-member
-#     - --disable=import-error
-#     - --disable=no-name-in-module
-#     - --load-plugins=pylint.extensions.docparams
-#     - --accept-no-param-doc=n
-#     - --accept-no-raise-doc=n
-#     - --accept-no-return-doc=n
-#     - --accept-no-yields-doc=n
-
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  # ignores
-  # ANN201 Missing return type annotation for public function
-  # ANN202 Missing return type annotation for private function (wants -> None everywhere)
-  # B905 zip() without an explicit strict= parameter
-  # COM812 Trailing comma missing
-  # D203 1 blank line required before class docstring
-  # D213 multi line summary second line
-  # D400 first line should end with a period
-  # I001 Import block is un-sorted or un-formatted
-  # ISC003 Explicitly concatenated string should be implicitly concatenated
-  # N802 Function name should be lowercase
-  # N806 Variable in function should be lowercase
-  # PERF401 Use a list comprehension to create a transformed list
-  # PGH003 Use specific rule codes when ignoring type issues
-  # PLR0913 Too many arguments to function call
-  #
-  # ERA001 Found commented-out code
-  # N803 Argument name should be lowercase
-  # S320 Using `lxml` to parse untrusted data is known to be ... XML attacks
-  # PLR2004 Magic values
-  # C901 function is too complex  # for iter_at_depth
-  # PLR0912 too many branches  # for iter_at_depth
-  #
-  rev: 'v0.14.14'
+# ruff config (select/ignore/fixable/target-version) lives in pyproject.toml
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  rev: 'v0.16.1'
   hooks:
     - id: ruff
-      exclude: "tests"
-      args:
-      - --target-version=py38
-      - --select=ALL
-      - --ignore=ANN201,ANN202,B905,COM812,D203,D213,D400,I001,ISC003,N802,N806,PERF401,PGH003,PLR0913,ERA001,N803,S320,PLR2004,C901,PLR0912
-      # # - --fix
+      args: ["--fix"]
+    - id: ruff-format
+      name: "ruff-format"
 
-# reads pyproject.toml for additional config
-- repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.408
+# basedpyright config (select/ignore/fixable/target-version) lives in pyproject.toml
+- repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
+  rev: 1.39.9
   hooks:
-    - id: pyright
+  - id: basedpyright

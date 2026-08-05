@@ -1,25 +1,44 @@
-
 [project]
 name = "docx2python"
 version = "3.6.2"
 description = "Extract content from docx files"
 authors = [{ name = "Shay Hill", email = "shay_public@hotmail.com" }]
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE.txt"]
 readme = "README.md"
-requires-python = ">=3.10.0"
-dependencies = ["lxml", "paragraphs", "typing_extensions", "types-lxml"]
-
-[project.optional-dependencies]
-dev = ["commitizen", "pre-commit", "pytest", "tox", "types-lxml"]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = [
+    "lxml>=6.1.1",
+    "paragraphs>=1.0.1",
+]
 
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.11.25,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "commitizen>=4.17.0",
+    "pre-commit>=4.6.1",
+    "pytest>=9.1.1",
+    "types-lxml>=2026.2.16",
+]
 
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "3.6.2"
+version = "0.1.0"
 tag_format = "$version"
 major-version-zero = true
 version_files = ["pyproject.toml:^version"]
@@ -29,44 +48,68 @@ version_files = ["pyproject.toml:^version"]
 profile = "black"
 
 
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py{314,313,312,311,310}
-
-[testenv]
-deps = pytest
-commands = pytest
-"""
-
-
 [tool.pytest.ini_options]
-pythonpath = ["tests"]
-log_cli = 1
+addopts = "--doctest-modules"
+pythonpath = "tests"
+testpaths = ["tests"]
+log_cli = true
+
+
+[tool.ruff]
+target-version = "py310"
+exclude = ["typings", ".venv"]
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    "S101",
+    "D",
+    "F401",
+] # Ignore assertions, docstrings, unused imports in test files
+
+[tool.ruff.format]
+docstring-code-line-length = 88
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint.isort]
+# keep isort consistent with format.skip-magic-trailing-comma
+split-on-trailing-comma = false
+
+[tool.ruff.lint]
+select = ["ALL"]
+# only auto-fix __all__ sorting (RUF022) and import sorting (I)
+fixable = ["RUF022", "I"]
+ignore = [
+    "COM812",  # trailing comma missing (does not agree with Black)
+    "D203",    # 1 blank line before class docstring (incompatible with D211)
+    "D213",    # multi-line summary second line (incompatible with D212)
+    "ISC003",  # explicitly concatenated string should be implicit
+    "FLY",     # Use f-string instead of ...
+    "S311",    # Standard pseudo-random generators are not suitable for security/cryptographic purposes
+    "S301",    # don't use pickle
+    "CPY001",  # copyrite notice should be present in each file
+]
 
 
 [tool.pyright]
-include = ["src"]
+include = ["src", "tests"]
 exclude = ["**/__pycache__.py"]
+ignore = ["typings", ".venv"]
 
-pythonVersion = "3.9"
-pythonPlatform = "Any"
+pythonVersion = "3.10"
+pythonPlatform = "All"
 
 typeCheckingMode = "strict"
-reportShadowedImports = true
 reportCallInDefaultInitializer = true
 reportImplicitStringConcatenation = true
-# reportMissingSuperCall = true
 reportPropertyTypeMismatch = true
 reportUninitializedInstanceVariable = true
 reportUnnecessaryTypeIgnoreComment = true
 reportUnusedCallResult = true
-reportUnknownArgumentType = false
-reportUnknownLambdaType = false
-reportUnknownMemberType = false
-reportUnknownParameterType = false
-reportUnknownVariableType = false
-reportUntypedFunctionDecorator = false
 
 venvPath = "."
-venv = "./venv"
+venv = "./.venv"
+
+[[tool.pyright.executionEnvironments]]
+root = "tests"
