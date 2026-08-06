@@ -1,6 +1,5 @@
 # Run tests then upload to Pypi on version bumps.
 # Run tests on each push.
-# Try to bump version
 # If version is bumped, upload to pypi or test.pypi depending on branch name.
 
 name: pypi project
@@ -38,32 +37,9 @@ jobs:
       run: |
         pytest
 
-  # # If the tests pass, try to bump the version number. If no bump is warranted,
-  # # pass silently.
-  # bump_version:
-  #   runs-on: ubuntu-latest
-  #   name: "Bump version and create changelog with commitizen"
-  #   continue-on-error: false
-  #   needs: [tests]
-  #   if: github.ref == 'refs/heads/dev'
-  #   steps:
-  #     - name: Check out
-  #       uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #         token: "${{ secrets.COMMITIZEN_BUMP }}"
-  #     - id: cz
-  #       name: Create bump and changelog
-  #       uses: commitizen-tools/commitizen-action@master
-  #       with:
-  #         github_token: ${{ secrets.COMMITIZEN_BUMP }}
-  #     - name: Print Version
-  #       run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
-
   # Deploy on test.pypi when branch is dev and commit message starts with 'bump'
   deploy-on-testpypi:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: [tests]
     if: github.ref_name == 'dev' && startsWith(github.event.head_commit.message, 'bump:')
     steps:
@@ -79,16 +55,16 @@ jobs:
       - name: Build package
         run: python -m build
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository_url: https://test.pypi.org/legacy/
-          user: __token__
+          repository-url: https://test.pypi.org/legacy/
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
   # Deploy on pypi when branch is master and commit message starts with 'bump'
   deploy-on-pypi:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    permissions:
+      id-token: write
     needs: [tests]
     if: github.ref_name == 'master' && startsWith(github.event.head_commit.message, 'bump:')
     steps:
@@ -104,7 +80,6 @@ jobs:
       - name: Build package
         run: python -m build
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
