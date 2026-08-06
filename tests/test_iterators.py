@@ -32,14 +32,14 @@ TABLES = [
 class TestOutOfRange:
     def test_enum_at_depth_low(self) -> None:
         """Raise ValueError when attempting to enumerate over depth < 1."""
-        with pytest.raises(ValueError) as msg:
-            _ = tuple(enum_at_depth(TABLES, 0))  # type: ignore
+        with pytest.raises(ValueError, match="depth argument must be") as msg:
+            _ = tuple(enum_at_depth(TABLES, 0))  # type: ignore  noqa: PGH003
         assert "depth argument must be 1, 2, 3, 4, or 5" in str(msg.value)
 
     def test_enum_at_depth_high(self) -> None:
         """Raise ValueError when attempting to enumerate over depth < 1."""
-        with pytest.raises(ValueError) as msg:
-            _ = tuple(enum_at_depth(TABLES, 6))  # type: ignore
+        with pytest.raises(ValueError, match="depth argument must be") as msg:
+            _ = tuple(enum_at_depth(TABLES, 6))  # type: ignore  noqa: PGH003
         assert "depth argument must be 1, 2, 3, 4, or 5" in str(msg.value)
 
 

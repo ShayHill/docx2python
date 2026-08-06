@@ -39,23 +39,22 @@ class TestIncrementListCounter:
         assert ilvl2count == {"1": 1, "2": 3}
 
 
-@pytest.fixture()
+@pytest.fixture
 def numbered_paragraphs() -> list[bytes]:
     """Seven numbered paragraphs, indented 0-6 ilvls."""
-    paragraphs: list[str] = []
-    for ilvl in range(7):
-        paragraphs.append(
-            "<w:p><w:pPr><w:numPr>"
-            + '<w:ilvl w:val="'
-            + str(ilvl)
-            + '"/>'
-            + '<w:numId w:val="1"/>'
-            + "</w:numPr></w:pPr></w:p>"
-        )
+    paragraphs = [
+        "<w:p><w:pPr><w:numPr>"
+        + '<w:ilvl w:val="'
+        + str(ilvl)
+        + '"/>'
+        + '<w:numId w:val="1"/>'
+        + "</w:numPr></w:pPr></w:p>"
+        for ilvl in range(7)
+    ]
     return [valid_xml(x) for x in paragraphs]
 
 
-@pytest.fixture()
+@pytest.fixture
 def numbering_context() -> NumberingContext:
     """
 
@@ -157,7 +156,7 @@ class TestGetBulletString:
         """
         paragraph = etree.fromstring(numbered_paragraphs[6])[0][0]
         bullets = BulletGenerator(numbering_context["numId2Atts"])
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning, match="undefined numbering format"):
             _ = bullets.get_bullet(paragraph)
 
     def test_not_numbered(self, numbering_context: NumberingContext) -> None:
@@ -171,7 +170,7 @@ class TestGetBulletString:
 
     def test_resets_sublists(
         self, numbered_paragraphs: list[bytes], numbering_context: NumberingContext
-    ):
+    ) -> None:
         """Numbers reset when returning to shallower level
 
         1)  top level

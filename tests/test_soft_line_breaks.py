@@ -17,7 +17,7 @@ from tests.conftest import RESOURCES
 
 
 class TestSoftLineBreaks:
-    def test_separate_pars(self):
+    def test_separate_pars(self) -> None:
         """
         Start a new paragraph when a <w:br/> element is found.
         """

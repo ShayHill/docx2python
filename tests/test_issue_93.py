@@ -28,4 +28,7 @@ class TestIssue93:
     def test_explicit_close(self) -> None:
         """Closing DocxReader closes the zipfile."""
         content = docx2python(test_file)
-        print(content.text)
+        assert (
+            content.text[:50]
+            == "Spring 2026\n\nWeek Starting\n\nDay\n\nTopics (Sections "
+        )

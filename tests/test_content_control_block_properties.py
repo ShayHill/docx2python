@@ -20,13 +20,18 @@ description of the sdt context in xml and how to access it.
 
 from __future__ import annotations
 
-from lxml.etree import _Element as EtreeElement  # type: ignore
+from typing import TYPE_CHECKING
 
 from docx2python.attribute_register import Tags
 from docx2python.iterators import iter_paragraphs
 from docx2python.main import docx2python
 from docx2python.text_runs import gather_Pr
 from tests.conftest import RESOURCES
+
+if TYPE_CHECKING:
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
 _DOCX = RESOURCES / "ControlTest.docx"
 
@@ -55,7 +60,6 @@ def get_sdt_tag(elem: EtreeElement) -> str | None:
 
 
 class TestStructuredDocumentTags:
-
     def test_paragraphs_in_sdt_elements(self) -> None:
         """Get the SDT tag above a paragraph."""
         with docx2python(_DOCX) as extraction:

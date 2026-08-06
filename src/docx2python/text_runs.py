@@ -24,7 +24,9 @@ from docx2python.namespace import find_parent_by_qn, qn
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
 
 def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]:
@@ -219,7 +221,7 @@ def _format_Pr_into_html(
     # group together supported formats with the same container and property_
     # e.g., group together everything that goes into `<span style="$HERE$">`
     # con_pro2for[(con, pro)] = string created from for
-    con_pro2for: defaultdict[tuple[None | str, None | str], list[str]]
+    con_pro2for: defaultdict[tuple[str | None, str | None], list[str]]
     con_pro2for = defaultdict(list)
     for tag, val in ((k, v) for k, v in Pr2val.items() if k in xml2html):
         formatter, container, property_ = xml2html[tag]

@@ -16,7 +16,9 @@ from docx2python.attribute_register import Tags, get_prefixed_tag, has_content
 from docx2python.text_runs import get_html_formatting
 
 if TYPE_CHECKING:
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
     from docx2python.docx_reader import File
 

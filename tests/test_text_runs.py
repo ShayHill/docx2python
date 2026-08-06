@@ -35,7 +35,7 @@ NO_STYLE_RUN = valid_xml(
 class TestGatherRpr:
     """Test text_runs.gather_rPr"""
 
-    def test_get_styles(self):
+    def test_get_styles(self) -> None:
         """Map styles to values."""
         document = etree.fromstring(ONE_TEXT_RUN)
         assert gather_Pr(document[0][0][0]) == {
@@ -48,7 +48,7 @@ class TestGatherRpr:
             "szCs": "32",
         }
 
-    def test_no_styles(self):
+    def test_no_styles(self) -> None:
         """Return empty dict when no rPr for text run."""
         document = etree.fromstring(NO_STYLE_RUN)
         assert gather_Pr(document[0][0][0]) == {}

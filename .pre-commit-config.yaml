@@ -1,7 +1,7 @@
 ci:
   skip: [pyright]
 
-exclude: "typings|tests"
+exclude: "typings|tests/do_not_test*"
 
 repos:
 
@@ -47,8 +47,8 @@ repos:
     verbose: true
     additional_dependencies: ['types-requests']
     # exclude: "tests"
-    # args:
-    # - --ignore-missing-imports
+    args:
+    - --ignore-attr-defined
     # files: ^(src/|tests/)
 
 - repo: https://github.com/asottile/pyupgrade

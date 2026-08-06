@@ -4,8 +4,8 @@
 :created: 2021-12-20
 """
 
-import os
 import tempfile
+from pathlib import Path
 
 from docx2python.main import docx2python
 from docx2python.utilities import get_headings, get_links, replace_docx_text
@@ -31,7 +31,7 @@ class TestSearchReplace:
 
         # attempt a search and replace
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            output_filename = Path(temp_dir, "pears_and_apples.docx")
             replace_docx_text(
                 input_filename,
                 output_filename,
@@ -57,7 +57,7 @@ class TestSearchReplace:
         input_filename = RESOURCES / "apples_and_pears.docx"
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            output_filename = Path(temp_dir, "pears_and_apples.docx")
             replace_docx_text(
                 input_filename,
                 output_filename,
@@ -80,7 +80,7 @@ class TestSearchReplace:
         input_filename = RESOURCES / "apples_and_pears.docx"
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            output_filename = Path(temp_dir, "pears_and_apples.docx")
             replace_docx_text(
                 input_filename,
                 output_filename,
@@ -105,7 +105,7 @@ class TestSearchReplace:
         html = True
         input_filename = RESOURCES / "apples_and_pears.docx"
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_filename = os.path.join(temp_dir, "pears_and_apples.docx")
+            output_filename = Path(temp_dir, "pears_and_apples.docx")
             replace_docx_text(
                 input_filename,
                 output_filename,
@@ -126,7 +126,7 @@ class TestSearchReplace:
 
 def test_get_links() -> None:
     """Return links as tuples"""
-    assert [x for x in get_links(RESOURCES / "merged_links.docx")] == [
+    assert list(get_links(RESOURCES / "merged_links.docx")) == [
         ("https://www.shayallenhill.com", "hy"),
         ("https://www.shayallenhill.com", "per"),
         ("https://www.shayallenhill.com", "link"),
@@ -136,7 +136,7 @@ def test_get_links() -> None:
 
 def test_get_headings() -> None:
     """Return all headings (paragraphs with heading style) in document"""
-    assert [x for x in get_headings(RESOURCES / "example.docx")] == [
+    assert list(get_headings(RESOURCES / "example.docx")) == [
         ["<h1>", "Heading 1", "</h1>"],
         ["<h2>", "Heading 2", "</h2>"],
     ]

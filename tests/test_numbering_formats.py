@@ -30,15 +30,13 @@ class TestLowerLetter:
 
     def test_zero(self) -> None:
         """Raise a value error for < 1"""
-        with pytest.raises(ValueError) as msg:
+        with pytest.raises(ValueError, match="not defined for this numbering"):
             _ = lower_letter(0)
-        assert "0 and <1 are not defined" in str(msg.value)
 
     def test_neg(self) -> None:
         """Raise a value error for < 1"""
-        with pytest.raises(ValueError) as msg:
+        with pytest.raises(ValueError, match="not defined for this numbering"):
             _ = lower_letter(-1)
-        assert "0 and <1 are not defined" in str(msg.value)
 
 
 def test_upper_letter() -> None:
@@ -58,15 +56,13 @@ class TestLowerRoman:
 
     def test_zero(self) -> None:
         """Raise a value error for < 1"""
-        with pytest.raises(ValueError) as msg:
+        with pytest.raises(ValueError, match="Roman"):
             _ = lower_roman(0)
-        assert "Roman" in str(msg.value)
 
     def test_neg(self) -> None:
         """Raise a value error for < 1"""
-        with pytest.raises(ValueError) as msg:
+        with pytest.raises(ValueError, match="Roman"):
             _ = lower_roman(-1)
-        assert "Roman" in str(msg.value)
 
 
 def test_upper_roman() -> None:

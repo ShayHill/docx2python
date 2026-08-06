@@ -55,7 +55,7 @@ def test_checked_boxes_explicit() -> None:
             [[]],
             [[]],
             [[]],
-            [["\u2612", " Prosecutor’s Office"]],
+            [["\u2612", " Prosecutor’s Office"]],  # noqa: RUF001
             [[]],
             [[]],
             [[]],

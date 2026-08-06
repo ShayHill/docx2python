@@ -117,7 +117,7 @@ class DocxContent:
     docx_reader: DocxReader
     image_folder: str | os.PathLike[str] | None
 
-    def close(self):
+    def close(self) -> None:
         """Close the zipfile opened by DocxReader."""
         self.docx_reader.close()
 
@@ -130,9 +130,9 @@ class DocxContent:
 
     def __exit__(
         self,
-        exc_type: None | type[BaseException],
-        exc_value: None | BaseException,
-        exc_traceback: None | TracebackType,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_traceback: TracebackType | None,
     ) -> None:
         """Close the zipfile opened by DocxReader.
 

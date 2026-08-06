@@ -27,7 +27,9 @@ from docx2python.namespace import get_attrib_by_qn, iterfind_by_qn
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
     from docx2python.docx_context import NumIdAttrs
 

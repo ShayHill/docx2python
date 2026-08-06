@@ -23,7 +23,9 @@ from lxml import etree
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
 # ===============================================================================
 # Examine and reformat html tags
@@ -256,9 +258,9 @@ def _format_heading(tag: str, val: str) -> str:
 # An HtmlFormatter instance for every xml format Docx2Python recognizes.
 # This mapping can be extended from outside by
 #
-#     import docx2python
+#     import docx2python                                               # noqa: ERA001
 #     docx2python.attribute_register.xml2html_formatter[xml_format] =
-#         docx2python.attribute_register.HtmlFormatter(args)
+#         docx2python.attribute_register.HtmlFormatter(args)           # noqa: ERA001
 XML2HTML_FORMATTER = {
     "b": HtmlFormatter(),
     "i": HtmlFormatter(),

@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import dataclasses
 import itertools as it
-from typing import TYPE_CHECKING, Any, Literal, Union, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from docx2python.attribute_register import get_localname
 from docx2python.iterators import enum_at_depth
@@ -48,12 +48,14 @@ from docx2python.text_runs import (
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
     from docx2python.docx_reader import File
 
 
-_MaybeStr = Union[str, None]
+_MaybeStr = str | None
 _Lineage = tuple[Literal["document"], _MaybeStr, _MaybeStr, _MaybeStr, _MaybeStr]
 
 
@@ -174,7 +176,7 @@ class DepthCollector:
 
         self.comment_ranges: dict[str, tuple[int, int]] = {}
 
-    def _set_in_lineage(self, index: Literal[1, 2, 3, 4], value: str | None):
+    def _set_in_lineage(self, index: Literal[1, 2, 3, 4], value: str | None) -> None:
         """Set a value in the lineage tuple."""
         prev = self._lineage[1:index]
         aftr = self._lineage[index + 1 :]
@@ -358,7 +360,7 @@ class DepthCollector:
         self._rightmost_branches = self._rightmost_branches[:-1]
 
     def set_caret(
-        self, depth: None | Literal[1, 2, 3, 4], elem: EtreeElement | None = None
+        self, depth: Literal[1, 2, 3, 4] | None, elem: EtreeElement | None = None
     ) -> None:
         """Set caret at given depth.
 

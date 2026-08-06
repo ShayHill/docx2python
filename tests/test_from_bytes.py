@@ -5,6 +5,7 @@
 """
 
 from io import BytesIO
+from pathlib import Path
 
 from docx2python.main import docx2python
 from tests.conftest import RESOURCES
@@ -15,7 +16,7 @@ example_docx = RESOURCES / "example.docx"
 class TestFromBytes:
     def test_from_bytes(self) -> None:
         """Loads .docx from a buffer of raw bytes."""
-        with open(example_docx, "rb") as f:
+        with Path(example_docx).open("rb") as f:
             buf = BytesIO(f.read())
         with docx2python(buf) as content:
             core_properties = content.core_properties

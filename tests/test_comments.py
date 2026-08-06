@@ -7,15 +7,9 @@ author, date, comment).
 :created: 2024-03-29
 """
 
-import os
-import sys
+from collections.abc import Iterator
 
 import pytest
-
-project = os.path.abspath(os.path.join(__file__, "..", ".."))
-sys.path.append(project)
-
-
 from paragraphs import par
 
 from docx2python import docx2python
@@ -87,7 +81,7 @@ def test_comments() -> None:
 
 
 @pytest.fixture(scope="module")
-def test_file_with_comments():
+def test_file_with_comments() -> Iterator[list[tuple[str, str, str, str]]]:
     test_file = RESOURCES / "test_file_with_comments.docx"
     pars = docx2python(test_file)
     yield pars.comments

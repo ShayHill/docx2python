@@ -26,7 +26,9 @@ from docx2python.text_runs import gather_Pr
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
     from docx2python.docx_reader import File
 
@@ -139,7 +141,7 @@ class TagRunner:
             return True
         return method(tree)
 
-    def close(self, tree: EtreeElement):
+    def close(self, tree: EtreeElement) -> None:
         """Take care of any cleanup after extracting element text."""
         tree_depth = _get_elem_depth(tree)
 
@@ -301,17 +303,17 @@ class TagRunner:
         self.tables.insert_text_as_new_run("\t")
         return True
 
-    def _close_paragraph(self, tree: EtreeElement):
+    def _close_paragraph(self, tree: EtreeElement) -> None:
         """Close a paragraph."""
         _ = tree
         self.tables.conclude_paragraph()
 
-    def _close_run(self, tree: EtreeElement):
+    def _close_run(self, tree: EtreeElement) -> None:
         """Close a run."""
         _ = tree
         self.tables.conclude_run()
 
-    def _close_table_cell(self, tree: EtreeElement):
+    def _close_table_cell(self, tree: EtreeElement) -> None:
         """Close a table cell.
 
         Word treats vertically and horizontally merged cells differently.

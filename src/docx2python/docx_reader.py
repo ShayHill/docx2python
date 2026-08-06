@@ -46,7 +46,9 @@ if TYPE_CHECKING:
     from io import BytesIO
     from types import TracebackType
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
     from docx2python.depth_collector import DepthCollector
 
@@ -89,11 +91,11 @@ class File:
         self.dir = attribute_dict["dir"]
 
         # cached_properties
-        self.__path: None | str = None
-        self.__rels_path: None | str = None
-        self.__rels: None | dict[str, str] = None
-        self.__root_element: None | EtreeElement = None
-        self.__depth_collector: None | DepthCollector = None
+        self.__path: str | None = None
+        self.__rels_path: str | None = None
+        self.__rels: dict[str, str] | None = None
+        self.__root_element: EtreeElement | None = None
+        self.__depth_collector: DepthCollector | None = None
 
     def __repr__(self) -> str:
         """File with self.path.
@@ -320,9 +322,9 @@ class DocxReader:
             self.xml2html_format = {}
 
         # cached properties and a flag (__closed)
-        self.__zipf: None | zipfile.ZipFile = None
-        self.__files: None | list[File] = None
-        self.__numId2Attrs: None | dict[str, list[NumIdAttrs]] = None
+        self.__zipf: zipfile.ZipFile | None = None
+        self.__files: list[File] | None = None
+        self.__numId2Attrs: dict[str, list[NumIdAttrs]] | None = None
         self.__closed = False
 
     @property
@@ -340,7 +342,7 @@ class DocxReader:
             return self.__zipf
         return self.__zipf
 
-    def close(self):
+    def close(self) -> None:
         """Close the zipfile, set __closed flag to True."""
         if self.__zipf is not None and self.__zipf.fp:
             self.__zipf.close()
@@ -355,9 +357,9 @@ class DocxReader:
 
     def __exit__(
         self,
-        exc_type: None | type[BaseException],
-        exc_value: None | BaseException,
-        exc_traceback: None | TracebackType,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_traceback: TracebackType | None,
     ) -> Self:
         """Close the zipfile.
 

@@ -24,33 +24,33 @@ class TestCloseDocxReader:
         input_context = DocxReader(example_docx)
         _ = input_context.file_of_type("officeDocument").root_element
         # assert DocxReader zipfile is open
-        assert input_context._DocxReader__zipf.fp  # type: ignore
+        assert input_context._DocxReader__zipf.fp  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
         input_context.close()
         # assert DocxReader zipfile is closed
-        assert not input_context._DocxReader__zipf.fp  # type: ignore
+        assert not input_context._DocxReader__zipf.fp  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
     def test_no_access_after_explicit_close(self) -> None:
         """The zipfile will not automatically reopen after explicit close."""
         input_context = DocxReader(example_docx)
         input_context.close()
         # assert zipfile cannot be accessed
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="DocxReader instance has been closed"):
             _ = input_context.zipf
 
 
 class TestDocxReaderContext:
-    def test_context_manager_enter(self):
+    def test_context_manager_enter(self) -> None:
         """DocxReader can be used as a context manager."""
         with DocxReader(example_docx) as input_context:
             input_xml = input_context.file_of_type("officeDocument").root_element
             assert get_prefixed_tag(input_xml) == Tags.DOCUMENT
 
-    def test_context_manager_close(self):
+    def test_context_manager_close(self) -> None:
         """DocxReader can be used as a context manager."""
         with DocxReader(example_docx) as input_context:
             _ = input_context.file_of_type("officeDocument").root_element
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="DocxReader instance has been closed"):
             _ = input_context.zipf
 
 
@@ -59,31 +59,30 @@ class TestCloseDocxContent:
         """Closing DocxReader closes the zipfile."""
         content = docx2python(example_docx)
         _ = content.header_runs
-        assert content.docx_reader._DocxReader__zipf.fp  # type: ignore
+        assert content.docx_reader._DocxReader__zipf.fp  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
         content.close()
         # assert DocxReader zipfile is closed
-        assert not content.docx_reader._DocxReader__zipf.fp  # type: ignore
+        assert not content.docx_reader._DocxReader__zipf.fp  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
     def test_no_access_after_explicit_close(self) -> None:
         """The zipfile will not automatically reopen after explicit close."""
         content = docx2python(example_docx)
         content.close()
         # assert zipfile cannot be accessed
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="DocxReader instance has been closed"):
             _ = content.docx_reader.zipf
 
 
 class TestDocxContentContext:
-    def test_context_manager_enter(self):
+    def test_context_manager_enter(self) -> None:
         """DocxReader can be used as a context manager."""
         with docx2python(example_docx) as content:
             _ = content.header_runs
 
-    def test_context_manager_close(self):
+    def test_context_manager_close(self) -> None:
         """DocxReader can be used as a context manager."""
         with docx2python(example_docx) as content:
-            pass
             _ = content.header_runs
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="DocxReader instance has been closed"):
             _ = content.docx_reader.zipf

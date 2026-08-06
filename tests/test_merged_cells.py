@@ -9,7 +9,7 @@ from tests.conftest import RESOURCES
 
 
 class TestMergedCells:
-    def test_duplicate_merged_cells_false(self):
+    def test_duplicate_merged_cells_false(self) -> None:
         """By default, duplicate merged cells."""
         with docx2python(
             RESOURCES / "merged_cells.docx", duplicate_merged_cells=False
@@ -27,7 +27,7 @@ class TestMergedCells:
             ]
             # fmt: on
 
-    def test_duplicate_merged_cells_true(self):
+    def test_duplicate_merged_cells_true(self) -> None:
         """Duplicate contents in merged cells for an mxn table list."""
         with docx2python(RESOURCES / "merged_cells.docx") as content:
             # fmt: off

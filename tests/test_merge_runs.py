@@ -73,7 +73,7 @@ from docx2python.main import docx2python
 from tests.conftest import RESOURCES
 
 
-def test_merge_runs():
+def test_merge_runs() -> None:
     """
     Merge duplicate, consecutive hyperlinks
 

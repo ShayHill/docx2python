@@ -20,7 +20,7 @@ covered::
 from string import ascii_lowercase
 
 # Subs to convert any number of i's to a proper Roman numeral
-# fmt=off
+# fmt=off  # noqa: ERA001
 ROMAN_SUBS = [
     ("iiiii", "v"),  # 1+1+1+1+1 -> 5
     ("vv", "x"),  # 5+5 -> 10
@@ -35,7 +35,7 @@ ROMAN_SUBS = [
     ("cccc", "cd"),  # 100+100+100+100 -> 40
     ("dcd", "cm"),  # 500+400 -> 900
 ]
-# fmt=on
+# fmt=on  #noqa: ERA001
 
 
 def lower_letter(n: int) -> str:

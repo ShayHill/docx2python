@@ -93,15 +93,19 @@ def test_paragraphs_only() -> None:
     expect = [
         (
             "",
-            [par("""[Grab your reader’s attention with a great quote from the
+            [
+                par("""[Grab your reader’s attention with a great quote from the
                     document or use this space to emphasize a key point. To place
-                    this text box anywhere on the page, just drag it.]""")],
+                    this text box anywhere on the page, just drag it.]""")  # noqa: RUF001
+            ],
         ),
         (
             "",
-            [par("""[Grab your reader’s attention with a great quote from the
+            [
+                par("""[Grab your reader’s attention with a great quote from the
                     document or use this space to emphasize a key point. To place
-                    this text box anywhere on the page, just drag it.]""")],
+                    this text box anywhere on the page, just drag it.]""")  # noqa: RUF001
+            ],
         ),
         (
             "Heading1",
@@ -204,7 +208,7 @@ def test_par_styles_not_in_text() -> None:
         axj axk axl axm axn axo axp axq axr axs axt axu axv axw axx axy axz aya ayb
         ayc ayd aye ayf ayg ayh ayi ayj ayk ayl aym ayn ayo ayp ayq ayr ays ayt ayu
         ayv ayw ayx ayy ayz aza azb azc azd aze azf azg azh azi azj azk azl azm azn
-        azo azp azq azr azs azt azu azv azw azx azy azz</h1>"""
+        azo azp azq azr azs azt azu azv azw azx azy azz</h1>"""  # noqa: RUF001
     )
     pars.close()
 

@@ -51,9 +51,8 @@ class TestDeprecatedPropertiesProperty:
         """
         Raise a future warning when user requests ``result.properties``
         """
-        with docx2python(FILE_WITH_DOCPROPS) as result:
-            with pytest.warns(FutureWarning):
-                _ = result.properties
+        with docx2python(FILE_WITH_DOCPROPS) as result, pytest.warns(FutureWarning):
+            _ = result.properties
 
 
 class TestDocPropsFound:
@@ -83,6 +82,8 @@ class TestGoogleDocs:
         To correct the above error, result.properties will now return an empty
         dictionary (with a warning).
         """
-        with docx2python(FILE_WITHOUT_DOCPROPS) as result:
-            with pytest.warns(UserWarning):
-                assert result.core_properties == {}
+        with (
+            docx2python(FILE_WITHOUT_DOCPROPS) as result,
+            pytest.warns(UserWarning, match="Could not find core-properties file"),
+        ):
+            assert result.core_properties == {}

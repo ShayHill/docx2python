@@ -55,7 +55,9 @@ from docx2python.attribute_register import get_prefixed_tag
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
 
 def qn(elem: EtreeElement, tag: str) -> str:

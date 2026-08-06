@@ -20,7 +20,7 @@ test_file = RESOURCES / "list_index_a.docx"
 
 
 class TestContentControlDropdownSelectorInTable:
-    def test_content_control_dropdown_selector_in_table(self):
+    def test_content_control_dropdown_selector_in_table(self) -> None:
         """Test the dropdown selector in a table."""
         with docx2python(test_file) as docx_content:
             content_runs = docx_content.document

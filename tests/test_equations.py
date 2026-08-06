@@ -16,7 +16,7 @@ from tests.conftest import RESOURCES
 
 
 class TestEquations:
-    def test_professional_format(self):
+    def test_professional_format(self) -> None:
         """
         Start a new paragraph when a <w:br/> element is found.
         """

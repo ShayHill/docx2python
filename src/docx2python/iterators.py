@@ -66,7 +66,7 @@ def enum_at_depth(
 ) -> Iterator[tuple[tuple[int, int, int, int, int], _T]]: ...
 
 
-def enum_at_depth(
+def enum_at_depth(  # noqa: C901, PLR0912
     nested: (
         Iterable[_T]
         | Iterable[Iterable[_T]]

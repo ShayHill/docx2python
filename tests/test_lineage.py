@@ -21,7 +21,7 @@ from .conftest import RESOURCES
 class TestLineage:
     """Are lineage tags correct for Par instances?"""
 
-    def test_explicit(self):
+    def test_explicit(self) -> None:
         """Output matches expected lineage."""
         with docx2python(RESOURCES / "paragraphs_and_tables.docx") as extraction:
             pars = extraction.document_pars
@@ -47,7 +47,7 @@ class TestLineage:
 class TestTableIdentification:
     """Are tables identified correctly?"""
 
-    def test_is_tbl(self):
+    def test_is_tbl(self) -> None:
         """Tables are identified correctly."""
         with docx2python(RESOURCES / "paragraphs_and_tables.docx") as extraction:
             pars = extraction.document_pars
@@ -59,7 +59,7 @@ class TestTableIdentification:
             False,
         ]
 
-    def test_is_tr(self):
+    def test_is_tr(self) -> None:
         """Tables are identified correctly."""
         with docx2python(RESOURCES / "paragraphs_and_tables.docx") as extraction:
             pars = extraction.document_pars
@@ -76,7 +76,7 @@ class TestTableIdentification:
             False,
         ]
 
-    def test_is_tc(self):
+    def test_is_tc(self) -> None:
         """Tables are identified correctly."""
         with docx2python(RESOURCES / "paragraphs_and_tables.docx") as extraction:
             pars = extraction.document_pars

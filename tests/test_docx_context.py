@@ -4,9 +4,9 @@ author: Shay Hill
 created: 6/26/2019
 """
 
-import os
 import tempfile
 import zipfile
+from pathlib import Path
 
 from lxml import etree
 
@@ -25,7 +25,7 @@ class TestSaveDocx:
     def test_save_unchanged(self) -> None:
         """Creates a valid docx"""
         with tempfile.TemporaryDirectory() as temp_dir:
-            example_copy_docx = os.path.join(temp_dir, "example_copy.docx")
+            example_copy_docx = Path(temp_dir, "example_copy.docx")
             with DocxReader(example_docx) as input_context:
                 input_xml = input_context.file_of_type("officeDocument").root_element
                 input_context.save(example_copy_docx)
@@ -42,7 +42,7 @@ class TestSaveDocx:
                 continue
             elem.text = elem.text.replace("bullet", "BULLET")
         with tempfile.TemporaryDirectory() as temp_dir:
-            with_text_replaced = os.path.join(temp_dir, "with_text_replaced.docx")
+            with_text_replaced = Path(temp_dir, "with_text_replaced.docx")
             input_context.save(with_text_replaced)
             with DocxReader(with_text_replaced) as output_context:
                 output_runs = output_context.file_of_type("officeDocument").text
@@ -142,11 +142,14 @@ class TestPullImageFiles:
         docx_context = DocxReader(example_docx)
         with tempfile.TemporaryDirectory() as image_folder:
             _ = docx_context.pull_image_files(image_folder)
-            assert set(os.listdir(image_folder)) == {"image1.png", "image2.jpg"}
+            assert {x.name for x in Path(image_folder).iterdir()} == {
+                "image1.png",
+                "image2.jpg",
+            }
 
     def test_no_image_files(self) -> None:
         """Pass silently when no image files."""
         docx_context = DocxReader(RESOURCES / "basic.docx")
         with tempfile.TemporaryDirectory() as image_folder:
             _ = docx_context.pull_image_files(image_folder)
-            assert os.listdir(image_folder) == []
+            assert list(Path(image_folder).iterdir()) == []

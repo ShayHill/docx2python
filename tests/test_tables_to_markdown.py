@@ -9,11 +9,15 @@ for tables as markdown. The new features in docx2python v3 make this straightfor
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from conftest import RESOURCES
 
 from docx2python import docx2python
-from docx2python.depth_collector import Par
 from docx2python.iterators import is_tbl, iter_at_depth, iter_tables
+
+if TYPE_CHECKING:
+    from docx2python.depth_collector import Par
 
 
 def _print_tc(cell: list[Par]) -> str:

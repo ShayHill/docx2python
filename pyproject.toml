@@ -66,6 +66,8 @@ convention = "pep257"
     "S101",
     "D",
     "F401",
+    "SLF001",  # private member access
+    "E501",  # line too long
 ] # Ignore assertions, docstrings, unused imports in test files
 
 [tool.ruff.format]
@@ -89,6 +91,12 @@ ignore = [
     "S311",    # Standard pseudo-random generators are not suitable for security/cryptographic purposes
     "S301",    # don't use pickle
     "CPY001",  # copyrite notice should be present in each file
+    "N802",    # function name should be lowercase
+    "N803",    # argument name should be lowercase
+    "N806",    # variable in function should be lowercase
+    "D400",    # First line of docstring should end with a period
+    "PLR2004", # magic number should be defined as a constant
+    "SIM108",  # use ternary operator
 ]
 
 
@@ -113,3 +121,4 @@ venv = "./.venv"
 
 [[tool.pyright.executionEnvironments]]
 root = "tests"
+extraPaths = ["."]

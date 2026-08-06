@@ -1,0 +1,74 @@
+{
+  "configurations": {
+    "run": {
+      "adapter": "debugpy",
+      "breakpoints": {
+        "exception": {
+          "caught": "N",
+          "raised": "N",
+          "uncaught": "Y",
+          "userUnhandled": "N"
+        }
+      },
+      "configuration": {
+        "cwd": "${workspaceRoot}",
+        "name": "run this Python file",
+        "program": "${file}",
+        "python": "${workspaceRoot}/.venv/Scripts/python.exe",
+        "pythonArgs": [
+          "-Xfrozen_modules=off"
+        ],
+        "request": "launch",
+        "type": "python"
+      }
+    },
+    "run - main.py": {
+      "adapter": "debugpy",
+      "breakpoints": {
+        "exception": {
+          "caught": "N",
+          "raised": "N",
+          "uncaught": "Y",
+          "userUnhandled": "N"
+        }
+      },
+      "configuration": {
+        "cwd": "${workspaceRoot}",
+        "name": "run main.py",
+        "program": "${workspaceRoot}/src/docx2python/main.py",
+        "python": "${workspaceRoot}/.venv/Scripts/python.exe",
+        "pythonArgs": [
+          "-Xfrozen_modules=off"
+        ],
+        "request": "launch",
+        "type": "python"
+      }
+    },
+    "test": {
+      "adapter": "debugpy",
+      "breakpoints": {
+        "exception": {
+          "caught": "N",
+          "raised": "N",
+          "uncaught": "Y",
+          "userUnhandled": "N"
+        }
+      },
+      "configuration": {
+        "args": [
+          "-q",
+          "${file}"
+        ],
+        "cwd": "${workspaceRoot}",
+        "module": "pytest",
+        "name": "run this test file",
+        "python": "${workspaceRoot}/.venv/Scripts/python.exe",
+        "pythonArgs": [
+          "-Xfrozen_modules=off"
+        ],
+        "request": "launch",
+        "type": "python"
+      }
+    }
+  }
+}

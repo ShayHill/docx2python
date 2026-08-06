@@ -29,7 +29,7 @@ def test_symbols() -> None:
             "<span style=font-family:Webdings>&#x0068;</span>"
             "≠"
             "<span style=font-family:Symbol>&#x00F0;</span>"
-            "∞×÷≥≤±™®©¥£€µαβπΩ∑"
+            "∞×÷≥≤±™®©¥£€µαβπΩ∑"  # noqa: RUF001
             "<span style=font-family:Webdings>&#x004A;</span>"
             "<span style=font-family:Webdings>&#x004B;</span>"
             "<span style=font-family:Webdings>&#x0084;</span>"
@@ -45,7 +45,7 @@ def test_symbols_with_html_true() -> None:
             "<span style=font-family:Webdings>&#x0068;</span>"
             "≠"
             "<span style=font-family:Symbol>&#x00F0;</span>"
-            "∞×÷≥≤±™®©¥£€µαβπΩ∑"
+            "∞×÷≥≤±™®©¥£€µαβπΩ∑"  # noqa: RUF001
             "<span style=font-family:Webdings>&#x004A;</span>"
             "<span style=font-family:Webdings>&#x004B;</span>"
             "<span style=font-family:Webdings>&#x0084;</span>"

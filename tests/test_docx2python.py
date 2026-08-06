@@ -4,9 +4,9 @@
 :created: 7/5/2019
 """
 
-import os
 import re
 import shutil
+from pathlib import Path
 
 from paragraphs import par
 
@@ -232,9 +232,9 @@ class TestImageDir:
     def test_pull_image_files(self) -> None:
         """Copy image files to output path."""
         pars = docx2python(RESOURCES / "example.docx", "delete_this/path/to/images")
-        assert set(os.listdir("delete_this/path/to/images")) == {
-            "image1.png",
-            "image2.jpg",
+        assert set(Path("delete_this/path/to/images").iterdir()) == {
+            Path("delete_this/path/to/images/image1.png"),
+            Path("delete_this/path/to/images/image2.jpg"),
         }
         # clean up
         shutil.rmtree("delete_this")

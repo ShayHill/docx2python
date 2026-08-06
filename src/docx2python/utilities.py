@@ -23,7 +23,9 @@ if TYPE_CHECKING:
     import os
     from collections.abc import Iterator
 
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
 
 def _copy_new_text(elem: EtreeElement, new_text: str) -> EtreeElement:
@@ -58,7 +60,7 @@ def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
     Will use softbreaks <br> to preserve line breaks in replacement text.
     """
 
-    def recursive_text_replace(branch: EtreeElement):
+    def recursive_text_replace(branch: EtreeElement) -> None:
         """Replace any text element contining old with one or more elements.
 
         :param branch: an etree element
@@ -74,7 +76,9 @@ def replace_root_text(root: EtreeElement, old: str, new: str) -> None:
 
             # insert breakpoints where line breaks were
             breaks = [_new_br_element(elem) for _ in new_elems]
-            new_elems = [x for pair in zip(new_elems, breaks) for x in pair][:-1]
+            new_elems = [
+                x for pair in zip(new_elems, breaks, strict=True) for x in pair
+            ][:-1]
 
             # replace the original element with the new elements
             parent = elem.getparent()

@@ -19,7 +19,9 @@ from typing import TYPE_CHECKING
 from docx2python.namespace import get_attrib_by_qn, iterfind_by_qn, qn
 
 if TYPE_CHECKING:
-    from lxml.etree import _Element as EtreeElement  # type: ignore
+    from lxml.etree import (
+        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
+    )
 
 
 def get_checkBox_entry(checkBox: EtreeElement) -> str:
