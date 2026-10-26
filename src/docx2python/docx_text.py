@@ -208,6 +208,22 @@ class TagRunner:
         self.tables.add_code_into_open_run("\n")
         return True
 
+    def _open_cr(self, tree: EtreeElement) -> bool:
+        """Open a carriage return. Treat it as a line break, like ``<w:br/>``."""
+        _ = tree
+        self.tables.add_code_into_open_run("\n")
+        return True
+
+    def _open_no_break_hyphen(self, tree: EtreeElement) -> bool:
+        """Open a non-breaking hyphen.
+
+        A hyphen-minus. Not being a line-break opportunity only matters when
+        laying out a page, so it is not carried into the extracted text.
+        """
+        _ = tree
+        self.tables.add_text_into_open_run("-")
+        return True
+
     def _open_sym(self, tree: EtreeElement) -> bool:
         """Open a symbol."""
         font = str(tree.attrib.get(qn(tree, "w:font")))
