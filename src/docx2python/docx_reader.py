@@ -46,9 +46,7 @@ if TYPE_CHECKING:
     from io import BytesIO
     from types import TracebackType
 
-    from lxml.etree import (
-        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
-    )
+    from lxml.etree import _Element as EtreeElement  # pyright: ignore[reportPrivateUsage]
 
     from docx2python.depth_collector import DepthCollector
 

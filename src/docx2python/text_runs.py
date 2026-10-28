@@ -24,9 +24,7 @@ from docx2python.namespace import find_parent_by_qn, qn
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from lxml.etree import (
-        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
-    )
+    from lxml.etree import _Element as EtreeElement  # pyright: ignore[reportPrivateUsage]
 
 
 def _gather_sub_vals(element: EtreeElement, qname: str) -> dict[str, str | None]:

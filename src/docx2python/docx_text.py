@@ -26,9 +26,7 @@ from docx2python.text_runs import gather_Pr
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from lxml.etree import (
-        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
-    )
+    from lxml.etree import _Element as EtreeElement  # pyright: ignore[reportPrivateUsage]
 
     from docx2python.docx_reader import File
 

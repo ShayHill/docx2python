@@ -29,9 +29,7 @@ from docx2python.text_runs import gather_Pr
 from tests.conftest import RESOURCES
 
 if TYPE_CHECKING:
-    from lxml.etree import (
-        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
-    )
+    from lxml.etree import _Element as EtreeElement  # pyright: ignore[reportPrivateUsage]
 
 _DOCX = RESOURCES / "ControlTest.docx"
 

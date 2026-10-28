@@ -73,6 +73,7 @@ def enum_at_depth(  # noqa: C901, PLR0912
         | Iterable[Iterable[Iterable[_T]]]
         | Iterable[Iterable[Iterable[Iterable[_T]]]]
         | Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]]
+        | Iterable[Iterable[Iterable[Iterable[Iterable[Iterable[_T]]]]]]
     ),
     depth: Literal[1, 2, 3, 4, 5],
 ) -> (

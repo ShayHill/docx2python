@@ -1,4 +1,25 @@
 
+## 3.7.2 (2026-10-28)
+
+### Fix
+
+- Support w:noBreakHyphen and w:cr instead of dropping them.
+
+## 3.6.2 (2026-01-31)
+
+### Fix
+
+- Gracefully recover when failing to unmerge cells. It is not always possible
+  to infer the original size of merged table cells when other tables are nested
+  into them. When this happens, fail silently to duplicate data into merged cell.
+
+## 3.6.0 (2026-01-29)
+
+### Feat
+
+- Remove Python 3.9 support.
+- Test Python 3.14 support.
+
 ## 3.5.0 (2025-02-03)
 
 ### Feat

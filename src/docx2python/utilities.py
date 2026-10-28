@@ -23,9 +23,7 @@ if TYPE_CHECKING:
     import os
     from collections.abc import Iterator
 
-    from lxml.etree import (
-        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
-    )
+    from lxml.etree import _Element as EtreeElement  # pyright: ignore[reportPrivateUsage]
 
 
 def _copy_new_text(elem: EtreeElement, new_text: str) -> EtreeElement:

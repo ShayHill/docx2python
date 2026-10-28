@@ -29,9 +29,6 @@ repos:
     - id: mixed-line-ending
     - id: requirements-txt-fixer
     - id: trailing-whitespace
-    - id: name-tests-test
-      args:
-      - --pytest-test-first
     - id: no-commit-to-branch
     - id: pretty-format-json
       args: ['--autofix']
@@ -39,20 +36,23 @@ repos:
         # files: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v2.3.0
+  rev: v2.4.0
   hooks:
   - id: mypy
+    name: mypy
+    language: python
+    language_version: python 3.11
     types: [python]
     require_serial: true
     verbose: true
     additional_dependencies: ['types-requests']
-    # exclude: "tests"
-    args:
-    - --ignore-attr-defined
+    exclude: "tests"
+    # args:
+    # - --ignore-missing-imports
     # files: ^(src/|tests/)
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.21.2
+  rev: v3.22.0
   hooks:
   - args:
     - --py310-plus
@@ -66,7 +66,7 @@ repos:
 
 # ruff config (select/ignore/fixable/target-version) lives in pyproject.toml
 - repo: https://github.com/charliermarsh/ruff-pre-commit
-  rev: 'v0.16.1'
+  rev: 'v0.17.3'
   hooks:
     - id: ruff
       args: ["--fix"]
@@ -75,6 +75,6 @@ repos:
 
 # basedpyright config (select/ignore/fixable/target-version) lives in pyproject.toml
 - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
-  rev: 1.39.9
+  rev: 1.40.2
   hooks:
   - id: basedpyright

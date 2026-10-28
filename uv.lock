@@ -194,11 +194,12 @@ wheels = [
 
 [[package]]
 name = "docx2python"
-version = "0.1.0"
+version = "3.7.1"
 source = { editable = "." }
 dependencies = [
     { name = "lxml" },
     { name = "paragraphs" },
+    { name = "typing-extensions" },
 ]
 
 [package.dev-dependencies]
@@ -213,6 +214,7 @@ dev = [
 requires-dist = [
     { name = "lxml", specifier = ">=6.1.1" },
     { name = "paragraphs", specifier = ">=1.0.1" },
+    { name = "typing-extensions" },
 ]
 
 [package.metadata.requires-dev]

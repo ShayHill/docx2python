@@ -23,9 +23,7 @@ from lxml import etree
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
-    from lxml.etree import (
-        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
-    )
+    from lxml.etree import _Element as EtreeElement  # pyright: ignore[reportPrivateUsage]
 
 # ===============================================================================
 # Examine and reformat html tags

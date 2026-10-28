@@ -20,9 +20,7 @@ from docx2python.namespace import find_by_qn, findall_by_qn, get_attrib_by_qn
 if TYPE_CHECKING:
     import zipfile
 
-    from lxml.etree import (
-        _Element as EtreeElement,  # pyright: ignore[reportPrivateUsage]
-    )
+    from lxml.etree import _Element as EtreeElement  # pyright: ignore[reportPrivateUsage]
 
 
 @dataclasses.dataclass
